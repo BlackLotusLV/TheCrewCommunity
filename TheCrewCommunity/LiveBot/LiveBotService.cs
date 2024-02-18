@@ -158,6 +158,7 @@ public class LiveBotService : IHostedService, ILiveBotService
 
         _discordClient.ComponentInteractionCreated += _modMailService.OpenButton;
         _discordClient.ComponentInteractionCreated += _modMailService.CloseButton;
+        _discordClient.MessageCreated += _modMailService.ProcessModMailDm;
 
         ulong? guildId = null;
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
