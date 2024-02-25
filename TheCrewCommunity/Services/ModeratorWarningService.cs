@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using DSharpPlus;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using DSharpPlus.SlashCommands;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
@@ -13,7 +13,7 @@ public interface IModeratorWarningService
     public void StartService(DiscordClient client);
     public void StopService();
     public void AddToQueue(WarningItem value);
-    public Task RemoveWarningAsync(DiscordUser user, InteractionContext ctx, int warningId);
+    public Task RemoveWarningAsync(DiscordUser user, SlashCommandContext ctx, int warningId);
     Task<DiscordEmbed> GetUserInfoAsync(DiscordGuild guild, DiscordUser user);
     Task<List<DiscordEmbed>> BuildInfractionsEmbedsAsync(DiscordGuild guild, DiscordUser user, bool adminCommand = false);
     string UserInfoButtonPrefix { get; }
@@ -141,7 +141,7 @@ public class ModeratorWarningService(
             await item.InteractionContext.DeleteResponseAsync();
         }
     }
-    public async Task RemoveWarningAsync(DiscordUser user, InteractionContext ctx, int warningId)
+    public async Task RemoveWarningAsync(DiscordUser user, SlashCommandContext ctx, int warningId)
         {
             await using LiveBotDbContext liveBotDbContext = await DbContextFactory.CreateDbContextAsync();
             Guild? guild = await liveBotDbContext.Guilds.FindAsync(ctx.Guild.Id);
@@ -349,7 +349,7 @@ public class WarningItem(
     DiscordChannel channel,
     string reason,
     bool autoMessage,
-    InteractionContext? interactionContext = null,
+    SlashCommandContext? interactionContext = null,
     DiscordAttachment? attachment = null)
 {
     public DiscordUser User { get; set; } = user;
@@ -358,6 +358,6 @@ public class WarningItem(
     public DiscordChannel Channel { get; set; } = channel;
     public string Reason { get; set; } = reason;
     public bool AutoMessage { get; set; } = autoMessage;
-    public InteractionContext? InteractionContext { get; set; } = interactionContext;
+    public SlashCommandContext? InteractionContext { get; set; } = interactionContext;
     public DiscordAttachment? Attachment { get; set; } = attachment;
 }

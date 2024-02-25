@@ -11,7 +11,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public sealed class UserRankCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService)
 {
-    [Command("rank"), Description("Shows your rank based on past 30 days of activity"), RequireGuild]
+    [Command("rank"), Description("Shows your rank based on past 30 days of activity."), RequireGuild]
     public async Task ExecuteAsync(CommandContext ctx, DiscordMember? member = null)
     {
         await ctx.DeferResponseAsync();

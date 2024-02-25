@@ -1,6 +1,5 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Commands;
@@ -9,7 +8,6 @@ using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.UserCommands;
 using Serilog;
 using Serilog.Events;
-using TheCrewCommunity.LiveBot.Commands;
 using TheCrewCommunity.LiveBot.EventHandlers;
 using TheCrewCommunity.LiveBot.LogEnrichers;
 using TheCrewCommunity.Services;
@@ -67,18 +65,17 @@ public class LiveBotService : IHostedService, ILiveBotService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _discordClient.Logger.LogInformation(CustomLogEvents.LiveBot, "LiveBot is starting! Environment: {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production");
-        SlashCommandsConfiguration slashCommandConfig = new()
-        {
-            Services = _serviceProvider
-        };
         InteractivityConfiguration interactivityConfiguration = new();
+        ulong? guildId = null;
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            guildId = 282478449539678210;
+        }
         CommandsConfiguration commandsConfiguration = new()
         {
             ServiceProvider = _serviceProvider,
-            DebugGuildId = 282478449539678210
+            DebugGuildId = guildId
         };
-
-        SlashCommandsExtension slashCommandsExtension = _discordClient.UseSlashCommands(slashCommandConfig);
         CommandsExtension commandsExtension = _discordClient.UseCommands(commandsConfiguration);
         
         _discordClient.UseInteractivity(interactivityConfiguration);
@@ -114,10 +111,6 @@ public class LiveBotService : IHostedService, ILiveBotService
         _discordClient.SessionCreated += _systemEventsEventHandlers.SessionCreated;
         _discordClient.GuildAvailable += _systemEventsEventHandlers.GuildAvailable;
         _discordClient.ClientErrored += _systemEventsEventHandlers.ClientErrored;
-        slashCommandsExtension.SlashCommandExecuted += _systemEventsEventHandlers.SlashExecuted;
-        slashCommandsExtension.SlashCommandErrored += _systemEventsEventHandlers.SlashErrored;
-        slashCommandsExtension.ContextMenuExecuted += _systemEventsEventHandlers.ContextMenuExecuted;
-        slashCommandsExtension.ContextMenuErrored += _systemEventsEventHandlers.ContextMenuErrored;
 
         commandsExtension.CommandExecuted += _systemEventsEventHandlers.CommandExecuted;
         commandsExtension.CommandErrored += _systemEventsEventHandlers.CommandErrored;
@@ -159,18 +152,6 @@ public class LiveBotService : IHostedService, ILiveBotService
         _discordClient.ComponentInteractionCreated += _modMailService.OpenButton;
         _discordClient.ComponentInteractionCreated += _modMailService.CloseButton;
         _discordClient.MessageCreated += _modMailService.ProcessModMailDm;
-
-        ulong? guildId = null;
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-        {
-            guildId = 282478449539678210;
-        }
-
-        slashCommandsExtension.RegisterCommands<ModerationCommands>(guildId);
-        slashCommandsExtension.RegisterCommands<GeneralCommands>(guildId);
-        slashCommandsExtension.RegisterCommands<ModeratorMailCommands>(guildId);
-        slashCommandsExtension.RegisterCommands<AdminCommands>(guildId);
-        slashCommandsExtension.RegisterCommands<TagCommands>(guildId);
         
         await commandsExtension.AddProcessorsAsync(
             new SlashCommandProcessor(),

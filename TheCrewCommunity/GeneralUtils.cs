@@ -1,9 +1,5 @@
-﻿using System.Collections.Immutable;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using Microsoft.EntityFrameworkCore;
-using TheCrewCommunity.Data;
 
 namespace TheCrewCommunity;
 
@@ -17,29 +13,23 @@ public class GeneralUtils
                member.Permissions.HasPermission(Permissions.Administrator);
     }
     
-    public sealed class PhotoContestOption : IAutocompleteProvider
+    public int CalculateLevenshteinDistance(string a, string b)
     {
-        public async Task<IEnumerable<DiscordAutoCompleteChoice>> Provider(AutocompleteContext ctx)
+        var matrix = new int[a.Length + 1, b.Length + 1];
+
+        for (var i = 0; i <= a.Length; i++)
+            matrix[i, 0] = i;
+        for (var j = 0; j <= b.Length; j++)
+            matrix[0, j] = j;
+
+        for (var i = 1; i <= a.Length; i++)
         {
-            var databaseContext = ctx.Services.GetService<LiveBotDbContext>();
-            Guild guildSettings = await databaseContext.Guilds
-                .Include(x => x.PhotoCompSettings)
-                .ThenInclude(x => x.Entries)
-                .FirstOrDefaultAsync(x => x.Id == ctx.Guild.Id);
-            var customParameters = guildSettings.PhotoCompSettings
-                .Where(x => x.IsOpen && x.Entries.Any(entry => entry.UserId == ctx.User.Id))
-                .Select(x => x.CustomParameter).ToImmutableArray();
-            var openCompetitions = guildSettings.PhotoCompSettings
-                .Where(x => x.IsOpen && !customParameters.Any(customParameter => customParameter == x.CustomParameter))
-                .ToImmutableArray();
-
-            if (openCompetitions.Length == 0)
+            for (var j = 1; j <= b.Length; j++)
             {
-                return new DiscordAutoCompleteChoice[]
-                    { new("No open competitions", -1) };
+                int cost = (b[j - 1] == a[i - 1]) ? 0 : 1;
+                matrix[i, j] = Math.Min(Math.Min(matrix[i - 1, j] + 1, matrix[i, j - 1] + 1), matrix[i - 1, j - 1] + cost);
             }
-
-            return openCompetitions.Select(photoCompSettings => new DiscordAutoCompleteChoice(photoCompSettings.CustomName, photoCompSettings.Id)).ToList();
         }
+        return matrix[a.Length, b.Length];
     }
 }

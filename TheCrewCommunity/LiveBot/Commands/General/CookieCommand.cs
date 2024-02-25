@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Trees.Attributes;
@@ -12,7 +11,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class CookieCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService)
 {
-    [Command("cookie"), Description("Gives user a cookie."), DisplayName("Cookie"), RequireGuild]
+    [Command("cookie"), Description("Gives user a cookie."), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, [Description("Member who you want to give the cooky to.")] DiscordMember member)
     {
         if (ctx.Member is null)
