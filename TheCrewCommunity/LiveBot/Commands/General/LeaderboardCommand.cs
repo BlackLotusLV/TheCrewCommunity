@@ -79,28 +79,23 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
             throw new NullReferenceException("Guild is null");
         }
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+        
         var activityList = await dbContext.UserActivity
             .Where(x => x.Date > DateTime.UtcNow.AddDays(-30) && x.GuildId == ctx.Guild.Id)
             .GroupBy(x => x.UserDiscordId)
             .Select(g => new { UserID = g.Key, Points = g.Sum(x => x.Points) })
             .OrderByDescending(x => x.Points)
+            .Skip((page - 1) * 10)
+            .Take(10)
             .ToListAsync();
+        
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine("```csharp\n📋 Rank | Username");
-        for (int i = page * 10 - 10; i < page * 10; i++)
+        for (var i = 0; i < activityList.Count; i++)
         {
-            DiscordUser user = await ctx.Client.GetUserAsync(activityList[i].UserID);
+            DiscordUser user = await ctx.Client.GetUserAsync(activityList[i].UserID) ?? throw new Exception($"User with ID {activityList[i].UserID} not found");
             User? userInfo = await dbContext.Users.FindAsync(user.Id);
-            stringBuilder.Append($"[{i + 1}]\t# {user.Username}\n\t\t\tPoints:{activityList[i].Points}");
-            if (userInfo != null)
-            {
-                stringBuilder.AppendLine($"\t\t🍪:{userInfo.CookiesTaken}/{userInfo.CookiesGiven}");
-            }
-
-            if (i == activityList.Count - 1)
-            {
-                i = page * 10;
-            }
+            stringBuilder.Append(BuildLeaderboardString(i,user,userInfo,activityList[i].Points));
         }
 
         var rank = 0;
@@ -117,6 +112,17 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
         }
 
         stringBuilder.AppendLine($"\n# Your Ranking\n{personalScore.ToString()}\n```");
+        return stringBuilder.ToString();
+    }
+    
+    private static string BuildLeaderboardString(int rank, DiscordUser user, User? userInfo, int points)
+    {
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append($"[{rank}]\t# {user.Username}\n\t\t\tPoints:{points}");
+        if (userInfo != null)
+        {
+            stringBuilder.AppendLine($"\t\t🍪:{userInfo.CookiesTaken}/{userInfo.CookiesGiven}");
+        }
         return stringBuilder.ToString();
     }
 }
