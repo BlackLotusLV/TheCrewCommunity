@@ -61,7 +61,7 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
     // public async Task PruneUserMenu(SlashCommandContext ctx, DiscordMessage targetMessage) 
     //     => await PruneUserContextMenu.ExecuteAsync(ctx, targetMessage);
     
-    [Command("WhitelistInvite"), Description("Whitelist an invite code"), RequirePermissions(Permissions.ModerateMembers)]
+    [Command("whitelist-invite"), Description("Whitelist an invite code"), RequirePermissions(Permissions.ModerateMembers)]
     public async Task WhitelistInvite( SlashCommandContext ctx, [Description("The invite code to be whitelisted")] string code)
     => await WhitelistInviteCommand.ExecuteAsync(dbContextFactory, ctx, code);
     
