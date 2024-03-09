@@ -6,14 +6,14 @@ using DSharpPlus.Interactivity.Extensions;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
-public class CreateFaqCommand
+public static class CreateFaqCommand
 {
     public static async Task ExecuteAsync(SlashCommandContext ctx)
     {
         var customId = $"FAQ-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("New FAQ entry").WithCustomId(customId)
-            .AddComponents(new TextInputComponent("Question", "Question", null, null, true, TextInputStyle.Paragraph))
-            .AddComponents(new TextInputComponent("Answer", "Answer", "Answer to the question", null, true, TextInputStyle.Paragraph));
+            .AddComponents(new TextInputComponent("Question", "Question", required: true, style: TextInputStyle.Paragraph))
+            .AddComponents(new TextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: TextInputStyle.Paragraph));
         await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, modal);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();

@@ -37,5 +37,5 @@ public class UserActivity
 
     private DateTime _date;
 
-    public GuildUser GuildUser { get; set; }
+    public GuildUser? GuildUser { get; set; }
 }

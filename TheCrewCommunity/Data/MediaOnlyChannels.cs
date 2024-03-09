@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class MediaOnlyChannels
 {
@@ -14,7 +16,9 @@ public class MediaOnlyChannels
         set => _guildId = Convert.ToUInt64(value);
     }
     private ulong _guildId;
-    public string ResponseMessage { get; set; }
     
-    public Guild Guild { get; set; }
+    [MaxLength(1000)]
+    public required string ResponseMessage { get; set; }
+    
+    public Guild? Guild { get; set; }
 }

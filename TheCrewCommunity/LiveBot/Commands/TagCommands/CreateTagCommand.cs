@@ -27,7 +27,7 @@ public static class CreateTagCommand
         responseBuilder
             .WithTitle($"Create tag Named {name}")
             .WithCustomId(modalId)
-            .AddComponents(new TextInputComponent("Content", "content","Content of the tag", min_length: 1, style: TextInputStyle.Paragraph));
+            .AddComponents(new TextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: TextInputStyle.Paragraph));
         await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, responseBuilder);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();

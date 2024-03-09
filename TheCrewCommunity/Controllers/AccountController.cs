@@ -14,24 +14,16 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IDatabaseMethodService _dbMethodService = dbMethodService;
 
-    [HttpGet]
-    public IActionResult Login(string returnUrl = "/")
+    [Route("Account/Callback")]
+    public async Task<IActionResult> DiscordCallback()
     {
-        return Challenge(new AuthenticationProperties() { RedirectUri = returnUrl }, "Discord");
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> CallBack()
-    {
-        AuthenticateResult result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-        if (result.Succeeded != true)
+        var authResult = await HttpContext.AuthenticateAsync("Discord");
+        if (!authResult.Succeeded)
         {
-            return BadRequest("Error authenticating with Discord");
+            return RedirectToAction("Error", "Home");
         }
-
-        // You can access user info here
-        var claims = result.Principal.Identities
+        
+        var claims = authResult.Principal.Identities
             .FirstOrDefault()?.Claims
             .Select(claim => new { claim.Issuer, claim.OriginalIssuer, claim.Type, claim.Value });
         
@@ -54,10 +46,29 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             {
                 return BadRequest("Error creating user");
             }
+            
+            var saveResult = await _userManager.UpdateAsync(user);
+            if (!saveResult.Succeeded)
+            {
+                return BadRequest("Error saving user");
+            }
         }
 
         await _signInManager.SignInAsync(user, isPersistent: true);
-        
-        return Ok(claims);
+
+        return RedirectToAction("Index", "Home");
+    }
+
+    [HttpGet]
+    public IActionResult Login(string returnUrl = "/")
+    {
+        return Challenge(new AuthenticationProperties() { RedirectUri = returnUrl }, "Discord");
+    }
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        HttpContext.Session.Clear();
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index", "Home");
     }
 }

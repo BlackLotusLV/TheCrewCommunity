@@ -20,5 +20,5 @@ public class SpamIgnoreChannels
         get => _channelId;
         set => _channelId = Convert.ToUInt64(value);
     }
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

@@ -41,7 +41,7 @@ public class Infraction
     }
 
     public InfractionType InfractionType { get; set; }
-    public GuildUser GuildUser { get; set; }
+    public GuildUser? GuildUser { get; set; }
 }
 
 public enum InfractionType

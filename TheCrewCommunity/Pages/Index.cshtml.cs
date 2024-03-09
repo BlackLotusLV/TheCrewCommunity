@@ -5,20 +5,14 @@ using TheCrewCommunity.LiveBot;
 
 namespace TheCrewCommunity.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(ILogger<IndexModel> logger, ILiveBotService liveBotService) : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
-    private readonly ILiveBotService _liveBotService;
+    private readonly ILogger<IndexModel> _logger = logger;
 
-    public IndexModel(ILogger<IndexModel> logger, ILiveBotService liveBotService)
-    {
-        _logger = logger;
-        _liveBotService = liveBotService;
-    }
-    public string UptimeString { get; private set; }
+    public string? UptimeString { get; private set; }
 
     public void OnGet()
     {
-        UptimeString = (DateTime.UtcNow-_liveBotService.StartTime).ToString(@"dd\.hh\:mm\:ss");
+        UptimeString = (DateTime.UtcNow-liveBotService.StartTime).ToString(@"dd\.hh\:mm\:ss");
     }
 }

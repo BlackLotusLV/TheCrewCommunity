@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class VanityWhitelist
 {
@@ -9,6 +11,7 @@ public class VanityWhitelist
         set => _guildId = Convert.ToUInt64(value);
     }
     private ulong _guildId;
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
+    [MaxLength(25)]
     public required string VanityCode { get; set; }
 }

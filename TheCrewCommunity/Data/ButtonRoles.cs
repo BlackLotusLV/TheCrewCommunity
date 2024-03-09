@@ -33,5 +33,5 @@ public class ButtonRoles
         set => _channelId = Convert.ToUInt64(value);
     }
 
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

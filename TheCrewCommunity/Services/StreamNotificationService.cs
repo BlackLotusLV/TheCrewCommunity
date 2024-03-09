@@ -18,13 +18,13 @@ public class StreamNotificationService(IDbContextFactory<LiveBotDbContext> dbCon
     : BaseQueueService<StreamNotificationItem>(dbContextFactory, databaseMethodService,
         loggerFactory), IStreamNotificationService
 {
-    public static List<LiveStreamer> LiveStreamerList { get; set; } = new();
+    public static List<LiveStreamer> LiveStreamerList { get; set; } = [];
     public static int StreamCheckDelay { get; } = 5;
 
     private protected override async Task ProcessQueueItem(StreamNotificationItem item)
     {
         DiscordMember streamMember = await item.Guild.GetMemberAsync(item.EventArgs.User.Id);
-        DiscordActivity? activity = item.EventArgs.User?.Presence?.Activities?.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube");
+        DiscordActivity? activity = item.EventArgs.User?.Presence?.Activities?.FirstOrDefault(w => w.Name.Equals("twitch", StringComparison.CurrentCultureIgnoreCase) || w.Name.Equals("youtube", StringComparison.CurrentCultureIgnoreCase));
                 if (activity?.RichPresence?.State is null || activity.RichPresence?.Details is null || activity.StreamUrl is null) return;
                 string gameTitle = activity.RichPresence.State;
                 string streamTitle = activity.RichPresence.Details;
@@ -93,8 +93,8 @@ public class StreamNotificationItem(StreamNotifications streamNotification, Pres
 
 public class LiveStreamer
 {
-    public DiscordUser User { get; init; }
-    public DateTime Time { get; init; }
-    public DiscordGuild Guild { get; init; }
-    public DiscordChannel Channel { get; init; }
+    public required DiscordUser User { get; init; }
+    public required DateTime Time { get; init; }
+    public required DiscordGuild Guild { get; init; }
+    public required DiscordChannel Channel { get; init; }
 }

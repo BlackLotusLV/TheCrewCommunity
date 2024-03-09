@@ -7,7 +7,7 @@ namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
 public class UserNotesAutocompleteProvider(IDbContextFactory<LiveBotDbContext> dbContextFactory) : IAutoCompleteProvider
 {
-    public async ValueTask<Dictionary<string,object>> AutoCompleteAsync(AutoCompleteContext ctx)
+    public async ValueTask<IReadOnlyDictionary<string,object>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         var user = (ulong)ctx.Options.First(x => x.Name == "user").Value;

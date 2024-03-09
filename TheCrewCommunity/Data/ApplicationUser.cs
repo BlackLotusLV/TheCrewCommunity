@@ -12,6 +12,5 @@ public class ApplicationUser : IdentityUser
 
     private ulong _discordId;
     
-    //navigation properties
-    public User User { get; set; }
+    public User? User { get; set; }
 }

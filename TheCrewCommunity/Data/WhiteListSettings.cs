@@ -23,6 +23,6 @@ public class WhiteListSettings
         get => _roleId;
         set => _roleId = Convert.ToUInt64(value);
     }
-    public ICollection<WhiteList> WhitelistedUsers { get; set; }
-    public Guild Guild { get; set; }
+    public ICollection<WhiteList>? WhitelistedUsers { get; set; }
+    public Guild? Guild { get; set; }
 }

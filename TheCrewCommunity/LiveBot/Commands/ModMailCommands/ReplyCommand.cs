@@ -9,6 +9,11 @@ public static class ReplyCommand
 {
     public static async ValueTask ExecuteAsync(SlashCommandContext ctx,long id, string reply, IDbContextFactory<LiveBotDbContext> dbContextFactory,IDatabaseMethodService databaseMethodService)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a server!");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         ModMail? entry = await dbContext.ModMail.FirstOrDefaultAsync(x => x.Id == id && x.IsActive);

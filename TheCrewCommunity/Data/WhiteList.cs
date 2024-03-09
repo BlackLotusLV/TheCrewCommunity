@@ -4,7 +4,7 @@ public class WhiteList
 {
     public long Id { get; set; }
     
-    public string UbisoftName { get; set; }
+    public string? UbisoftName { get; set; }
     private ulong? _discordId;
 
     public ulong? DiscordId
@@ -14,5 +14,5 @@ public class WhiteList
     }
     public int WhiteListSettingsId { get; set; }
     
-    public WhiteListSettings Settings { get; set; }
+    public WhiteListSettings? Settings { get; set; }
 }

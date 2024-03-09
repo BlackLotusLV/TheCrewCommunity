@@ -30,5 +30,5 @@ public class RoleTagSettings
     public required string Message { get; set; }
     public required string Description { get; set; }
 
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

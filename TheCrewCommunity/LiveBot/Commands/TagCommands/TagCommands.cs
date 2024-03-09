@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using DSharpPlus;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
@@ -16,7 +17,7 @@ public class TagCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, I
 {
     [Command("Create"), Description("Creates a new tag"), RequirePermissions(Permissions.ManageMessages)]
     public async Task CreateTag(SlashCommandContext ctx,
-        [Description("Name of the tag that will be used to select it")] string name)
+        [Description("Name of the tag that will be used to select it"), MaxLength(30)] string name)
     => await CreateTagCommand.ExecuteAsync(dbContextFactory, ctx, name);
     
     [Command("Delete"), Description("Deletes a tag"), RequirePermissions(Permissions.ManageMessages)]

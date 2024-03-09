@@ -1,7 +1,4 @@
-using System.Net.Http.Headers;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -33,6 +30,7 @@ builder.Host.UseSerilog()
 builder.Services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<LiveBotDbContext>();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -49,22 +47,14 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("email");
         options.SaveTokens = true;
         options.CallbackPath= "/Account/Callback";
-        options.Events = new OAuthEvents()
-        {
-            OnCreatingTicket = async context =>
-            {
-                HttpRequestMessage request = new(HttpMethod.Get, context.Options.UserInformationEndpoint);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-
-                HttpResponseMessage response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
-                response.EnsureSuccessStatusCode();
-
-                JsonElement user = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
-                context.RunClaimActions(user);
-            }
-        };
     });
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 WebApplication app = builder.Build();
 
@@ -77,6 +67,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 

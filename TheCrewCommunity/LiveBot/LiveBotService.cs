@@ -47,7 +47,7 @@ public class LiveBotService : IHostedService, ILiveBotService
         ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog();
         _discordClient = new DiscordClient(new DiscordConfiguration
         {
-            Token = configuration.GetSection("Discord")["ClientSecret"] ?? throw new InvalidOperationException("Bot token not provided!"),
+            Token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!"),
             TokenType = TokenType.Bot,
             ReconnectIndefinitely = true,
             Intents = DiscordIntents.All,

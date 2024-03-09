@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public sealed class User
 {
@@ -17,6 +19,7 @@ public sealed class User
     public int CookiesGiven { get; set; }
     public int CookiesTaken { get; set; }
     public DateTime CookieDate { get; set; }
+    [MaxLength(5)]
     public string? Locale { get; set; }
 
     public ulong? ParentDiscordId
@@ -27,11 +30,11 @@ public sealed class User
 
     private ulong? _parentDiscordId;
 
-    public User Parent { get; set; }
+    public User? Parent { get; set; }
     
-    public ICollection<UbiInfo> UbiInfo { get; set; }
-    public ICollection<User> ChildUsers { get; set; }
-    public ICollection<GuildUser> UserGuilds { get; set; }
-    public ICollection<PhotoCompEntries> PhotoCompEntries { get; set; }
-    public ICollection<Tag> Tags { get; set; }
+    public ICollection<UbiInfo>? UbiInfo { get; set; }
+    public ICollection<User>? ChildUsers { get; set; }
+    public ICollection<GuildUser>? UserGuilds { get; set; }
+    public ICollection<PhotoCompEntries>? PhotoCompEntries { get; set; }
+    public ICollection<Tag>? Tags { get; set; }
 }

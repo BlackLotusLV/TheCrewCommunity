@@ -12,6 +12,11 @@ public static class DeleteNoteCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService,SlashCommandContext ctx, DiscordUser user, long noteId)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a server!");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Infraction? infraction = await dbContext.Infractions.FindAsync(noteId);

@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class ModMail
 {
@@ -31,7 +33,9 @@ public class ModMail
     public DateTime LastMessageTime { get; set; }
     public bool HasChatted { get; set; }
     public bool IsActive { get; set; }
+    
+    [MaxLength(7)]
     public string ColorHex { get; set; }
 
-    public GuildUser GuildUser { get; set; }
+    public GuildUser? GuildUser { get; set; }
 }

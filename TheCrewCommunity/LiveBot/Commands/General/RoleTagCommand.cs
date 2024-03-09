@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
@@ -61,11 +62,11 @@ public class RoleTagCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory
 }
 public sealed class RoleTagAutoCompleteProvider(IDbContextFactory<LiveBotDbContext> dbContextFactory) : IAutoCompleteProvider
 {
-    public async ValueTask<Dictionary<string, object>> AutoCompleteAsync(AutoCompleteContext ctx)
+    public async ValueTask<IReadOnlyDictionary<string, object>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
         if (ctx.Guild is null)
         {
-            return [];
+            return ReadOnlyDictionary<string, object>.Empty;
         }
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Dictionary<string, object> result = [];
