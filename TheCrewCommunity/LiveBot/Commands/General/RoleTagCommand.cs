@@ -14,7 +14,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 public class RoleTagCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService)
 {
     [Command("Roletag"), Description("Pings a role under specific criteria."), RequireGuild]
-    public async Task ExecuteAsync(SlashCommandContext ctx, [SlashAutoCompleteProvider(typeof(RoleTagAutoCompleteProvider)),Description("Which role to tag")] long id)
+    public async Task ExecuteAsync(SlashCommandContext ctx, [SlashAutoCompleteProvider(typeof(RoleTagAutoCompleteProvider)),Description("Which role to tag")] int id)
     {
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
@@ -64,10 +64,7 @@ public sealed class RoleTagAutoCompleteProvider(IDbContextFactory<LiveBotDbConte
 {
     public async ValueTask<IReadOnlyDictionary<string, object>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
-        if (ctx.Guild is null)
-        {
-            return ReadOnlyDictionary<string, object>.Empty;
-        }
+        if (ctx.Guild is null) return ReadOnlyDictionary<string, object>.Empty;
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Dictionary<string, object> result = [];
         foreach (RoleTagSettings item in dbContext.RoleTagSettings.Where(w => w.GuildId == ctx.Guild.Id && (w.ChannelId == ctx.Channel.Id || w.ChannelId == null)))
