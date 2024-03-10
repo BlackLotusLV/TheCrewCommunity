@@ -10,6 +10,16 @@ public static class AddNoteCommand
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService, IDatabaseMethodService databaseMethodService, SlashCommandContext ctx, DiscordUser user, string note, DiscordAttachment? image = null)
     {
         await ctx.DeferResponseAsync(true);
+        if (ctx.Guild is null)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("This command can only be used in a server!"));
+            return;
+        }
+        if (ctx.Member is null)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("This command can only be used by a member!"));
+            return;
+        }
         await databaseMethodService.AddInfractionsAsync(new Infraction(ctx.User.Id, user.Id, ctx.Guild.Id, note, false, InfractionType.Note));
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})"));

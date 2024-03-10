@@ -9,7 +9,7 @@ public class EventIdEnricher : ILogEventEnricher
     private const int MaxEventNameLength = 12;
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        if (!logEvent.Properties.TryGetValue("EventId", out LogEventPropertyValue eventIdValue) || eventIdValue is not StructureValue eventIdStructure)
+        if (!logEvent.Properties.TryGetValue("EventId", out LogEventPropertyValue? eventIdValue) || eventIdValue is not StructureValue eventIdStructure)
         {
             var property = new LogEventProperty("FormattedEventId", new ScalarValue($"{"",MaxEventIdLength}|{"",MaxEventNameLength}"));
             logEvent.AddPropertyIfAbsent(property);

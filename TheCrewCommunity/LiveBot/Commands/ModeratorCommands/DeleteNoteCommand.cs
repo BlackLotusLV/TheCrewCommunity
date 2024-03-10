@@ -17,6 +17,11 @@ public static class DeleteNoteCommand
             await ctx.RespondAsync("This command can only be used in a server!");
             return;
         }
+        if (ctx.Member is null)
+        {
+            await ctx.RespondAsync("This command can only be used by a member!");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Infraction? infraction = await dbContext.Infractions.FindAsync(noteId);

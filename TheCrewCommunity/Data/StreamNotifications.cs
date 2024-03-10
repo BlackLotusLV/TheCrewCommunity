@@ -36,5 +36,5 @@ public class StreamNotifications
     }
 
     private ulong _channelId;
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

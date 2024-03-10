@@ -41,7 +41,7 @@ public class FloodFilter(IModeratorWarningService warningService, IDbContextFact
             
         var channelList = duplicateMessages.GetRange(i - SpamCount, SpamCount).Select(s => s.Channel).Distinct().ToList();
         await member.TimeoutAsync(DateTimeOffset.UtcNow + TimeSpan.FromHours(1), "Spam filter triggered - flood");
-        foreach (DiscordChannel channel in channelList)
+        foreach (DiscordChannel channel in channelList.OfType<DiscordChannel>())
         {
             await channel.DeleteMessagesAsync(duplicateMessages.GetRange(i - SpamCount, SpamCount));
         }

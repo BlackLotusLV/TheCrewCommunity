@@ -12,6 +12,11 @@ public static class CreateTagCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory,SlashCommandContext ctx, string name)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a server!");
+            return;
+        }
         ctx.Client.Logger.LogDebug(CustomLogEvents.TagCommand, "User {User} in Guild {Guild} started making a tag", ctx.User.Id, ctx.Guild.Id);
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var tags = await liveBotDbContext.Tags.Where(x=>x.GuildId == ctx.Guild.Id).ToListAsync();
