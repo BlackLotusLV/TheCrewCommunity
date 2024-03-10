@@ -19,8 +19,8 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
     public async Task Warn(SlashCommandContext ctx,
         [Description("User to warn")] DiscordUser user,
         [Description("Why the user is being warned")] string reason,
-        [Description("How long the warning will last")] WarnCommand.TimeOutOptions timeOut = 0,
-        [Description("Image to attach to the warning")] DiscordAttachment? image = null)
+        [Description("Image to attach to the warning")] DiscordAttachment? image = null,
+        [Description("How long the warning will last")] WarnCommand.TimeOutOptions timeOut = 0)
         => await WarnCommand.ExecuteAsync(warningService, ctx, user, reason, timeOut, image);
     
     [Command("unwarn"), Description("Removes a warning from the user"), RequirePermissions(Permissions.KickMembers)]
