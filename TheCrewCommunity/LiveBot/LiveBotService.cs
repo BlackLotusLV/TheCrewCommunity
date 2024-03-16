@@ -66,7 +66,7 @@ public class LiveBotService : IHostedService, ILiveBotService
     {
         _discordClient.Logger.LogInformation(CustomLogEvents.LiveBot, "LiveBot is starting! Environment: {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production");
         InteractivityConfiguration interactivityConfiguration = new();
-        ulong? guildId = null;
+        ulong guildId = 0;
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
         {
             guildId = 282478449539678210;
