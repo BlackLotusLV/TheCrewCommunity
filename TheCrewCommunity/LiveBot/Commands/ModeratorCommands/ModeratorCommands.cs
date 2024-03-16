@@ -85,4 +85,11 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
     public async Task SayAsync(SlashCommandContext ctx, [Description("The message what the bot should say.")] string message,
         [Description("Channel where to send the message")] DiscordChannel? channel = null)
     => await SayCommand.ExecuteAsync(ctx, message, channel);
+    
+    [Command("timeout"), Description("Timeout a user"), RequirePermissions(Permissions.KickMembers)]
+    public async Task Timeout(SlashCommandContext ctx,
+        [Description("User to timeout")] DiscordMember user,
+        [Description("How long the timeout will last")] string duration,
+        [Description("Reason for the timeout")] string reason)
+    => await TimeoutCommand.ExecuteAsync(ctx, user, duration, reason);
 }
