@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -46,7 +48,20 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("guilds");
         options.Scope.Add("email");
         options.SaveTokens = true;
-        options.CallbackPath= "/Account/Callback";
+        options.Events = new OAuthEvents
+        {
+            OnTicketReceived = async context =>
+            {
+                string? discordId = context.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
+                ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
+                context.ReturnUri = "/Account/Profile";
+                if (user == null)
+                {
+                    context.ReturnUri = "/Account/Registering";
+                }
+            }
+        };
     });
 
 builder.Services.AddSession(options =>
@@ -71,6 +86,8 @@ app.UseStaticFiles();
 app.UseSession();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

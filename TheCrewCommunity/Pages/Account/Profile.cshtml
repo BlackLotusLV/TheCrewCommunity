@@ -1,0 +1,23 @@
+﻿@page
+@model TheCrewCommunity.Pages.Account.Profile
+
+@{
+    ViewData["Title"] = "Not logged in";
+    if (User.Identity is not null && User.Identity.IsAuthenticated)
+    {
+        ViewData["Title"] = User.Identity.Name;
+    }
+}
+<div class="text-center">
+    <h1>@ViewData["Title"]'s Profile</h1>
+    @if (Model.ApplicationUser is not null)
+    {
+        <p>Name: @Model.ApplicationUser.UserName</p>
+        <p>Email: @Model.ApplicationUser.Email</p>
+        <!-- Add more fields as needed -->
+    }
+    else
+    {
+        <p>No user information available.</p>
+    }
+</div>
