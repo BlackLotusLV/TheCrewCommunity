@@ -1,0 +1,6 @@
+name: TCM build
+on: push
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+      
