@@ -1,0 +1,15 @@
+name: Build TheCrewCommunity
+on:
+  workflow_call:
+
+jobs:
+  build-tcm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build
+        run: docker run --rm  -v ./TheCrewCommunity/:/app mcr.microsoft.com/dotnet/sdk:8.0 sh -c "cd /app && dotnet publish --sc "      
+
+      
