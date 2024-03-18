@@ -8,16 +8,20 @@
         ViewData["Title"] = User.Identity.Name;
     }
 }
-<div class="text-center">
-    <h1>@ViewData["Title"]'s Profile</h1>
-    @if (Model.ApplicationUser is not null)
-    {
-        <p>Name: @Model.ApplicationUser.UserName</p>
-        <p>Email: @Model.ApplicationUser.Email</p>
-        <!-- Add more fields as needed -->
-    }
-    else
-    {
-        <p>No user information available.</p>
-    }
+<head>
+    <!-- Other head elements -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <img class="card-img-top rounded-circle" src="@(Model.DiscordUser?.AvatarUrl ?? "/images/default-avatar.png")" alt="Profile picture">
+            <div class="card-body">
+                <h5 class="card-title">@Model.ApplicationUser?.UserName</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <!-- Rest of the content -->
+    </div>
 </div>

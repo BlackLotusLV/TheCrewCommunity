@@ -16,10 +16,10 @@ namespace TheCrewCommunity.LiveBot;
 public interface ILiveBotService
 {
     public DateTime StartTime{get;}
+    public DiscordClient DiscordClient{get;}
 }
 public class LiveBotService : IHostedService, ILiveBotService
 {
-    private readonly DiscordClient _discordClient;
     private readonly IServiceProvider _serviceProvider;
     private readonly SystemEvents _systemEventsEventHandlers;
     private readonly IModeratorLoggingService _moderatorLoggingService;
@@ -28,7 +28,8 @@ public class LiveBotService : IHostedService, ILiveBotService
     private readonly IModMailService _modMailService;
     
     public DateTime StartTime { get; private set; } = DateTime.UtcNow;
-    
+    public DiscordClient DiscordClient { get; }
+
     public LiveBotService(SystemEvents systemEventsEventHandlers,
         IConfiguration configuration,
         IServiceProvider serviceProvider,
@@ -45,7 +46,7 @@ public class LiveBotService : IHostedService, ILiveBotService
             .WriteTo.Console( standardErrorFromLevel: LogEventLevel.Error ,outputTemplate:"[{Timestamp:yyyy:MM:dd HH:mm:ss} {Level:u3}] [{FormattedEventId}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
         ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog();
-        _discordClient = new DiscordClient(new DiscordConfiguration
+        DiscordClient = new DiscordClient(new DiscordConfiguration
         {
             Token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!"),
             TokenType = TokenType.Bot,
@@ -64,7 +65,7 @@ public class LiveBotService : IHostedService, ILiveBotService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _discordClient.Logger.LogInformation(CustomLogEvents.LiveBot, "LiveBot is starting! Environment: {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production");
+        DiscordClient.Logger.LogInformation(CustomLogEvents.LiveBot, "LiveBot is starting! Environment: {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production");
         InteractivityConfiguration interactivityConfiguration = new();
         ulong guildId = 0;
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
@@ -76,9 +77,9 @@ public class LiveBotService : IHostedService, ILiveBotService
             ServiceProvider = _serviceProvider,
             DebugGuildId = guildId
         };
-        CommandsExtension commandsExtension = _discordClient.UseCommands(commandsConfiguration);
+        CommandsExtension commandsExtension = DiscordClient.UseCommands(commandsConfiguration);
         
-        _discordClient.UseInteractivity(interactivityConfiguration);
+        DiscordClient.UseInteractivity(interactivityConfiguration);
 
         var auditLogEvents = ActivatorUtilities.CreateInstance<AuditLogEvents>(_serviceProvider);
         var whiteListButton = ActivatorUtilities.CreateInstance<WhiteListButton>(_serviceProvider);
@@ -98,60 +99,60 @@ public class LiveBotService : IHostedService, ILiveBotService
 
         // start services
 
-        _moderatorLoggingService.StartService(_discordClient);
-        _moderatorWarningService.StartService(_discordClient);
-        _streamNotificationService.StartService(_discordClient);
+        _moderatorLoggingService.StartService(DiscordClient);
+        _moderatorWarningService.StartService(DiscordClient);
+        _streamNotificationService.StartService(DiscordClient);
 
         Timer streamCleanupTimer = new(_ => _streamNotificationService.StreamListCleanup());
-        Timer modMailCleanupTimer = new(_ => _modMailService.ModMailCleanupAsync(_discordClient));
+        Timer modMailCleanupTimer = new(_ => _modMailService.ModMailCleanupAsync(DiscordClient));
         streamCleanupTimer.Change(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(10));
         modMailCleanupTimer.Change(TimeSpan.FromMinutes(0), TimeSpan.FromMinutes(2));
 
         //handle events
-        _discordClient.SessionCreated += _systemEventsEventHandlers.SessionCreated;
-        _discordClient.GuildAvailable += _systemEventsEventHandlers.GuildAvailable;
-        _discordClient.ClientErrored += _systemEventsEventHandlers.ClientErrored;
+        DiscordClient.SessionCreated += _systemEventsEventHandlers.SessionCreated;
+        DiscordClient.GuildAvailable += _systemEventsEventHandlers.GuildAvailable;
+        DiscordClient.ClientErrored += _systemEventsEventHandlers.ClientErrored;
 
         commandsExtension.CommandExecuted += _systemEventsEventHandlers.CommandExecuted;
         commandsExtension.CommandErrored += _systemEventsEventHandlers.CommandErrored;
 
-        _discordClient.GuildAuditLogCreated += auditLogEvents.OnAuditLogCreated;
+        DiscordClient.GuildAuditLogCreated += auditLogEvents.OnAuditLogCreated;
 
-        _discordClient.ComponentInteractionCreated += whiteListButton.OnButtonClick;
+        DiscordClient.ComponentInteractionCreated += whiteListButton.OnButtonClick;
 
-        _discordClient.MessageCreated += userActivityTracker.Add_Points;
+        DiscordClient.MessageCreated += userActivityTracker.Add_Points;
 
-        _discordClient.ComponentInteractionCreated += buttonRoles.OnButtonClick;
+        DiscordClient.ComponentInteractionCreated += buttonRoles.OnButtonClick;
 
-        _discordClient.GuildMemberUpdated += membershipScreening.OnAcceptRules;
+        DiscordClient.GuildMemberUpdated += membershipScreening.OnAcceptRules;
 
-        _discordClient.GuildMemberAdded += memberFlow.OnJoin;
-        _discordClient.GuildMemberRemoved += memberFlow.OnLeave;
+        DiscordClient.GuildMemberAdded += memberFlow.OnJoin;
+        DiscordClient.GuildMemberRemoved += memberFlow.OnLeave;
 
-        _discordClient.MessageDeleted += deleteLog.OnMessageDeleted;
-        _discordClient.MessagesBulkDeleted += deleteLog.OnBulkDelete;
+        DiscordClient.MessageDeleted += deleteLog.OnMessageDeleted;
+        DiscordClient.MessagesBulkDeleted += deleteLog.OnBulkDelete;
 
-        _discordClient.PresenceUpdated += livestreamNotification.OnPresenceChange;
+        DiscordClient.PresenceUpdated += livestreamNotification.OnPresenceChange;
 
-        _discordClient.ComponentInteractionCreated += getUserInfoOnButton.OnButtonClick;
-        _discordClient.ComponentInteractionCreated += getInfractionOnButton.OnButtonClick;
+        DiscordClient.ComponentInteractionCreated += getUserInfoOnButton.OnButtonClick;
+        DiscordClient.ComponentInteractionCreated += getInfractionOnButton.OnButtonClick;
 
-        _discordClient.MessageCreated += mediaOnlyFilter.OnMessageCreated;
+        DiscordClient.MessageCreated += mediaOnlyFilter.OnMessageCreated;
 
-        _discordClient.MessageCreated += floodFilter.OnMessageCreated;
+        DiscordClient.MessageCreated += floodFilter.OnMessageCreated;
 
-        _discordClient.VoiceStateUpdated += voiceActivityLog.OnVoiceStateUpdated;
+        DiscordClient.VoiceStateUpdated += voiceActivityLog.OnVoiceStateUpdated;
 
-        _discordClient.MessageCreated += everyoneTagFilter.OnMessageCreated;
+        DiscordClient.MessageCreated += everyoneTagFilter.OnMessageCreated;
 
-        _discordClient.MessageCreated += discordInviteFilter.OnMessageCreated;
+        DiscordClient.MessageCreated += discordInviteFilter.OnMessageCreated;
 
-        _discordClient.GuildMemberAdded += memberFlow.LogJoin;
-        _discordClient.GuildMemberRemoved += memberFlow.LogLeave;
+        DiscordClient.GuildMemberAdded += memberFlow.LogJoin;
+        DiscordClient.GuildMemberRemoved += memberFlow.LogLeave;
 
-        _discordClient.ComponentInteractionCreated += _modMailService.OpenButton;
-        _discordClient.ComponentInteractionCreated += _modMailService.CloseButton;
-        _discordClient.MessageCreated += _modMailService.ProcessModMailDm;
+        DiscordClient.ComponentInteractionCreated += _modMailService.OpenButton;
+        DiscordClient.ComponentInteractionCreated += _modMailService.CloseButton;
+        DiscordClient.MessageCreated += _modMailService.ProcessModMailDm;
         
         await commandsExtension.AddProcessorsAsync(
             new SlashCommandProcessor(),
@@ -161,13 +162,13 @@ public class LiveBotService : IHostedService, ILiveBotService
         commandsExtension.AddCommands(typeof(LiveBotService).Assembly);
 
         DiscordActivity botActivity = new("/send-modmail to open chat with moderators", ActivityType.Playing);
-        _discordClient.Logger.LogInformation("LiveBot has started!");
-        await _discordClient.ConnectAsync(botActivity);
+        DiscordClient.Logger.LogInformation("LiveBot has started!");
+        await DiscordClient.ConnectAsync(botActivity);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _discordClient.Logger.LogInformation("LiveBot stopping!, Uptime: {Uptime}", DateTime.UtcNow- StartTime);
-        await _discordClient.DisconnectAsync();
+        DiscordClient.Logger.LogInformation("LiveBot stopping!, Uptime: {Uptime}", DateTime.UtcNow- StartTime);
+        await DiscordClient.DisconnectAsync();
     }
 }
