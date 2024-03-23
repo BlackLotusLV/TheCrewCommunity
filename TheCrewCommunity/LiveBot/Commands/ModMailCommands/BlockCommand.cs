@@ -13,6 +13,11 @@ public static class BlockCommand
 {
     public static async Task ExecuteAsync(SlashCommandContext ctx, DiscordUser user, IDbContextFactory<LiveBotDbContext> dbContextFactory)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a guild channel");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         GuildUser? guildUser = await dbContext.GuildUsers.FindAsync(user.Id, ctx.Guild.Id);

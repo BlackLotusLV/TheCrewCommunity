@@ -32,7 +32,7 @@ public class FloodFilter(IModeratorWarningService warningService, IDbContextFact
 
         if (generalUtils.CheckIfMemberAdmin(member)) return;
         _messageList.Add(eventArgs.Message);
-        var duplicateMessages = _messageList.Where(w => w.Author == eventArgs.Author && w.Content == eventArgs.Message.Content && eventArgs.Guild == w.Channel.Guild).ToList();
+        var duplicateMessages = _messageList.Where(w => w.Author is not null && w.Channel is not null && w.Author == eventArgs.Author && w.Content == eventArgs.Message.Content && eventArgs.Guild == w.Channel.Guild).ToList();
         int i = duplicateMessages.Count;
         if (i < SpamCount) return;
 

@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
@@ -40,8 +41,9 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
         messageBuilder.Content = item.Content ?? string.Empty;
         var hasAttachment = false;
         MemoryStream memoryStream = new();
-        if (item.Attachment!= null)
+        if (item.Attachment is not null)
         {
+            if (item.Attachment.FileName is null) throw new InvalidOperationException("Attachment filename is null");
             using HttpClient client = new();
             HttpResponseMessage response = await client.GetAsync(item.Attachment.Url);
             if (response.IsSuccessStatusCode)
@@ -64,7 +66,7 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
                     GetBotUser().Id,
                     item.TargetUser.Id,
                     item.ModLogChannel.Guild.Id,
-                    renewed.Embeds[0].Image.Url.ToString(),
+                    renewed.Embeds[0].Image?.Url.ToString() ?? throw new InvalidOperationException(),
                     true,
                     InfractionType.Note)
             );

@@ -26,9 +26,10 @@ public partial class DiscordInviteFilter(IModeratorWarningService warningService
 
         var matches = InviteRegex().Matches(eventArgs.Message.Content).Select(x=>x.Value).ToImmutableList();
         if (matches.Any(match => 
-                guildInvites.Any(x=>Regex.IsMatch(match, $@"/{x.Code}(\s|$|\?event=)")) ||
-                (eventArgs.Guild.VanityUrlCode is not null && Regex.IsMatch(match, $@"/{eventArgs.Guild.VanityUrlCode}(\s|$|\?event=)"))|
-                guild.WhitelistedVanities.Any(x => Regex.IsMatch(match, $@"/{x.VanityCode}(\s|$|\?event=)")))) 
+                guild.WhitelistedVanities != null &&
+                (guildInvites.Any(x=>Regex.IsMatch(match, $@"/{x.Code}(\s|$|\?event=)")) ||
+                 (eventArgs.Guild.VanityUrlCode is not null && Regex.IsMatch(match, $@"/{eventArgs.Guild.VanityUrlCode}(\s|$|\?event=)"))|
+                 guild.WhitelistedVanities.Any(x => Regex.IsMatch(match, $@"/{x.VanityCode}(\s|$|\?event=)"))))) 
             return;
         
         await eventArgs.Message.DeleteAsync("Invite link detected");

@@ -8,15 +8,15 @@ using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot.EventHandlers;
 
-public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggingService modLogService, IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, HttpClient httpClient)
+public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, HttpClient httpClient)
 {
-    private const int MaxTitleLength = 256;
+    //private const int MaxTitleLength = 256;
     private const int MaxDescriptionLength = 4096;
-    private const int MaxFields = 25;
-    private const int MaxFieldNameLength = 256;
-    private const int MaxFieldValueLength = 1024;
-    private const int MaxFooterLength = 2048;
-    private const int MaxEmbedLength = 6000;
+    //private const int MaxFields = 25;
+    //private const int MaxFieldNameLength = 256;
+    //private const int MaxFieldValueLength = 1024;
+    //private const int MaxFooterLength = 2048;
+    //private const int MaxEmbedLength = 6000;
     private readonly List<string> _imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".jfif", ".svg", ".ico"];
     
     public async Task OnMessageDeleted(DiscordClient client, MessageDeleteEventArgs args)
@@ -47,7 +47,7 @@ public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggin
         string msgContent = args.Message.Content == "" ? "*message didn't contain any text*" : $"*{args.Message.Content}*",
             replyInfo = "*not a reply*";
         StringBuilder sb = new();
-        if (args.Message.MessageType == MessageType.Reply)
+        if (args.Message is { MessageType: MessageType.Reply, Reference.Message.Author: not null })
         {
             replyInfo = $"[Reply to {args.Message.Reference.Message.Author.Username}](<{args.Message.Reference.Message.JumpLink}>)";
         }
@@ -86,7 +86,7 @@ public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggin
                 Name = $"{args.Message.Author.Username}'s message deleted"
             }
         };
-        if (args.Message.Stickers.Count>0)
+        if (args.Message.Stickers is not null && args.Message.Stickers.Count != 0)
         {
             embedBuilder.AddField("Sticker", $"[{args.Message.Stickers[0].Name}]({args.Message.Stickers[0].StickerUrl})");
         }
@@ -97,7 +97,7 @@ public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggin
         foreach (DiscordAttachment messageAttachment in args.Message.Attachments)
         {
             attachmentNames.AppendLine($"- {messageAttachment.FileName}");
-            if (!_imageExtensions.Contains(Path.GetExtension(messageAttachment.FileName))) continue;
+            if (!_imageExtensions.Contains(Path.GetExtension(messageAttachment.FileName??""))) continue;
             HttpResponseMessage response = await httpClient.GetAsync(messageAttachment.Url);
             if (!response.IsSuccessStatusCode) continue;
             var uniqueFileName = $"{Guid.NewGuid()}-{messageAttachment.FileName}";
@@ -130,7 +130,7 @@ public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggin
         messageBuilder.AddEmbeds(attachmentEmbeds);
 
         await deleteLogChannel.SendMessageAsync(messageBuilder);
-        await Parallel.ForEachAsync(imageStreams.AsEnumerable(), async (MemoryStream stream, CancellationToken _) => await stream.DisposeAsync());
+        await Parallel.ForEachAsync(imageStreams.AsEnumerable(), async (stream, _) => await stream.DisposeAsync());
         client.Logger.LogInformation(CustomLogEvents.DeleteLog, "{User}'s message was deleted in {Channel}", args.Message.Author.Username, args.Channel.Name);
     }
     
@@ -144,7 +144,7 @@ public class DeleteLog(IModeratorWarningService warningService, IModeratorLoggin
         StringBuilder sb = new();
         foreach (DiscordMessage message in e.Messages.Reverse())
         {
-            if (message.Author != null)
+            if (message.Author is not null && message.Channel is not null)
             {
                 if (!message.Author.IsBot)
                 {

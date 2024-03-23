@@ -9,6 +9,11 @@ public static class WhitelistInviteCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, SlashCommandContext ctx, [Description("The invite code to be whitelisted")] string code)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a guild channel");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await dbContext.Guilds.Include(x=>x.WhitelistedVanities).FirstOrDefaultAsync(x=>x.Id==ctx.Guild.Id);

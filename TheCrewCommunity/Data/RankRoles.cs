@@ -28,5 +28,5 @@ public class RankRoles
     private ulong _roleId;
     public long ServerRank { get; set; }
 
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

@@ -8,6 +8,11 @@ public static class DeleteTagCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, SlashCommandContext ctx,string tagId)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a guild channel");
+            return;
+        }
         await ctx.DeferResponseAsync(true);
         ctx.Client.Logger.LogDebug(CustomLogEvents.TagCommand, "User {User} in Guild {Guild} started deleting a tag", ctx.User.Id, ctx.Guild.Id);
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
