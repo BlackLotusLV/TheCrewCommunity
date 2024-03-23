@@ -17,6 +17,11 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
     [Command("Report"), Description("Report a message so moderators can take a look"), SlashCommandTypes(ApplicationCommandType.MessageContextMenu), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, DiscordMessage targetMessage)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a guild channel");
+            return;
+        }
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id);
         if (guild?.UserReportsChannelId is null)

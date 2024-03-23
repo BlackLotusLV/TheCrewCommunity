@@ -51,6 +51,11 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
         {
             foreach (DiscordAttachment attachment in e.Message.Attachments)
             {
+                if (attachment.Url is null)
+                {
+                    client.Logger.LogDebug(CustomLogEvents.ModMail, "Attachment URL was null in Mod Mail message from {Username}({UserId})", e.Author.Username, e.Author.Id);
+                    continue;
+                }
                 embed.AddField("Attachment", attachment.Url);
             }
         }

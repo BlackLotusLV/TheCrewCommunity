@@ -51,17 +51,20 @@ public class AddButtonCommand
             modified.AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
         }
 
-        foreach (DiscordActionRowComponent row in targetMessage.Components)
+        if (targetMessage.Components is not null && targetMessage.Components.Count > 0)
         {
-            if (row.Components.Count == 5)
+            foreach (DiscordActionRowComponent row in targetMessage.Components)
             {
-                modified.AddComponents(row);
-            }
-            else
-            {
-                var buttons = row.Components.ToList();
-                buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
-                modified.AddComponents(buttons);
+                if (row.Components.Count == 5)
+                {
+                    modified.AddComponents(row);
+                }
+                else
+                {
+                    var buttons = row.Components.ToList();
+                    buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
+                    modified.AddComponents(buttons);
+                }
             }
         }
 

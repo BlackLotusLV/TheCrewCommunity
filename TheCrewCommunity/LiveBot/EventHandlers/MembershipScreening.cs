@@ -10,7 +10,7 @@ public class MembershipScreening(IDbContextFactory<LiveBotDbContext> dbContextFa
 {
     public async Task OnAcceptRules(DiscordClient client, GuildMemberUpdateEventArgs e)
     {
-        if (e.PendingBefore is null) return;
+        if (e.PendingBefore is null || e.PendingAfter is null) return;
         if (e.PendingBefore.Value && !e.PendingAfter.Value)
         {
             await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();

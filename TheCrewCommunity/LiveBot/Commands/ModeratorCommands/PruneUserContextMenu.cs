@@ -21,7 +21,7 @@ public static class PruneUserContextMenu
             await foreach (DiscordMessage message in ctx.Channel.GetMessagesAfterAsync(messages.Last().Id))
             {
                 messageCount++;
-                if (message.Author == targetMessage.Author)
+                if (targetMessage.Author is not null && message.Author is not null && message.Author == targetMessage.Author)
                 {
                     messages.Add(message);
                 }

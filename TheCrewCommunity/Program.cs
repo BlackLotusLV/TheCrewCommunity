@@ -52,7 +52,7 @@ builder.Services.AddAuthentication(options =>
         {
             OnTicketReceived = async context =>
             {
-                string? discordId = context.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                string? discordId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                 var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
                 ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
                 context.ReturnUri = "/Account/Profile";

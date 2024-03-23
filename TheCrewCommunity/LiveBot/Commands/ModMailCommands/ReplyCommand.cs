@@ -9,7 +9,7 @@ public static class ReplyCommand
 {
     public static async ValueTask ExecuteAsync(SlashCommandContext ctx,long id, string reply, IDbContextFactory<LiveBotDbContext> dbContextFactory,IDatabaseMethodService databaseMethodService)
     {
-        if (ctx.Guild is null)
+        if (ctx.Guild is null || ctx.Member is null)
         {
             await ctx.RespondAsync("This command can only be used in a server!");
             return;

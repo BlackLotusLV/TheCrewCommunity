@@ -25,7 +25,7 @@ public class StreamNotificationService(IDbContextFactory<LiveBotDbContext> dbCon
     {
         DiscordMember streamMember = await item.Guild.GetMemberAsync(item.EventArgs.User.Id);
         DiscordActivity? activity = item.EventArgs.User?.Presence?.Activities?.FirstOrDefault(w => w.Name.Equals("twitch", StringComparison.CurrentCultureIgnoreCase) || w.Name.Equals("youtube", StringComparison.CurrentCultureIgnoreCase));
-                if (activity?.RichPresence?.State is null || activity.RichPresence?.Details is null || activity.StreamUrl is null) return;
+                if (activity?.RichPresence?.State is null || activity.RichPresence?.Details is null || activity?.StreamUrl is null) return;
                 string gameTitle = activity.RichPresence.State;
                 string streamTitle = activity.RichPresence.Details;
                 string streamUrl = activity.StreamUrl;
@@ -36,7 +36,7 @@ public class StreamNotificationService(IDbContextFactory<LiveBotDbContext> dbCon
                 bool role = roleIds.Count == 0 || streamMember.Roles.Any(r => roleIds.Contains(r.Id));
                 bool game = games.Count == 0 || games.Contains(gameTitle);
 
-                if (!game || !role) return;
+                if (!game || !role || item.EventArgs.User is null) return;
                 string description = $"**Streamer:**\n {item.EventArgs.User.Mention}\n\n" +
                                      $"**Game:**\n{gameTitle}\n\n" +
                                      $"**Stream title:**\n{streamTitle}\n\n" +

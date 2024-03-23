@@ -40,7 +40,7 @@ public class ModeratorWarningService(
     private protected override async Task ProcessQueueItem(WarningItem item)
     {
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-        Guild guild = await dbContext.Guilds.FindAsync(item.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(item.Guild.Id));
+        Guild guild = await dbContext.Guilds.FindAsync(item.Guild.Id) ?? await DatabaseMethodService.AddGuildAsync(new Guild(item.Guild.Id));
         DiscordMember? member = await TryGetMember(item.Guild, item.User);
 
         if (member is null && !item.AutoMessage)
@@ -49,7 +49,7 @@ public class ModeratorWarningService(
         }
 
         bool kick = false, ban = false;
-        if (guild?.ModerationLogChannelId == null)
+        if (guild.ModerationLogChannelId == null)
         {
             if (item.InteractionContext == null)
             {
@@ -143,6 +143,11 @@ public class ModeratorWarningService(
     }
     public async Task RemoveWarningAsync(DiscordUser user, SlashCommandContext ctx, int warningId)
         {
+            if (ctx.Guild is null)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("This command can only be used in a guild channel"));
+                return;
+            }
             await using LiveBotDbContext liveBotDbContext = await DbContextFactory.CreateDbContextAsync();
             Guild? guild = await liveBotDbContext.Guilds.FindAsync(ctx.Guild.Id);
             var infractions = await liveBotDbContext.Infractions.Where(w => ctx.Guild.Id == w.GuildId && user.Id == w.UserId && w.InfractionType == InfractionType.Warning && w.IsActive).ToListAsync();

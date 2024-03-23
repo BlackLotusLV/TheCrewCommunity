@@ -12,6 +12,11 @@ public static class EditNoteCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService,CommandContext ctx, DiscordUser user, long noteId)
     {
+        if (ctx.Member is null || ctx.Guild is null)
+        {
+            await ctx.RespondAsync("Incorrect usage of command, please use this command in a guild channel");
+            return;
+        }
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Infraction? infraction = await dbContext.Infractions.FindAsync(noteId);
         if (infraction is null || infraction.UserId != user.Id || infraction.AdminDiscordId != ctx.User.Id || infraction.InfractionType != InfractionType.Note)
@@ -20,10 +25,10 @@ public static class EditNoteCommand
             return;
         }
 
-        string oldNote = infraction.Reason;
+        string oldNote = infraction.Reason??"*No note content*";
         var customId = $"EditNote-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("Edit users note").WithCustomId(customId)
-            .AddComponents(new TextInputComponent("Content", "Content", null, infraction.Reason, true, TextInputStyle.Paragraph));
+            .AddComponents(new TextInputComponent("Content", "Content", null, oldNote, true, TextInputStyle.Paragraph));
         await ctx.RespondAsync(modal);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();

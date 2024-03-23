@@ -14,6 +14,11 @@ public static class EditTagCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService methodService, SlashCommandContext ctx, string tagId)
     {
+        if (ctx.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a guild channel");
+            return;
+        }
         ctx.Client.Logger.LogDebug(CustomLogEvents.TagCommand, "User {User} in Guild {Guild} started editing a tag", ctx.User.Id, ctx.Guild.Id);
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await liveBotDbContext.Guilds.Include(x=>x.Tags).FirstOrDefaultAsync(x=>x.Id == ctx.Guild.Id);

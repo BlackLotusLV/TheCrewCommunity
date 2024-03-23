@@ -47,6 +47,13 @@ public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactor
             return;
         }
 
+        if (entry.Settings is null)
+        {
+            responseBuilder.WithContent("Whitelist feature not set up properly. Contact a moderator.");
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+            return;
+        }
+
         DiscordRole role = e.Guild.GetRole(entry.Settings.RoleId);
         await member.GrantRoleAsync(role);
         entry.DiscordId = member.Id;
