@@ -8,16 +8,17 @@
         ViewData["Title"] = User.Identity.Name;
     }
 }
-<head>
-    <!-- Other head elements -->
+@section Styles{
+    <link rel="stylesheet" type="text/css" href="/css/Profile.css"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-</head>
+}
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <img class="card-img-top rounded-circle" src="@(Model.DiscordUser?.AvatarUrl ?? "/images/default-avatar.png")" alt="Profile picture">
             <div class="card-body">
-                <h5 class="card-title">@Model.ApplicationUser?.UserName</h5>
+                <img class="card-img-top rounded-circle profile-avatar" src="@Model.ApplicationUser.AvatarUrl" alt="Profile picture">
+                <h5 class="card-title global-user-name">@Model.ApplicationUser.GlobalUsername</h5>
+                <h5 class="card-title">@Model.ApplicationUser.UserName</h5>
             </div>
         </div>
     </div>

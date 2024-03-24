@@ -1,0 +1,13 @@
+﻿.profile-avatar {
+    width: 100%;
+    height: 200px;
+    object-fit: fill;
+}
+.user-name { 
+    font-style: italic; 
+    color: grey; 
+    font-size: 0.8rem;
+} 
+.global-user-name { 
+    font-weight: bold; 
+} 
