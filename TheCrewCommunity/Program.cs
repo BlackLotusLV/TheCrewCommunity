@@ -1,75 +1,12 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TheCrewCommunity;
-using TheCrewCommunity.Data;
-using TheCrewCommunity.LiveBot;
-using TheCrewCommunity.LiveBot.EventHandlers;
-using TheCrewCommunity.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddLogging();
-builder.Services.AddSingleton<ILiveBotService,LiveBotService>();
-builder.Services.AddHostedService<LiveBotService>();
-builder.Services.AddSingleton<SystemEvents>();
-builder.Services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
-builder.Services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
-builder.Services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
-builder.Services.AddSingleton<IStreamNotificationService, StreamNotificationService>();
-builder.Services.AddSingleton<IModMailService, ModMailService>();
-builder.Services.AddSingleton<GeneralUtils>();
-builder.Services.AddSingleton<HttpClient>();
 builder.Host.UseSerilog()
     .UseConsoleLifetime();
 
-builder.Services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<LiveBotDbContext>();
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    })
-    .AddCookie()
-    .AddDiscord(options =>
-    {
-        options.ClientId = builder.Configuration["Discord:ClientId"]??throw new Exception("Discord Client ID not found");
-        options.ClientSecret = builder.Configuration["Discord:ClientSecret"]??throw new Exception("Discord Client Secret not found");
-        options.Scope.Add("identify");
-        options.Scope.Add("guilds");
-        options.Scope.Add("email");
-        options.SaveTokens = true;
-        options.Events = new OAuthEvents
-        {
-            OnTicketReceived = async context =>
-            {
-                string? discordId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-                var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
-                ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
-                context.ReturnUri = "/Account/Profile";
-                if (user == null)
-                {
-                    context.ReturnUri = "/Account/Registering";
-                }
-            }
-        };
-    });
-
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromSeconds(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+builder.Services.AddMyServices(builder);
 
 WebApplication app = builder.Build();
 
