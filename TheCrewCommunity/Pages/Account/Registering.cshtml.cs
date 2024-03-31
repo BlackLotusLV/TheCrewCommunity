@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Security.Claims;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -26,11 +27,8 @@ public class Registering : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        ApplicationUser? applicationUser = await _userManager.GetUserAsync(User);
-        if (applicationUser != null)
-        {
-            return RedirectToAction("Index", "Home");
-        }
+        string userId = User.Claims.First(claim => claim.Type is ClaimTypes.NameIdentifier).Value;
+        ApplicationUser? applicationUser = await _userManager.Users.FirstOrDefaultAsync(x => x.DiscordId == Convert.ToUInt64(userId));
 
         ExtractMessageClaim(out string? discordIdString, out ulong discordId, out string? userName, out string? email);
 
@@ -40,11 +38,12 @@ public class Registering : PageModel
         }
 
         DiscordUser? discordUser = await FetchDiscordUserDetails(discordId);
-        if (!await CreateAndUpdateUser(discordId, userName, email, discordUser))
+        if (!await CreateAndUpdateUser(discordId, userName, email, discordUser, applicationUser))
         {
-            return BadRequest("Error creating or saving user");
+            return BadRequest("Error Creating/Updating or saving user");
         }
-        return RedirectToAction("index", "Home");
+
+        return RedirectToPage("./Profile");
     }
     private void ExtractMessageClaim(out string? discordIdString, out ulong discordId, out string userName, out string email)
     {
@@ -70,22 +69,29 @@ public class Registering : PageModel
         }
         return discordUser;
     }
-    private async Task<bool> CreateAndUpdateUser(ulong discordId, string userName, string email, DiscordUser? discordUser)
+    private async Task<bool> CreateAndUpdateUser(ulong discordId, string userName, string email, DiscordUser? discordUser, ApplicationUser? applicationUser)
     {
-        var applicationUser = new ApplicationUser
+        var create = false;
+        if (applicationUser is null)
         {
-            DiscordId = discordId,
-            UserName = userName,
-            Email = email,
-            GlobalUsername = discordUser?.GlobalName,
-            AvatarUrl = discordUser?.AvatarUrl,
-            IsModerator = discordUser is not null && await ComputeModeratorStatus(discordUser, discordId)
-        };
-        IdentityResult createResult = await _userManager.CreateAsync(applicationUser);
-        if (!createResult.Succeeded)
-        {
-            return false;
+            applicationUser = new ApplicationUser();
+            create = true;
         }
+        applicationUser.DiscordId = discordId;
+        applicationUser.UserName = userName;
+        applicationUser.Email = email;
+        applicationUser.GlobalUsername = discordUser?.GlobalName;
+        applicationUser.AvatarUrl = discordUser?.AvatarUrl;
+        applicationUser.IsModerator = discordUser is not null && await ComputeModeratorStatus(discordUser, discordId);
+        if (create)
+        {
+            IdentityResult createResult = await _userManager.CreateAsync(applicationUser);
+            if (!createResult.Succeeded)
+            {
+                return false;
+            }
+        }
+        
         IdentityResult saveResult = await _userManager.UpdateAsync(applicationUser);
         return saveResult.Succeeded;
     }
@@ -102,8 +108,7 @@ public class Registering : PageModel
             _logger.LogDebug("Failed to get member of id {ID}", discordId);
         }
 
-        var roles = discordMember?.Roles ?? new List<DiscordRole>();
-        return roles.Any(role => role is { Permissions: Permissions.ModerateMembers });
+        return discordMember is { Permissions: Permissions.ModerateMembers } or { Permissions: Permissions.All };
     }
 
     /*
