@@ -58,11 +58,7 @@ public static class ServiceConfiguration
                         string? discordId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
                         ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
-                        context.ReturnUri = "/Account/Profile";
-                        if (user == null)
-                        {
-                            context.ReturnUri = "/Account/Registering";
-                        }
+                        context.ReturnUri = "/Account/Registering";
                     }
                 };
             });

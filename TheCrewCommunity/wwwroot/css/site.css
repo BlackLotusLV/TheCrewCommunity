@@ -1,6 +1,6 @@
 html {
   font-size: 14px;
-  background-color: #2a2a2a;
+  background-color: #2a2a2a !important;
   color: lightgray;
 }
 
@@ -21,7 +21,7 @@ html {
 
 body {
   margin-bottom: 60px;
-  background-color: #2a2a2a;
+  background-color: #2a2a2a !important;
   color: lightgray;
 }
 
