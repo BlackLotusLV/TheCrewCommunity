@@ -28,7 +28,7 @@ public class VoiceActivityLog(IDbContextFactory<LiveBotDbContext> dbContextFacto
                 Url = e.User.AvatarUrl
             }
         };
-        DiscordChannel? beforeChannel = e.Before.Channel ?? null;
+        DiscordChannel? beforeChannel = e.Before?.Channel ?? null; //ignore warning that ? is not needed, DSP issue, it needs to be there!
         DiscordChannel? afterChannel = e.After.Channel ?? null;
         
         if (afterChannel is not null && beforeChannel is null)
@@ -36,12 +36,14 @@ public class VoiceActivityLog(IDbContextFactory<LiveBotDbContext> dbContextFacto
             embed.Title = "➡ [JOINED] ➡";
             embed.Color = DiscordColor.Green;
             embed.AddField("Channel joined", $"**{afterChannel.Name}** *({afterChannel.Id})*");
+            await vcActivityLogChannel.SendMessageAsync(embed);
         }
         else if (afterChannel is null && beforeChannel is not null)
         {
             embed.Title = "⬅ [LEFT] ⬅";
             embed.Color = DiscordColor.Red;
             embed.AddField("Channel left", $"**{beforeChannel.Name}** *({beforeChannel.Id})*");
+            await vcActivityLogChannel.SendMessageAsync(embed);
         }
         else if (afterChannel is not null && beforeChannel is not null && afterChannel != beforeChannel)
         {
@@ -49,9 +51,6 @@ public class VoiceActivityLog(IDbContextFactory<LiveBotDbContext> dbContextFacto
             embed.Color = new DiscordColor(0x87CEFF);
             embed.AddField("Channel left", $"**{beforeChannel.Name}** *({beforeChannel.Id})*");
             embed.AddField("Channel joined", $"**{afterChannel.Name}** *({afterChannel.Id})*");
-        }
-        if (afterChannel is not null && beforeChannel is not null && afterChannel != beforeChannel)
-        {
             await vcActivityLogChannel.SendMessageAsync(embed);
         }
     }
