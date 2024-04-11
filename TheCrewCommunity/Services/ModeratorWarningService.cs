@@ -112,16 +112,14 @@ public class ModeratorWarningService(
         if (member is not null)
         {
             await TrySendInfractionMessage(member, embedToUser.Build());
-        }
-        
-        if (kick && member is not null)
-        {
-            await member.RemoveAsync("Exceeded warning limit!");
-        }
-
-        if (ban)
-        {
-            await item.Guild.BanMemberAsync(item.User.Id, 0, "Exceeded warning limit!");
+            if (kick)
+            {
+                await member.RemoveAsync("Exceeded warning limit!");
+            }
+            if (ban)
+            {
+                await item.Guild.BanMemberAsync(item.User.Id, 0, "Exceeded warning limit!");
+            }
         }
 
         moderatorLoggingService.AddToQueue(new ModLogItem(modLog, item.User, warningDescription, ModLogType.Warning, "",item.Attachment));
