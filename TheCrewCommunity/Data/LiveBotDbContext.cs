@@ -1,29 +1,36 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using TheCrewCommunity.Data.GameData;
+using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Data;
 
 public class LiveBotDbContext : DbContext
 {
-    public DbSet<StreamNotifications> StreamNotifications { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<GuildUser> GuildUsers { get; set; }
-    public DbSet<Infraction> Infractions { get; set; }
-    public DbSet<Guild> Guilds { get; set; }
-    public DbSet<RankRoles> RankRoles { get; set; }
-    public DbSet<ModMail> ModMail { get; set; }
-    public DbSet<RoleTagSettings> RoleTagSettings { get; set; }
-    public DbSet<SpamIgnoreChannels> SpamIgnoreChannels { get; set; }
-    public DbSet<ButtonRoles> ButtonRoles { get; set; }
-    public DbSet<UbiInfo> UbiInfo { get; set; }
-    public DbSet<UserActivity> UserActivity { get; set; }
-    public DbSet<WhiteListSettings> WhiteListSettings { get; set; }
-    public DbSet<WhiteList> WhiteLists { get; set; }
-    public DbSet<PhotoCompSettings> PhotoCompSettings { get; set; }
-    public DbSet<PhotoCompEntries> PhotoCompEntries { get; set; }
-    public DbSet<Tag> Tags { get; set; }
-    public DbSet<VanityWhitelist> VanityWhitelist { get; set; }
-    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+    public DbSet<StreamNotifications> StreamNotifications { get; init; }
+    public DbSet<User> Users { get; init; }
+    public DbSet<GuildUser> GuildUsers { get; init; }
+    public DbSet<Infraction> Infractions { get; init; }
+    public DbSet<Guild> Guilds { get; init; }
+    public DbSet<RankRoles> RankRoles { get; init; }
+    public DbSet<ModMail> ModMail { get; init; }
+    public DbSet<RoleTagSettings> RoleTagSettings { get; init; }
+    public DbSet<SpamIgnoreChannels> SpamIgnoreChannels { get; init; }
+    public DbSet<ButtonRoles> ButtonRoles { get; init; }
+    public DbSet<UbiInfo> UbiInfo { get; init; }
+    public DbSet<UserActivity> UserActivity { get; init; }
+    public DbSet<WhiteListSettings> WhiteListSettings { get; init; }
+    public DbSet<WhiteList> WhiteLists { get; init; }
+    public DbSet<PhotoCompSettings> PhotoCompSettings { get; init; }
+    public DbSet<PhotoCompEntries> PhotoCompEntries { get; init; }
+    public DbSet<Tag> Tags { get; init; }
+    public DbSet<VanityWhitelist> VanityWhitelist { get; init; }
+    public DbSet<ApplicationUser> ApplicationUsers { get; init; }
+    public DbSet<Brand> Brands { get; init; }
+    public DbSet<Game> Games { get; init; }
+    public DbSet<Vehicle> Vehicles { get; init; }
+    public DbSet<VehicleCategory> VehicleCategories { get; init; }
+    public DbSet<MtfstCarProSettings> MotorfestCarProSettings { get; init; }
 
     public LiveBotDbContext()
     {
@@ -34,25 +41,58 @@ public class LiveBotDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ButtonRoles>().HasKey(br => br.Id);
-        modelBuilder.Entity<Guild>().HasKey(g => g.Id);
-        modelBuilder.Entity<GuildUser>().HasKey(gu => new { gu.UserDiscordId, gu.GuildId });
-        modelBuilder.Entity<Infraction>().HasKey(i => i.Id);
-        modelBuilder.Entity<ModMail>().HasKey(mm => mm.Id);
-        modelBuilder.Entity<RankRoles>().HasKey(rr => rr.Id);
-        modelBuilder.Entity<RoleTagSettings>().HasKey(rts => rts.Id);
-        modelBuilder.Entity<SpamIgnoreChannels>().HasKey(sic => sic.Id);
-        modelBuilder.Entity<StreamNotifications>().HasKey(sn => sn.Id);
-        modelBuilder.Entity<UbiInfo>().HasKey(ui => ui.Id);
-        modelBuilder.Entity<User>().HasKey(u => u.DiscordId);
-        modelBuilder.Entity<UserActivity>().HasKey(ua => ua.Id);
-        modelBuilder.Entity<WhiteList>().HasKey(wl => wl.Id);
-        modelBuilder.Entity<WhiteListSettings>().HasKey(wls => wls.Id);
-        modelBuilder.Entity<PhotoCompSettings>().HasKey(pcs => pcs.Id);
-        modelBuilder.Entity<PhotoCompEntries>().HasKey(pce => pce.Id);
-        modelBuilder.Entity<MediaOnlyChannels>().HasKey(moc => moc.ChannelId);
-        modelBuilder.Entity<Tag>().HasKey(t=>t.Id);
-        modelBuilder.Entity<VanityWhitelist>().HasKey(vw=>vw.Id);
+        modelBuilder.Entity<ButtonRoles>().HasKey(x => x.Id);
+        modelBuilder.Entity<Guild>().HasKey(x => x.Id);
+        modelBuilder.Entity<GuildUser>().HasKey(x => new { x.UserDiscordId, x.GuildId });
+        modelBuilder.Entity<Infraction>().HasKey(x => x.Id);
+        modelBuilder.Entity<ModMail>().HasKey(x => x.Id);
+        modelBuilder.Entity<RankRoles>().HasKey(x => x.Id);
+        modelBuilder.Entity<RoleTagSettings>().HasKey(x => x.Id);
+        modelBuilder.Entity<SpamIgnoreChannels>().HasKey(x => x.Id);
+        modelBuilder.Entity<StreamNotifications>().HasKey(x => x.Id);
+        modelBuilder.Entity<UbiInfo>().HasKey(x => x.Id);
+        modelBuilder.Entity<User>().HasKey(x => x.DiscordId);
+        modelBuilder.Entity<UserActivity>().HasKey(x => x.Id);
+        modelBuilder.Entity<WhiteList>().HasKey(x => x.Id);
+        modelBuilder.Entity<WhiteListSettings>().HasKey(x => x.Id);
+        modelBuilder.Entity<PhotoCompSettings>().HasKey(x => x.Id);
+        modelBuilder.Entity<PhotoCompEntries>().HasKey(x => x.Id);
+        modelBuilder.Entity<MediaOnlyChannels>().HasKey(x => x.ChannelId);
+        modelBuilder.Entity<Tag>().HasKey(x=>x.Id);
+        modelBuilder.Entity<VanityWhitelist>().HasKey(x=>x.Id);
+        modelBuilder.Entity<Brand>().HasKey(x => x.Id);
+        modelBuilder.Entity<Game>().HasKey(x => x.Id);
+        modelBuilder.Entity<VehicleCategory>().HasKey(x => x.Id);
+        modelBuilder.Entity<Vehicle>().HasKey(x => x.Id);
+        modelBuilder.Entity<MtfstCarProSettings>().HasKey(x => x.Id);
+        
+        modelBuilder.Entity<Vehicle>()
+            .HasOne(v=>v.VCat)
+            .WithMany(vc => vc.Vehicles)
+            .HasForeignKey(v => v.VCatId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Vehicle>()
+            .HasOne(v => v.Game)
+            .WithMany(g => g.Vehicles)
+            .HasForeignKey(v => v.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Vehicle>()
+            .HasOne(v => v.Brand)
+            .WithMany(b => b.Vehicles)
+            .HasForeignKey(v => v.BrandId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MtfstCarProSettings>()
+            .HasOne(mcp => mcp.ApplicationUser)
+            .WithMany(au => au.MotorfestCarProSettings)
+            .HasForeignKey(mcp => mcp.DiscordId)
+            .HasPrincipalKey(au=>au.DiscordId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MtfstCarProSettings>()
+            .HasOne(mcp => mcp.Vehicle)
+            .WithMany(v => v.MotorfestCarProSettings)
+            .HasForeignKey(mcp => mcp.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ApplicationUser>()
             .HasOne(a => a.User)

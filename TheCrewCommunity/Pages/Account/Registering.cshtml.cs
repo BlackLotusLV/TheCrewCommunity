@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
 
 namespace TheCrewCommunity.Pages.Account;

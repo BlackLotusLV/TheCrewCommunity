@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
 using TheCrewCommunity.LiveBot.EventHandlers;
 using TheCrewCommunity.Services;

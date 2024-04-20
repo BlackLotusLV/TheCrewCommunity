@@ -9,9 +9,9 @@
 
     <ItemGroup>
       <PackageReference Include="AspNet.Security.OAuth.Discord" Version="8.0.0" />
-      <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02187" />
-      <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02187" />
-      <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02187" />
+      <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02211" />
+      <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02211" />
+      <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02211" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
