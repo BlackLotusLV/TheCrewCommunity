@@ -10,7 +10,7 @@ public class GetInfractionOnButton(IModeratorWarningService moderatorWarningServ
 {
     public async Task OnButtonClick(DiscordClient client, ComponentInteractionCreateEventArgs e)
     {
-        if (e.Interaction is not { Type: InteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(moderatorWarningService.InfractionButtonPrefix) || e.Interaction.Guild is null) return;
+        if (e.Interaction is not { Type: DiscordInteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(moderatorWarningService.InfractionButtonPrefix) || e.Interaction.Guild is null) return;
         string idString = e.Interaction.Data.CustomId.Replace(moderatorWarningService.InfractionButtonPrefix, "");
         if(!ulong.TryParse(idString,out ulong userId)) return;
         await e.Interaction.DeferAsync(true);
@@ -32,9 +32,9 @@ public class GetInfractionOnButton(IModeratorWarningService moderatorWarningServ
         string leftButtonId = $"left_{e.User.Id}",
             rightButtonId = $"right_{e.User.Id}",
             stopButtonId = $"stop_{e.User.Id}";
-        DiscordButtonComponent leftButton = new(ButtonStyle.Primary, leftButtonId, "", true, new DiscordComponentEmoji("⬅️")),
-            stopButton = new(ButtonStyle.Danger, stopButtonId, "", false, new DiscordComponentEmoji("⏹️")),
-            rightButton = new(ButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
+        DiscordButtonComponent leftButton = new(DiscordButtonStyle.Primary, leftButtonId, "", true, new DiscordComponentEmoji("⬅️")),
+            stopButton = new(DiscordButtonStyle.Danger, stopButtonId, "", false, new DiscordComponentEmoji("⏹️")),
+            rightButton = new(DiscordButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
 
         webhookBuilder.AddEmbed(embeds[currentPage])
             .AddComponents(leftButton, stopButton, rightButton);
@@ -78,7 +78,7 @@ public class GetInfractionOnButton(IModeratorWarningService moderatorWarningServ
                 .AddEmbeds(new []{embeds[0],embeds[currentPage]})
                 .AddComponents(leftButton, stopButton, rightButton);
             await e.Interaction.EditOriginalResponseAsync(webhookBuilder);
-            await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+            await result.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         }
     }
 }

@@ -47,7 +47,7 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
         string msgContent = args.Message.Content == "" ? "*message didn't contain any text*" : $"*{args.Message.Content}*",
             replyInfo = "*not a reply*";
         StringBuilder sb = new();
-        if (args.Message is { MessageType: MessageType.Reply, Reference.Message.Author: not null })
+        if (args.Message is { MessageType: DiscordMessageType.Reply, Reference.Message.Author: not null })
         {
             replyInfo = $"[Reply to {args.Message.Reference.Message.Author.Username}](<{args.Message.Reference.Message.JumpLink}>)";
         }

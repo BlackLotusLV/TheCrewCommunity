@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
-using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Trees.Attributes;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -48,7 +47,7 @@ public class OpenModMailCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
         ModMail newEntry = new(ctx.Guild.Id, ctx.User.Id, DateTime.UtcNow, colorId);
         await databaseMethodService.AddModMailAsync(newEntry);
 
-        DiscordButtonComponent closeButton = new(ButtonStyle.Danger, $"{modMailService.CloseButtonPrefix}{newEntry.Id}", "Close", false, new DiscordComponentEmoji("✖️"));
+        DiscordButtonComponent closeButton = new(DiscordButtonStyle.Danger, $"{modMailService.CloseButtonPrefix}{newEntry.Id}", "Close", false, new DiscordComponentEmoji("✖️"));
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Mod Mail #{newEntry.Id} opened, please head over to your Direct Messages with Live Bot to chat to the moderator team!"));
 

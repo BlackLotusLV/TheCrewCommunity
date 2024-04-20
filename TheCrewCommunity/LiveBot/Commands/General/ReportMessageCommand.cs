@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
-using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
-using DSharpPlus.Commands.Trees.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -14,7 +12,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory)
 {
-    [Command("Report"), Description("Report a message so moderators can take a look"), SlashCommandTypes(ApplicationCommandType.MessageContextMenu), RequireGuild]
+    [Command("Report"), Description("Report a message so moderators can take a look"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, DiscordMessage targetMessage)
     {
         if (ctx.Guild is null)
@@ -37,9 +35,9 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
             .WithTitle("Report Message")
             .WithCustomId("report_message")
-            .AddComponents(new TextInputComponent("Complaint","Complaint","What is your complaint?",null,true,TextInputStyle.Paragraph)
+            .AddComponents(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",null,true,DiscordTextInputStyle.Paragraph)
             );
-        await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal,modal);
+        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,modal);
         
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(modal.CustomId, ctx.User);
@@ -50,7 +48,7 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             .WithDescription($"# Contents:\n`{targetMessage.Content}`")
             .WithAuthor($"{ctx.User.Username}({ctx.User.Id})", null, ctx.User.AvatarUrl);
 
-        var raiseHandButton = new DiscordButtonComponent(ButtonStyle.Primary, $"raiseHand-report-{targetMessage.ChannelId}-{targetMessage.Id}", "Raise Hand", false, new DiscordComponentEmoji("✋"));
+        var raiseHandButton = new DiscordButtonComponent(DiscordButtonStyle.Primary, $"raiseHand-report-{targetMessage.ChannelId}-{targetMessage.Id}", "Raise Hand", false, new DiscordComponentEmoji("✋"));
         
         DiscordMessageBuilder reportMessage = new DiscordMessageBuilder()
             .AddEmbed(reportEmbed)
@@ -58,6 +56,6 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             
         DiscordChannel reportChannel = ctx.Guild.GetChannel(guild.UserReportsChannelId.Value);
         await reportChannel.SendMessageAsync(reportMessage);
-        await response.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Report sent. A Moderator will review it soon. *If actions are taken, you wil NOT be informed*").AsEphemeral());
+        await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Report sent. A Moderator will review it soon. *If actions are taken, you wil NOT be informed*").AsEphemeral());
     }
 }

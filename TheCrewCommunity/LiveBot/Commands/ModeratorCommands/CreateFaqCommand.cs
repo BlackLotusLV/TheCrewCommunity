@@ -12,9 +12,9 @@ public static class CreateFaqCommand
     {
         var customId = $"FAQ-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("New FAQ entry").WithCustomId(customId)
-            .AddComponents(new TextInputComponent("Question", "Question", required: true, style: TextInputStyle.Paragraph))
-            .AddComponents(new TextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: TextInputStyle.Paragraph));
-        await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, modal);
+            .AddComponents(new DiscordTextInputComponent("Question", "Question", required: true, style: DiscordTextInputStyle.Paragraph))
+            .AddComponents(new DiscordTextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: DiscordTextInputStyle.Paragraph));
+        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
@@ -23,7 +23,7 @@ public static class CreateFaqCommand
             await new DiscordMessageBuilder()
                 .WithContent($"**Q: {response.Result.Values["Question"]}**\n *A: {response.Result.Values["Answer"].TrimEnd()}*")
                 .SendAsync(ctx.Channel);
-            await response.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+            await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent("FAQ message created!").AsEphemeral());
         }
     }

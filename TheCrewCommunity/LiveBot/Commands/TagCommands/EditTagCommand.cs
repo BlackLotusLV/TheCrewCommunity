@@ -48,8 +48,8 @@ public static class EditTagCommand
         responseBuilder
             .WithTitle("Edit Tag")
             .WithCustomId(modalId)
-            .AddComponents(new TextInputComponent("Name", "name", value: tag.Name, min_length: 1))
-            .AddComponents(new TextInputComponent("Content", "content", value: tag.Content, min_length: 1, style: TextInputStyle.Paragraph));
+            .AddComponents(new DiscordTextInputComponent("Name", "name", value: tag.Name, min_length: 1))
+            .AddComponents(new DiscordTextInputComponent("Content", "content", value: tag.Content, min_length: 1, style: DiscordTextInputStyle.Paragraph));
 
         await ctx.RespondAsync(responseBuilder);
         

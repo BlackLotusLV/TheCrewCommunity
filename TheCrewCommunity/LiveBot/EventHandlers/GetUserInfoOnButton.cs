@@ -9,7 +9,7 @@ public class GetUserInfoOnButton(IModeratorWarningService moderatorWarningServic
 {
     public async Task OnButtonClick(DiscordClient client, ComponentInteractionCreateEventArgs e)
     {
-        if (e.Interaction is not { Type: InteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(moderatorWarningService.UserInfoButtonPrefix) || e.Interaction.Guild is null) return;
+        if (e.Interaction is not { Type: DiscordInteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(moderatorWarningService.UserInfoButtonPrefix) || e.Interaction.Guild is null) return;
         string idString = e.Interaction.Data.CustomId.Replace(moderatorWarningService.UserInfoButtonPrefix, "");
         if(!ulong.TryParse(idString,out ulong userId)) return;
         DiscordUser user = await client.GetUserAsync(userId);
@@ -19,6 +19,6 @@ public class GetUserInfoOnButton(IModeratorWarningService moderatorWarningServic
             IsEphemeral = true
         };
         response.AddEmbed(embed);
-        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, response);
+        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, response);
     }
 }

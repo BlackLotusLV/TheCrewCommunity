@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
-using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
-using DSharpPlus.Commands.Trees.Attributes;
 using DSharpPlus.Entities;
 using TheCrewCommunity.Services;
 
@@ -11,7 +9,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class InfoCommand(IModeratorWarningService warningService)
 {
-    [Command("Info"), Description("Shows general info about the user."), RequireGuild, SlashCommandTypes(ApplicationCommandType.SlashCommand, ApplicationCommandType.UserContextMenu)]
+    [Command("Info"), Description("Shows general info about the user."), RequireGuild, SlashCommandTypes(DiscordApplicationCommandType.SlashCommand, DiscordApplicationCommandType.UserContextMenu)]
     public async Task ExecuteAsync(SlashCommandContext ctx, [Description("User who to get the info about.")] DiscordUser user)
     {
         await ctx.DeferResponseAsync(true);

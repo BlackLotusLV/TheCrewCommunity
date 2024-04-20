@@ -1,8 +1,7 @@
 ﻿using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
-using DSharpPlus.Commands.Trees.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -11,7 +10,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class AddButtonCommand
 {
-    [Command("AddButton"), SlashCommandTypes(ApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(Permissions.ManageMessages)]
+    [Command("AddButton"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task AddButton(SlashCommandContext ctx, DiscordMessage targetMessage)
     {
         if (targetMessage.Author is null || targetMessage.Author != ctx.Client.CurrentUser)
@@ -26,11 +25,11 @@ public class AddButtonCommand
             Title = "Button Parameters",
             CustomId = customId
         };
-        response.AddComponents(new TextInputComponent("Custom ID", "customId"));
-        response.AddComponents(new TextInputComponent("Label", "label"));
-        response.AddComponents(new TextInputComponent("Emoji", "emoji", required: false));
+        response.AddComponents(new DiscordTextInputComponent("Custom ID", "customId"));
+        response.AddComponents(new DiscordTextInputComponent("Label", "label"));
+        response.AddComponents(new DiscordTextInputComponent("Emoji", "emoji", required: false));
 
-        await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, response);
+        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, response);
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var modalResponse = await interactivity.WaitForModalAsync(customId, ctx.User);
 
@@ -48,7 +47,7 @@ public class AddButtonCommand
 
         if (targetMessage.Components is null || targetMessage.Components.Count == 0)
         {
-            modified.AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
+            modified.AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
         }
 
         if (targetMessage.Components is not null && targetMessage.Components.Count > 0)
@@ -62,14 +61,14 @@ public class AddButtonCommand
                 else
                 {
                     var buttons = row.Components.ToList();
-                    buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
+                    buttons.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
                     modified.AddComponents(buttons);
                 }
             }
         }
 
         await targetMessage.ModifyAsync(modified);
-        await modalResponse.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+        await modalResponse.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().WithContent($"Button added to the message. **Custom ID:** {modalResponse.Result.Values["customId"]}").AsEphemeral());
     }
 }

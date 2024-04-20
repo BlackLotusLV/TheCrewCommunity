@@ -43,8 +43,8 @@ public static class DeleteNoteCommand
         };
         DiscordWebhookBuilder responseBuilder = new DiscordWebhookBuilder()
             .AddEmbed(embed)
-            .AddComponents(new DiscordButtonComponent(ButtonStyle.Success, $"yes", "Yes"),
-                new DiscordButtonComponent(ButtonStyle.Danger, $"no", "No"));
+            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, $"yes", "Yes"),
+                new DiscordButtonComponent(DiscordButtonStyle.Danger, $"no", "No"));
         
         DiscordMessage message = await ctx.EditResponseAsync(responseBuilder);
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
@@ -53,7 +53,7 @@ public static class DeleteNoteCommand
         if (response.Result.Id == "no")
         {
             await response.Result.Interaction.CreateResponseAsync(
-                InteractionResponseType.ChannelMessageWithSource,
+                DiscordInteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder()
                     .WithContent("Note not deleted")
                     .AsEphemeral()
@@ -64,7 +64,7 @@ public static class DeleteNoteCommand
         dbContext.Infractions.Remove(infraction);
         await dbContext.SaveChangesAsync();
         await response.Result.Interaction.CreateResponseAsync(
-            InteractionResponseType.ChannelMessageWithSource,
+            DiscordInteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder()
                 .WithContent($"Note `{infraction.Id}` deleted")
                 .AsEphemeral()

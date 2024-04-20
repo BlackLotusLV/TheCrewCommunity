@@ -109,6 +109,6 @@ public class Registering : PageModel
             _logger.LogDebug("Failed to get member of id {ID}", discordId);
         }
 
-        return discordMember is { Permissions: Permissions.ModerateMembers } or { Permissions: Permissions.All };
+        return discordMember is { Permissions: DiscordPermissions.ModerateMembers } or { Permissions: DiscordPermissions.All };
     }
 }

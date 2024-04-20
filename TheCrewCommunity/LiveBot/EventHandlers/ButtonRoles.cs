@@ -11,7 +11,7 @@ public class ButtonRoles(IDbContextFactory<LiveBotDbContext> dbContextFactory)
     private const string ButtonRolePrefix = "ButtonRole-";
     public async Task OnButtonClick(object client, ComponentInteractionCreateEventArgs e)
     {
-        if (e.Interaction is not { Type: InteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(ButtonRolePrefix) || e.Interaction.Guild is null) return;
+        if (e.Interaction is not { Type: DiscordInteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(ButtonRolePrefix) || e.Interaction.Guild is null) return;
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var rolesList = await liveBotDbContext.ButtonRoles.Where(x => x.GuildId == e.Interaction.GuildId && x.ChannelId == e.Interaction.ChannelId).ToListAsync();
         if (rolesList.Count == 0) return;
@@ -38,7 +38,7 @@ public class ButtonRoles(IDbContextFactory<LiveBotDbContext> dbContextFactory)
                 response.Content = $"{member.Mention} you have been given the {role.Mention} role.";
             }
 
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, response);
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, response);
         }
     }
 }

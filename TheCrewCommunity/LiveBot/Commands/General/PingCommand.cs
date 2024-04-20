@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using DSharpPlus.Commands;
-using DSharpPlus.Commands.Trees.Attributes;
 
 namespace TheCrewCommunity.LiveBot.Commands.General;
 
