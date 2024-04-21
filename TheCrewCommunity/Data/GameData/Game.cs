@@ -9,5 +9,6 @@ public class Game
     public required string Name { get; set; }
     public DateOnly ReleaseDate { get; set; }
     
-    public ICollection<Vehicle> Vehicles { get; set; }
+    public ICollection<Vehicle>? Vehicles { get; set; }
+    public ICollection<VehicleCategory>? VehicleCategories { get; set; }
 }

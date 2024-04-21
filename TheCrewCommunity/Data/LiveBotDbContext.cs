@@ -94,6 +94,12 @@ public class LiveBotDbContext : DbContext
             .HasForeignKey(mcp => mcp.VehicleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<VehicleCategory>()
+            .HasOne(vc => vc.Game)
+            .WithMany(g => g.VehicleCategories)
+            .HasForeignKey(vc => vc.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<ApplicationUser>()
             .HasOne(a => a.User)
             .WithOne()

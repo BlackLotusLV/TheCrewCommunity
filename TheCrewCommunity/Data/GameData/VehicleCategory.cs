@@ -8,6 +8,8 @@ public class VehicleCategory
     
     [MaxLength(30)]
     public required string Name { get; set; }
+    public Guid GameId { get; set; }
+    public Game? Game { get; set; }
     
     public ICollection<Vehicle> Vehicles { get; set; }
 }
