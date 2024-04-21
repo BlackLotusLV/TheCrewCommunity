@@ -11,8 +11,9 @@ public class Vehicle
     public Guid VCatId { get; set; }
     [MaxLength(50)]
     public required string ModelName { get; set; }
-    public int PriceBucks { get; set; } = 0;
-    public int PriceCredits { get; set; } = 0;
+    public required DateOnly Year { get; set; }
+    public int PriceBucks { get; set; }
+    public int PriceCredits { get; set; }
     public bool IsSummit { get; set; }
     public bool IsPlaylist { get; set; }
     public bool IsMainStage { get; set; }
@@ -25,5 +26,5 @@ public class Vehicle
     public VehicleCategory? VCat { get; set; }
     public Game? Game { get; set; }
     
-    public ICollection<MtfstCarProSettings> MotorfestCarProSettings { get; set; }
+    public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; set; }
 }
