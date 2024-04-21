@@ -23,6 +23,12 @@ body {
   margin-bottom: 60px;
   background-color: #2a2a2a !important;
   color: lightgray;
+  display:flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+footer{
+  margin-top: auto;
 }
 
 .map-background {
@@ -32,29 +38,74 @@ body {
   height: 100vh;
   width: 100%;
 }
+.navigationBar{
+  overflow: hidden;
+  background-color: #2a2a2a;
+}
+.navigationBar a {
+  float: left;
+  font-size: 16px;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
 
-.nav-item.dropdown:hover .dropdown-menu {
+.subNav, .subNav2, .dropDown{
+  float: left;
+  overflow:hidden;
+}
+.navRight{
+  float: right;
+}
+.subNav .subNavButton,.subNav2 .subNavButton , .subNavRight .subNavButton, .dropDown .dropDownButton{
+  font-size: 16px;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+.navigationBar a:hover, .subNav:hover .subNavButton, .subNav2:hover .subNavButton , .subNavRight:hover .subNavButton{
+  background-color: yellow;
+  color: black;
+}
+.subNavContent, .subNavContent2{
+  display: none;
+  position: absolute;
+  left: 0;
+  background-color: yellow;
+  color: black;
+  width: 100%;
+  z-index: 1;
+  border: 1px solid black;
+}
+.dropDownContent {
+  display: none;
+  position: absolute;
+  background-color: yellow;
+  color: black;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.subNavContent a, .subNavContent2 a{
+  text-decoration: none;
+  color:black;
+}
+.dropDownContent a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
   display: block;
+  text-align: left;
 }
-.nav-item{
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  height: 100%;
-  
+.subNavContent a:hover, .subNavContent2 a:hover, .dropDownContent a:hover{
+  background-color: orange;
 }
-.nav-item:last-child{
-  border-right: none;
-  border-bottom-right-radius: 5px;
-  border-top-right-radius: 5px;
-}
-.nav-item:first-child{
-  border-left: none;
-  border-bottom-left-radius: 5px;
-  border-top-left-radius: 5px;
-}
-.nav-item:hover{
-  background-color: lightgray;
-}
-.navbar-nav{
-  height: 100%;
+.subNav:hover .subNavContent, .subNav2:hover .subNavContent2, .dropDown:hover .dropDownContent{
+  display: block;
 }

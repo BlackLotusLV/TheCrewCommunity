@@ -6,51 +6,51 @@
     <title>@ViewData["Title"] - TheCrewCommunity</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/TheCrewCommunity.styles.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     @await RenderSectionAsync("Styles", false)
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container">
-            <a class="navbar-brand" asp-area="" asp-page="/Index">The Crew Community</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Motorfest
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" asp-area="" asp-page="/Motorfest/Map">Map</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                    </li>
-                </ul>
+    <nav>
+        <div class="navigationBar">
+            <a asp-page="/Index">Home</a>
+            <div class="subNav">
+                <button class="subNavButton">The Crew 2[WIP]<i class="fa fa-caret-down"></i></button>
+                <div class="subNavContent">
+                    <a>Image Hub[WIP]</a>
+                </div>
+            </div>
+            <div class="subNav">
+                <button class="subNavButton">Motorfest <i class="fa fa-caret-down"></i></button>
+                <div class="subNavContent">
+                    <div class="subNav2">
+                        <button class="subNavButton">Pro Settings <i class="fa fa-caret-down"></i></button>
+                        <div class="subNavContent2">
+                            <a asp-page="/Motorfest/ProSettings/Cars">Cars</a>
+                            <a>Bikes[WIP]</a>
+                            <a>Planes[WIP]</a>
+                            <a>Boats[WIP]</a>
+                        </div>
+                    </div>
+                    <a asp-page="/Motorfest/Map">Map[WIP]</a>
+                    <a>Image Hub[WIP]</a>
+                </div>
             </div>
             @if (User.Identity is not null && User.Identity.IsAuthenticated)
             {
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        @User.Identity.Name
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a asp-page="/Account/Profile" class="dropdown-item">Profile</a></li>
-                        <li><a asp-page="/Account/Logout" class="dropdown-item">Logout</a></li>
-                    </ul>
+                <div class="dropDown navRight">
+                    <button class="dropDownButton">@User.Identity.Name <i class="fa fa-caret-down"></i></button>
+                    <div class="dropDownContent">
+                        <a asp-page="/Account/Profile">Profile</a>
+                        <a asp-page="/Account/Logout">Logout</a>
+                    </div>
                 </div>
             }
             else
             {
-                <a class="nav-link text-dark" asp-page="/Account/Login">Login with Discord</a>
+                <div class="navRight">
+                    <a asp-page="/Account/Login">Login with Discord</a>
+                </div>
             }
         </div>
     </nav>
@@ -64,7 +64,7 @@
 <footer class="border-top footer text-muted">
     <div class="container">
         &copy; 2023 - TheCrewCommunity - <a asp-area="" asp-page="/Privacy">Privacy</a>
-        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support on ko-fi', '#2a2a2a', 'H2H6G8PAH');kofiwidget2.draw();</script> 
+        <script type="text/javascript" src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script><script type="text/javascript">kofiwidget2.init('Support on ko-fi', '#2a2a2a', 'H2H6G8PAH');kofiwidget2.draw();</script> 
     </div>
 </footer>
 
