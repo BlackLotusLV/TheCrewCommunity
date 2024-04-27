@@ -15,6 +15,7 @@ public class MtfstCarProSettings
     public Guid VehicleId { get; set; }
     [MaxLength(40)]
     public required string Name { get; set; }
+    [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
     [Range(-20,0)]
     public required sbyte FinalDrive { get; set; }
@@ -53,6 +54,6 @@ public class MtfstCarProSettings
     [Range(-25,25)]
     public required sbyte CamberRear { get; set; }
     
-    public Vehicle? Vehicle { get; set; }
-    public ApplicationUser? ApplicationUser { get; set; }
+    public Vehicle Vehicle { get; set; }
+    public ApplicationUser ApplicationUser { get; set; }
 }
