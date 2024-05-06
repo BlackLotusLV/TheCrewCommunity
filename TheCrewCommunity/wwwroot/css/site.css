@@ -2,6 +2,8 @@ html {
   font-size: 14px;
   background-color: #2a2a2a !important;
   color: lightgray;
+  position: relative;
+  min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -10,22 +12,16 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+  margin-bottom: 0;
   background-color: #2a2a2a !important;
   color: lightgray;
   display:flex;
   flex-direction: column;
-  min-height: 100vh;
+  max-height: 100vh;
+}
+main{
+  max-height: 100vh;
 }
 footer{
   margin-top: auto;
@@ -68,11 +64,15 @@ footer{
   font-family: inherit;
   margin: 0;
 }
-.navigationBar a:hover, .subNav:hover .subNavButton, .subNav2:hover .subNavButton , .subNavRight:hover .subNavButton{
+.navigationBar a:hover,
+.subNav:hover .subNavButton,
+.subNav2:hover .subNavButton,
+.subNavRight:hover .subNavButton{
   background-color: yellow;
   color: black;
 }
-.subNavContent, .subNavContent2{
+.subNavContent,
+.subNavContent2{
   display: none;
   position: absolute;
   left: 0;
@@ -103,9 +103,81 @@ footer{
   display: block;
   text-align: left;
 }
-.subNavContent a:hover, .subNavContent2 a:hover, .dropDownContent a:hover{
+.subNavContent a:hover,
+.subNavContent2 a:hover,
+.dropDownContent a:hover{
   background-color: orange;
 }
-.subNav:hover .subNavContent, .subNav2:hover .subNavContent2, .dropDown:hover .dropDownContent{
+.subNav:hover .subNavContent,
+.subNav2:hover .subNavContent2,
+.dropDown:hover .dropDownContent{
   display: block;
+}
+
+.sidebar{
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  width: 150px;
+  background-color: #2a2a2a;
+  height: 100vh;
+  overflow: auto;
+}
+.sidebar a{
+  display: block;
+  left: 0;
+  color: white;
+  text-decoration: none;
+  padding: 16px;
+  width: 100%;
+  border: black 1px solid;
+}
+.sidebar a:hover{
+  background-color: yellow;
+  color: black;
+  text-decoration: none;
+ }
+.ProSettingsContainer {
+  display: flex;
+}
+.ProSettingsContents{
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.searchBox{
+  height: 40px;
+}
+.proSettingsList{
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 240px);
+}
+.proElement{
+  padding: 10px;
+  color: black;
+  background-color: yellow;
+  border: black solid 1px;
+  margin: 2px;
+}
+.proElement:hover{
+  background-color: orange;
+}
+.proDetails{
+  display: inline-block;
+}
+.proBrand{
+  width: 15%;
+}
+.proModel{
+  width: 30%;
+}
+.proName{
+  width: 20%;
+  text-overflow: ellipsis;
+}
+.proDescription{
+  width: 35%;
 }

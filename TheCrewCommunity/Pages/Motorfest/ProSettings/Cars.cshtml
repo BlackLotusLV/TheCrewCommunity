@@ -1,6 +1,48 @@
 ﻿@page
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using TheCrewCommunity.Data.GameData
 @model TheCrewCommunity.Pages.Motorfest.ProSettings.Cars
 
 @{
     ViewData["Title"] = "Car Pro Settings";
 }
+<div class="ProSettingsContainer">
+    <div class="sidebar">
+        @{
+            foreach (VehicleCategory vehicleCategory in Model.VCatList)
+            {
+                <a id="@vehicleCategory.Id">@vehicleCategory.Name</a>
+            }
+        }
+    </div>
+    <div class="ProSettingsContents">
+        <input placeholder="Search..." class="w-full p-2 sticky top-0 bg-white z-10" type="text" id="searchInput"/>
+        <div class="proSettingsList" id="proSettingsList">
+            @foreach (var item in Model.ProSettingsDictionary)
+            {
+                <div class="proElement" id="@item.Key.Id">
+                    <div class="proDetails proBrand">@item.Key.Vehicle.Brand.Name</div>
+                    <div class="proDetails proModel">@item.Key.Vehicle.ModelName</div>
+                    <div class="proDetails proName">@item.Key.Name</div>
+                    <div class="proDetails proDescription">@item.Key.Description</div>
+                </div>
+            }
+            @for (int i = 0; i < 20; i++)
+            {
+
+            <div class="proElement" id="@i">
+                <div class="proDetails proBrand">PH brand @i</div>
+                <div class="proDetails proModel">PH model @i</div>
+                <div class="proDetails proName">PH name @i</div>
+                <div class="proDetails proDescription">PH desc @i</div>
+            </div>
+            }
+            <div class="proElement" id="99">
+                <div class="proDetails proBrand">This is a long brand name</div>
+                <div class="proDetails proModel">this is a very very long model name of a vehicle</div>
+                <div class="proDetails proName">someone named this to this so boom</div>
+                <div class="proDetails proDescription">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</div>
+            </div>
+        </div>
+    </div>
+</div>
