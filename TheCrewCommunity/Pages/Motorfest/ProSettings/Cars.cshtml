@@ -11,7 +11,7 @@
         @{
             foreach (VehicleCategory vehicleCategory in Model.VCatList)
             {
-                <a id="@vehicleCategory.Id">@vehicleCategory.Name</a>
+                <a id="@vehicleCategory.Id" data-url="@Url.Page("Cars","LoadProSettings")" onclick="loadProSettings(this,'@vehicleCategory.Id')">@vehicleCategory.Name</a>
             }
         }
     </div>
@@ -27,22 +27,71 @@
                     <div class="proDetails proDescription">@item.Key.Description</div>
                 </div>
             }
-            @for (int i = 0; i < 20; i++)
-            {
-
-            <div class="proElement" id="@i">
-                <div class="proDetails proBrand">PH brand @i</div>
-                <div class="proDetails proModel">PH model @i</div>
-                <div class="proDetails proName">PH name @i</div>
-                <div class="proDetails proDescription">PH desc @i</div>
-            </div>
-            }
-            <div class="proElement" id="99">
-                <div class="proDetails proBrand">This is a long brand name</div>
-                <div class="proDetails proModel">this is a very very long model name of a vehicle</div>
-                <div class="proDetails proName">someone named this to this so boom</div>
-                <div class="proDetails proDescription">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</div>
-            </div>
         </div>
     </div>
 </div>
+<script>
+    document.getElementById('searchInput').addEventListener('input', function (event) {
+        let search = event.target.value;
+        let selectedVehicleCategory = document.querySelector('.selectedVehicleCategory');
+        let vCatUuid = selectedVehicleCategory ? selectedVehicleCategory.id : '';
+        
+        loadProSettings(null, vCatUuid,search);
+    });
+    
+    let categoryLinks = document.querySelectorAll('.sidebar a');
+    categoryLinks.forEach((link) => {
+        link.addEventListener('click', function(event) {
+            // Remove existing 'selectedVehicleCategory' class from any link
+            categoryLinks.forEach((otherLink) => {
+                otherLink.classList.remove('selectedVehicleCategory');
+            });
+
+            // Add 'selectedVehicleCategory' class to the clicked link
+            event.currentTarget.classList.add('selectedVehicleCategory');
+        });
+    });
+    
+    function loadProSettings(element, vCatUuid, search) {
+        let url = '@Url.Page("Cars", new { handler = "LoadProSettings" })';
+
+        $.ajax({
+            url: url,
+            type: "GET",
+            data: {
+                vCatUuid: vCatUuid,
+                search: search
+            },
+            success: function(data) {
+                // clear current list
+                document.getElementById('proSettingsList').innerHTML = '';
+
+                // render new list based on fetched data
+                data.forEach(function(item) {
+                    let div = document.createElement('div');
+                    div.classList.add('proElement');
+                    div.id = item.Id;
+
+                    ['brandName', 'model'].forEach(function(key) {
+                        let details = document.createElement('div');
+                        details.classList.add('proDetails', 'pro' + key);
+                        details.textContent = item.Vehicle[key];
+                        div.appendChild(details);
+                    });
+                    ['name', 'description'].forEach(function(key) {
+                        let details = document.createElement('div');
+                        details.classList.add('proDetails', 'pro' + key);
+                        details.textContent = item[key];
+                        div.appendChild(details);
+                    });
+
+                    document.getElementById('proSettingsList').appendChild(div);
+                });
+            },
+            error: function(response) {
+                alert('Error! ' + response.statusText);
+            }
+        });
+    }
+
+</script>

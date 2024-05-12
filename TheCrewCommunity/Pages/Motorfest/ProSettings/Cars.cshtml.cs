@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.GameData;
 using TheCrewCommunity.Data.WebData.ProSettings;
@@ -39,28 +40,46 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
         }
     }
 
-    private async Task LoadProSettingsDictionary(string uuid)
+    private async Task<List<MtfstCarProSettings>> LoadProSettingsDictionaryAsync()
     {
-        if (Guid.TryParse(uuid, out Guid id))
-        {
-            logger.LogDebug("Failed to parse GUID by provided string `{Uuid}` for pro settings loading", uuid);
-            return;
-        }
-        ProSettingsDictionary.Clear();
-        foreach (MtfstCarProSettings item in ProSettingsList.Where(x=>x.Vehicle.VCatId == id))
-        {
-            ProSettingsDictionary.Add(item,$"{item.Vehicle.Brand.Name} {item.Vehicle.ModelName} {item.Name} {item.ApplicationUser.GlobalUsername}");
-        }
-        
+        await using LiveBotDbContext dbContext = await contextFactory.CreateDbContextAsync();
+        var list = await dbContext.MotorfestCarProSettings
+            .Include(x => x.Vehicle).ThenInclude(vehicle => vehicle.Brand)
+            .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.VCat)
+            .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.Game)
+            .Include(x => x.ApplicationUser)
+            .Where(x=>x.Vehicle.Game.Name.Contains("Motorfest"))
+            .ToListAsync();
+        return list;
     }
-    
 
-    [HttpGet]
-    public IActionResult GetProSettings(string search)
+    public async Task<IActionResult> OnGetLoadProSettingsAsync(string vCatUuid = "", string? search ="")
     {
-        // match search term with dictionary by comparing value leivenstein distance from generalutils
-        var searchResults = ProSettingsDictionary.Where(x => generalUtils.CalculateLevenshteinDistance(x.Value, search) <= 3).Select(x => x.Key).ToList();
-
-        return new JsonResult(searchResults);
+        var data = await LoadProSettingsDictionaryAsync();
+        if (vCatUuid != "" && Guid.TryParse(vCatUuid, out Guid vCatGuid))
+        {
+            data = data.Where(x => x.Vehicle.VCatId == vCatGuid).ToList();
+        }
+        var result = data.Select(x=> new
+        {
+            Id=x.Id,
+            AuthorDiscordId = x.DiscordId,
+            AuthorName = x.ApplicationUser.UserName,
+            Vehicle = new
+            {
+                BrandName = x.Vehicle.Brand.Name,
+                Model = x.Vehicle.ModelName,
+                Year = x.Vehicle.Year,
+                VCatId= x.Vehicle.VCatId
+            },
+            Name = x.Name,
+            Description = x.Description,
+            SearchKey=$"{x.Vehicle.Brand.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}"
+        });
+        if (!string.IsNullOrEmpty(search))
+        {
+            result = result.OrderBy(x => generalUtils.CalculateLevenshteinDistance(search, x.SearchKey));
+        }
+        return new JsonResult(result);
     }
 }
