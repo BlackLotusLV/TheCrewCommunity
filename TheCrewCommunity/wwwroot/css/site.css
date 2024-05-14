@@ -136,12 +136,12 @@ footer{
 }
 .sidebar a:hover{
   background-color: yellow;
-  color: black;
+  color: black !important;
   text-decoration: none;
  }
 .selectedVehicleCategory{
   background-color: yellow;
-  color: black;
+  color: black !important;
 }
 .ProSettingsContainer {
   display: flex;
@@ -174,16 +174,16 @@ footer{
   display: inline-block;
   vertical-align: top;
 }
-.proBrand{
-  width: 15%;
-}
-.proModel{
-  width: 30%;
-}
 .proName{
   width: 25%;
   text-overflow: ellipsis;
 }
 .proDescription{
   width: 25%;
+}
+.proCar{
+  width: 20%;
+}
+.proAuthor{
+  width: 20%;
 }
