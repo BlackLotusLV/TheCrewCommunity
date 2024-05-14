@@ -78,22 +78,22 @@
                     let div = document.createElement('div');
                     div.classList.add('proElement');
                     
-                    let brandName = document.createElement('div');
-                    brandName.classList.add('proDetails','proBrand');
-                    brandName.textContent = item['vehicle']['brandName'];
-                    let modelName = document.createElement('div');
-                    modelName.classList.add('proDetails','proModel');
-                    modelName.textContent = item['vehicle']['model'];
+                    let carDetails = document.createElement('div');
+                    carDetails.classList.add('proDetails','proCar');
+                    carDetails.textContent = item['vehicle']['brandName'] + ' - ' + item['vehicle']['model'];
                     let proName = document.createElement('div');
                     proName.classList.add('proDetails', 'proName');
                     proName.textContent = item['name'];
                     let description = document.createElement('div');
                     description.classList.add('proDetails','proDescription');
                     description.textContent = item['description'];
+                    let author = document.createElement('div');
+                    author.classList.add('proDetails','proAuthor');
+                    author.textContent = 'Author: ' + item['authorName'];
                     
-                    div.appendChild(brandName);
-                    div.appendChild(modelName);
+                    div.appendChild(carDetails);
                     div.appendChild(proName);
+                    div.appendChild(author);
                     div.appendChild(description);
 
                     document.getElementById('proSettingsList').appendChild(div);
