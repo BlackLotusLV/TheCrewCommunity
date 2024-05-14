@@ -19,6 +19,7 @@ body {
   display:flex;
   flex-direction: column;
   max-height: 100vh;
+  font-family: Arial, serif;
 }
 main{
   max-height: 100vh;
@@ -105,7 +106,8 @@ footer{
 }
 .subNavContent a:hover,
 .subNavContent2 a:hover,
-.dropDownContent a:hover{
+.dropDownContent a:hover,
+.subNav2 .subNavButton:hover{
   background-color: orange;
 }
 .subNav:hover .subNavContent,
