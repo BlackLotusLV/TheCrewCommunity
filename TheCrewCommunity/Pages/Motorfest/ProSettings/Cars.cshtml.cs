@@ -78,7 +78,17 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
         });
         if (!string.IsNullOrEmpty(search))
         {
-            result = result.OrderBy(x => generalUtils.CalculateLevenshteinDistance(search, x.SearchKey));
+            string[] searchTokens = search.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var resultsWithMatchQuality = result.Select(x =>
+            {
+                string[] comparisonTokens = x.SearchKey.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                int totalDistance = searchTokens.Sum(searchToken =>
+                    comparisonTokens.Min(comparisonToken =>
+                        generalUtils.CalculateLevenshteinDistance(searchToken, comparisonToken)));
+                return (matchQuality: totalDistance, result: x);
+            });
+
+            result = resultsWithMatchQuality.OrderBy(x => x.matchQuality).Select(x => x.result);
         }
         return new JsonResult(result);
     }

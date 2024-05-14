@@ -17,27 +17,34 @@
     </div>
     <div class="ProSettingsContents">
         <input placeholder="Search..." class="w-full p-2 sticky top-0 bg-white z-10" type="text" id="searchInput"/>
-        <div class="proSettingsList" id="proSettingsList">
-            @foreach (var item in Model.ProSettingsDictionary)
-            {
-                <div class="proElement" id="@item.Key.Id">
-                    <div class="proDetails proBrand">@item.Key.Vehicle.Brand.Name</div>
-                    <div class="proDetails proModel">@item.Key.Vehicle.ModelName</div>
-                    <div class="proDetails proName">@item.Key.Name</div>
-                    <div class="proDetails proDescription">@item.Key.Description</div>
-                </div>
-            }
-        </div>
+        <div class="proSettingsList" id="proSettingsList"></div>
     </div>
 </div>
 <script>
+    let debounceTimeout;
     document.getElementById('searchInput').addEventListener('input', function (event) {
+        if (event.key === "Enter") {
+            // If Enter key is pressed, clear the timeout and immediately call the function
+            clearTimeout(debounceTimeout);
+            loadProSettingsFunction(event);
+        } else {
+            // If any key other than Enter is pressed, debounce the function call
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => loadProSettingsFunction(event), 500);
+        }
+    });
+
+    window.onload = function() {
+        loadProSettings(null, null, null);
+    }
+
+    function loadProSettingsFunction(event) {
         let search = event.target.value;
         let selectedVehicleCategory = document.querySelector('.selectedVehicleCategory');
         let vCatUuid = selectedVehicleCategory ? selectedVehicleCategory.id : '';
-        
-        loadProSettings(null, vCatUuid,search);
-    });
+
+        loadProSettings(null, vCatUuid, search);
+    }
     
     let categoryLinks = document.querySelectorAll('.sidebar a');
     categoryLinks.forEach((link) => {
@@ -70,20 +77,24 @@
                 data.forEach(function(item) {
                     let div = document.createElement('div');
                     div.classList.add('proElement');
-                    div.id = item.Id;
-
-                    ['brandName', 'model'].forEach(function(key) {
-                        let details = document.createElement('div');
-                        details.classList.add('proDetails', 'pro' + key);
-                        details.textContent = item.Vehicle[key];
-                        div.appendChild(details);
-                    });
-                    ['name', 'description'].forEach(function(key) {
-                        let details = document.createElement('div');
-                        details.classList.add('proDetails', 'pro' + key);
-                        details.textContent = item[key];
-                        div.appendChild(details);
-                    });
+                    
+                    let brandName = document.createElement('div');
+                    brandName.classList.add('proDetails','proBrand');
+                    brandName.textContent = item['vehicle']['brandName'];
+                    let modelName = document.createElement('div');
+                    modelName.classList.add('proDetails','proModel');
+                    modelName.textContent = item['vehicle']['model'];
+                    let proName = document.createElement('div');
+                    proName.classList.add('proDetails', 'proName');
+                    proName.textContent = item['name'];
+                    let description = document.createElement('div');
+                    description.classList.add('proDetails','proDescription');
+                    description.textContent = item['description'];
+                    
+                    div.appendChild(brandName);
+                    div.appendChild(modelName);
+                    div.appendChild(proName);
+                    div.appendChild(description);
 
                     document.getElementById('proSettingsList').appendChild(div);
                 });
@@ -93,5 +104,6 @@
             }
         });
     }
+
 
 </script>
