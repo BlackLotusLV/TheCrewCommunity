@@ -23,4 +23,5 @@ public class ApplicationUser : IdentityUser
     public User? User { get; set; }
     
     public ICollection<MtfstCarProSettings> MotorfestCarProSettings { get; set; }
+    public ICollection<MtfstCarProSettingsLikes> MotorfestCarProSettingLikes { get; set; }
 }

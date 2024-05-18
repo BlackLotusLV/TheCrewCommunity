@@ -31,6 +31,7 @@ public class LiveBotDbContext : DbContext
     public DbSet<Vehicle> Vehicles { get; init; }
     public DbSet<VehicleCategory> VehicleCategories { get; init; }
     public DbSet<MtfstCarProSettings> MotorfestCarProSettings { get; init; }
+    public DbSet<MtfstCarProSettingsLikes> MotorfestCarProSettingsLikes { get; set; }
 
     public LiveBotDbContext()
     {
@@ -65,6 +66,7 @@ public class LiveBotDbContext : DbContext
         modelBuilder.Entity<VehicleCategory>().HasKey(x => x.Id);
         modelBuilder.Entity<Vehicle>().HasKey(x => x.Id);
         modelBuilder.Entity<MtfstCarProSettings>().HasKey(x => x.Id);
+        modelBuilder.Entity<MtfstCarProSettingsLikes>().HasKey(x => x.Id);
         
         modelBuilder.Entity<Vehicle>()
             .HasOne(v=>v.VCat)
@@ -92,6 +94,18 @@ public class LiveBotDbContext : DbContext
             .HasOne(mcp => mcp.Vehicle)
             .WithMany(v => v.MotorfestCarProSettings)
             .HasForeignKey(mcp => mcp.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+
+        modelBuilder.Entity<MtfstCarProSettingsLikes>()
+            .HasOne(likes => likes.MtfstCarProSettings)
+            .WithMany(mcp => mcp.MotorfestCarProSettingLikes)
+            .HasForeignKey(likes => likes.ProSettingsId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MtfstCarProSettingsLikes>()
+            .HasOne(likes => likes.ApplicationUser)
+            .WithMany(au => au.MotorfestCarProSettingLikes)
+            .HasForeignKey(likes => likes.DiscordId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<VehicleCategory>()

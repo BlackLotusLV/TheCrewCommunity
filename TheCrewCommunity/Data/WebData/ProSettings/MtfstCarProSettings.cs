@@ -5,18 +5,23 @@ namespace TheCrewCommunity.Data.WebData.ProSettings;
 
 public class MtfstCarProSettings
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.NewGuid();
     public ulong DiscordId
     {
         get => _discordId;
         set => _discordId = Convert.ToUInt64(value);
     }
     private ulong _discordId;
-    public Guid VehicleId { get; set; }
+    public Guid VehicleId { get; init; }
     [MaxLength(40)]
     public required string Name { get; set; }
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
+
+    public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
+    [Range(0, int.MaxValue, ErrorMessage = "Please enter a value bigger than {1}")]
+    public int LikesCount { get; set; } = 0;
+    
     [Range(-20,0)]
     public required sbyte FinalDrive { get; set; }
     [Range(20,60)]
@@ -56,4 +61,5 @@ public class MtfstCarProSettings
     
     public Vehicle Vehicle { get; set; }
     public ApplicationUser ApplicationUser { get; set; }
+    public ICollection<MtfstCarProSettingsLikes> MotorfestCarProSettingLikes { get; set; }
 }
