@@ -106,6 +106,7 @@ public class LiveBotDbContext : DbContext
             .HasOne(likes => likes.ApplicationUser)
             .WithMany(au => au.MotorfestCarProSettingLikes)
             .HasForeignKey(likes => likes.DiscordId)
+            .HasPrincipalKey(au=>au.DiscordId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<VehicleCategory>()
