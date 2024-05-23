@@ -1,5 +1,4 @@
 ﻿@page
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using TheCrewCommunity.Data.GameData
 @model TheCrewCommunity.Pages.Motorfest.ProSettings.Cars
 
@@ -77,6 +76,7 @@
                 data.forEach(function(item) {
                     let div = document.createElement('div');
                     div.classList.add('proElement');
+                    div.dataset.id = item['id']
                     
                     let carDetails = document.createElement('div');
                     carDetails.classList.add('proDetails','proCar');
@@ -84,9 +84,9 @@
                     let proName = document.createElement('div');
                     proName.classList.add('proDetails', 'proName');
                     proName.textContent = item['name'];
-                    let description = document.createElement('div');
-                    description.classList.add('proDetails','proDescription');
-                    description.textContent = item['description'];
+                    let proDetailsLikes = document.createElement('div');
+                    proDetailsLikes.classList.add('proDetails','proLikes');
+                    proDetailsLikes.textContent = item['likesCount'];
                     let author = document.createElement('div');
                     author.classList.add('proDetails','proAuthor');
                     author.textContent = 'Author: ' + item['authorName'];
@@ -94,7 +94,12 @@
                     div.appendChild(carDetails);
                     div.appendChild(proName);
                     div.appendChild(author);
-                    div.appendChild(description);
+                    div.appendChild(proDetailsLikes);
+                    
+                    div.addEventListener('click', function (e){
+                    const id = e.currentTarget.dataset.id;
+                    window.location.href= '/Motorfest/ProSettings/CarDetails?proSettingsId=' + id;
+                    });
 
                     document.getElementById('proSettingsList').appendChild(div);
                 });

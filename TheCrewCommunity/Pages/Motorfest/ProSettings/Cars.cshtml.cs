@@ -73,7 +73,7 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
                 VCatId= x.Vehicle.VCatId
             },
             Name = x.Name,
-            Description = x.Description,
+            LikesCount = x.LikesCount,
             SearchKey=$"{x.Vehicle.Brand.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}"
         });
         if (!string.IsNullOrEmpty(search))
