@@ -1,19 +1,20 @@
-﻿using System.Collections.Immutable;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.GameData;
 using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Pages.Motorfest.ProSettings;
 
-public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUtils generalUtils, ILogger<Cars> logger) : PageModel
+public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUtils generalUtils) : PageModel
 {
     public List<MtfstCarProSettings> ProSettingsList { get; set; } = [];
     public Dictionary<MtfstCarProSettings, string> ProSettingsDictionary { get; } = [];
     public List<VehicleCategory> VCatList { get; set; } = [];
+
+    private static readonly char[] Separator = [' '];
+
     public async Task OnGetAsync()
     {
         await using LiveBotDbContext dbContext = await contextFactory.CreateDbContextAsync();
@@ -24,6 +25,7 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
                 vCat.Game != null &&
                 vCat.Game.Name.Equals("The Crew Motorfest") &&
                 vCat.Type.Equals("car"))
+            .AsNoTracking()
             .ToListAsync();
         
         ProSettingsList = await dbContext.MotorfestCarProSettings
@@ -53,43 +55,42 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
         return list;
     }
 
-    public async Task<IActionResult> OnGetLoadProSettingsAsync(string vCatUuid = "", string? search ="")
+    public async Task<IActionResult> OnGetLoadProSettingsAsync(string vCatUuid = "", string? search = "")
     {
         var data = await LoadProSettingsDictionaryAsync();
         if (vCatUuid != "" && Guid.TryParse(vCatUuid, out Guid vCatGuid))
         {
             data = data.Where(x => x.Vehicle.VCatId == vCatGuid).ToList();
         }
-        var result = data.Select(x=> new
+
+        var result = data.Select(x => new
         {
-            Id=x.Id,
+            x.Id,
             AuthorDiscordId = x.DiscordId,
             AuthorName = x.ApplicationUser.UserName,
             Vehicle = new
             {
                 BrandName = x.Vehicle.Brand.Name,
                 Model = x.Vehicle.ModelName,
-                Year = x.Vehicle.Year,
-                VCatId= x.Vehicle.VCatId
+                x.Vehicle.Year,
+                x.Vehicle.VCatId
             },
-            Name = x.Name,
-            LikesCount = x.LikesCount,
-            SearchKey=$"{x.Vehicle.Brand.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}"
+            x.Name,
+            x.LikesCount,
+            SearchKey = $"{x.Vehicle.Brand.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}".ToLower()
         });
-        if (!string.IsNullOrEmpty(search))
+        if (string.IsNullOrEmpty(search)) return new JsonResult(result);
+        string[] searchTokens = search.ToLower().Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        var resultsWithMatchQuality = result.Select(x =>
         {
-            string[] searchTokens = search.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var resultsWithMatchQuality = result.Select(x =>
-            {
-                string[] comparisonTokens = x.SearchKey.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                int totalDistance = searchTokens.Sum(searchToken =>
-                    comparisonTokens.Min(comparisonToken =>
-                        generalUtils.CalculateLevenshteinDistance(searchToken, comparisonToken)));
-                return (matchQuality: totalDistance, result: x);
-            });
+            string[] comparisonTokens = x.SearchKey.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+            int totalDistance = searchTokens.Sum(searchToken =>
+                comparisonTokens.Min(comparisonToken =>
+                    generalUtils.CalculateLevenshteinDistance(searchToken, comparisonToken)));
+            return (matchQuality: totalDistance, result: x);
+        });
 
-            result = resultsWithMatchQuality.OrderBy(x => x.matchQuality).Select(x => x.result);
-        }
+        result = resultsWithMatchQuality.OrderBy(x => x.matchQuality).Select(x => x.result);
         return new JsonResult(result);
     }
 }
