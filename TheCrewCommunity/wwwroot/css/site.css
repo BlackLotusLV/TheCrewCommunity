@@ -39,6 +39,7 @@ footer{
 .navigationBar{
   overflow: hidden;
   background-color: #2a2a2a;
+  border-bottom: solid yellow 1px;
 }
 .navigationBar a {
   float: left;
@@ -87,6 +88,7 @@ footer{
   border: 1px solid black;
 }
 .dropDownContent {
+  box-sizing: border-box;
   display: none;
   position: absolute;
   background-color: yellow;
@@ -197,4 +199,110 @@ footer{
 }
 .proAuthor{
   width: 20%;
+}
+.proAddNew{
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: solid black 1px;
+  background-color: yellow;
+  color: black;
+  border-radius: 5px;
+}
+.proAddNew a:hover{
+  background-color: orange;
+  border-radius: 5px;
+}
+.proAddNew a{
+  text-decoration: none;
+  color: black;
+}
+.proSettingsItem{
+  display: flex;
+}
+.proSlider{
+  -webkit-appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  opacity: 0.7;
+  transition: opacity .2s;
+  width:40vw;
+}
+.proSlider:hover{
+  opacity: 1;
+}
+.proSlider:disabled{
+  opacity: 0.2;
+}
+.proSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: yellow;
+  cursor: pointer;
+}
+.proSlider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: yellow;
+  cursor: pointer;
+}
+.sliderName{
+  padding: 5px;
+  width: 200px;
+}
+.proDistribution{
+  transform:rotate(180deg);
+}
+.slider-value,
+.slider-value-front,
+.slider-value-rear{
+  width: 75px;
+  display: inline-block;
+  text-align: right;
+  padding: 5px;
+}
+.vehicleBox{
+  padding: 5px;
+}
+.vehicleSelectionBox {
+  width: 100%;
+  display: flex;
+  gap: 20px; /* Additional space between each select box */
+  border-bottom: yellow solid 1px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.vehicleSelectionBox .selectWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 25%;
+}
+
+.vehicleSelectionBox label {
+  margin-bottom: 5px;
+}
+
+.vehicleSelectionBox select {
+  width: 100%;
+  padding: 5px 10px;
+  box-sizing: border-box;
+  color: lightgrey;
+  background: #2a2a2a;
+  border: 1px solid #2a2a2a;
+  font-size: 20px;
+}
+.vehicleSelectionBox select option {
+  color: lightgrey;
+  background: #2a2a2a;
+  height: 40px;
+  font-size: 20px;
 }

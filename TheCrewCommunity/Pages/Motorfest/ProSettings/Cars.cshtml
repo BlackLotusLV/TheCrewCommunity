@@ -8,6 +8,12 @@
 <div class="ProSettingsContainer">
     <div class="sidebar">
         @{
+            if (User.Identity is not null && User.Identity.IsAuthenticated)
+            {
+                <div class="proAddNew">
+                    <a href="@Url.Page("/Motorfest/ProSettings/AddCarProSettings")">Add New</a>
+                </div>
+            }
             foreach (VehicleCategory vehicleCategory in Model.VCatList)
             {
                 <a id="@vehicleCategory.Id" data-url="@Url.Page("Cars","LoadProSettings")" onclick="loadProSettings(this,'@vehicleCategory.Id')">@vehicleCategory.Name</a>
