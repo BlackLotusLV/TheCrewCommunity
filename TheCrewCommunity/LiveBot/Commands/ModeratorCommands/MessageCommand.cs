@@ -41,7 +41,7 @@ public static class MessageCommand
 
         var dmMessage = $"You are receiving a Moderator DM from **{ctx.Guild.Name}** Discord\n{ctx.User.Username} - {message}";
         DiscordMessageBuilder messageBuilder = new();
-        messageBuilder.AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"{modMailService.OpenButtonPrefix}{ctx.Guild.Id}", "Open Mod Mail"));
+        messageBuilder.AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Primary, $"{modMailService.OpenButtonPrefix}{ctx.Guild.Id}", "Open Mod Mail"));
         messageBuilder.WithContent(dmMessage);
 
         await member.SendMessageAsync(messageBuilder);

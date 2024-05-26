@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Pages.Account;
 

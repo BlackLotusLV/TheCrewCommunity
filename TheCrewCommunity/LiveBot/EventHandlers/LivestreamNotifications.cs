@@ -14,7 +14,7 @@ public class LivestreamNotifications(IStreamNotificationService streamNotificati
     {
         if (e.User is null || e.User.IsBot || e.User.Presence is null) return;
         DiscordGuild guild = e.User.Presence.Guild;
-        if (e.User.Presence.Activities.All(x => x.ActivityType != ActivityType.Streaming)) return;
+        if (e.User.Presence.Activities.All(x => x.ActivityType != DiscordActivityType.Streaming)) return;
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var streamNotifications = liveBotDbContext.StreamNotifications.Where(w => w.GuildId == guild.Id).ToList();
         if (streamNotifications.Count == 0) return;
@@ -58,7 +58,7 @@ public class LivestreamNotifications(IStreamNotificationService streamNotificati
                 }
                 case -1
                     when e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") != null
-                         && e.User.Presence.Activities.First(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").ActivityType.Equals(ActivityType.Streaming):
+                         && e.User.Presence.Activities.First(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").ActivityType.Equals(DiscordActivityType.Streaming):
                     streamNotificationService.AddToQueue(new StreamNotificationItem(streamNotification, e, guild, channel, streamer));
                     break;
             }

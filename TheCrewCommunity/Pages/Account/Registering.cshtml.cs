@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
 
 namespace TheCrewCommunity.Pages.Account;
@@ -108,6 +109,6 @@ public class Registering : PageModel
             _logger.LogDebug("Failed to get member of id {ID}", discordId);
         }
 
-        return discordMember is { Permissions: Permissions.ModerateMembers } or { Permissions: Permissions.All };
+        return discordMember is { Permissions: DiscordPermissions.ModerateMembers } or { Permissions: DiscordPermissions.All };
     }
 }

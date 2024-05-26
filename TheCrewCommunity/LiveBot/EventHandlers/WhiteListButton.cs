@@ -10,7 +10,7 @@ public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactor
 {
     public async Task OnButtonClick(DiscordClient client, ComponentInteractionCreateEventArgs e)
     {
-        if (e.Guild is null ||e.Interaction.Type != InteractionType.Component || e.Interaction.Data.CustomId != "Activate") return;
+        if (e.Guild is null ||e.Interaction.Type != DiscordInteractionType.Component || e.Interaction.Data.CustomId != "Activate") return;
         DiscordInteractionResponseBuilder responseBuilder = new()
         {
             IsEphemeral = true
@@ -20,7 +20,7 @@ public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactor
         if (settingsList.Count==0)
         {
             responseBuilder.WithContent("Whitelist feature not set up properly. Contact a moderator.");
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
             return;
         }
         var member = (DiscordMember)e.User;
@@ -36,21 +36,21 @@ public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactor
         if (entry is null)
         {
             responseBuilder.WithContent("Your username/Nickname has not been found in the database, please make sure you have set it exactly as on Ubisoft Connect!");
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
             return;
         }
 
         if (entry.DiscordId !=null)
         {
             responseBuilder.WithContent("You have already been verified once, if you think this is a mistake please contact a moderator");
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
             return;
         }
 
         if (entry.Settings is null)
         {
             responseBuilder.WithContent("Whitelist feature not set up properly. Contact a moderator.");
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
             return;
         }
 
@@ -61,6 +61,6 @@ public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactor
         await liveBotDbContext.SaveChangesAsync();
         
         responseBuilder.WithContent("You have verified successfully!");
-        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
     }
 }

@@ -120,14 +120,14 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
     public async Task CloseButton(DiscordClient client, ComponentInteractionCreateEventArgs e)
     {
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
-        if (e.Interaction.Type != InteractionType.Component || e.Interaction.User.IsBot || !e.Interaction.Data.CustomId.Contains(CloseButtonPrefix))return;
+        if (e.Interaction.Type != DiscordInteractionType.Component || e.Interaction.User.IsBot || !e.Interaction.Data.CustomId.Contains(CloseButtonPrefix))return;
         ModMail? mmEntry = await liveBotDbContext.ModMail.FindAsync(Convert.ToInt64(e.Interaction.Data.CustomId.Replace(CloseButtonPrefix, "")));
         DiscordInteractionResponseBuilder discordInteractionResponseBuilder = new();
         if (e.Message.Embeds.Count>0)
         {
             discordInteractionResponseBuilder.AddEmbeds(e.Message.Embeds);
         }
-        await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, discordInteractionResponseBuilder.WithContent(e.Message.Content));
+        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, discordInteractionResponseBuilder.WithContent(e.Message.Content));
         if (mmEntry is not { IsActive: true }) return;
         await CloseModMailAsync(
             client,
@@ -139,8 +139,8 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
 
     public async Task OpenButton(DiscordClient client, ComponentInteractionCreateEventArgs e)
     {
-        if (e.Interaction.Type != InteractionType.Component || e.Interaction.User.IsBot || !e.Interaction.Data.CustomId.Contains(OpenButtonPrefix)) return;
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        if (e.Interaction.Type != DiscordInteractionType.Component || e.Interaction.User.IsBot || !e.Interaction.Data.CustomId.Contains(OpenButtonPrefix)) return;
+            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordGuild guild = await client.GetGuildAsync(Convert.ToUInt64(e.Interaction.Data.CustomId.Replace(OpenButtonPrefix,"")));
             await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
@@ -186,7 +186,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
 
             await databaseMethodService.AddModMailAsync(newEntry);
             
-            DiscordButtonComponent closeButton = new(ButtonStyle.Danger, $"{CloseButtonPrefix}{newEntry.Id}", "Close", false, new DiscordComponentEmoji("✖️"));
+            DiscordButtonComponent closeButton = new(DiscordButtonStyle.Danger, $"{CloseButtonPrefix}{newEntry.Id}", "Close", false, new DiscordComponentEmoji("✖️"));
 
             await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(closeButton).WithContent($"**----------------------------------------------------**\n" +
                             $"ModMail entry **open** with `{guild.Name}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {TimeoutMinutes} minutes after last message is sent.*\n" +

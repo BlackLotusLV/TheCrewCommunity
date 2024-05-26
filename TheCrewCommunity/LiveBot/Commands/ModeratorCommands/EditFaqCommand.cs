@@ -18,17 +18,17 @@ public class EditFaqCommand
 
         var customId = $"FAQ-Editor-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("FAQ Editor").WithCustomId(customId)
-            .AddComponents(new TextInputComponent("Question", "Question", null, question, true, TextInputStyle.Paragraph))
-            .AddComponents(new TextInputComponent("Answer", "Answer", null, answer, true, TextInputStyle.Paragraph));
+            .AddComponents(new DiscordTextInputComponent("Question", "Question", null, question, true, DiscordTextInputStyle.Paragraph))
+            .AddComponents(new DiscordTextInputComponent("Answer", "Answer", null, answer, true, DiscordTextInputStyle.Paragraph));
 
-        await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, modal);
+        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (!response.TimedOut)
         {
             await message.ModifyAsync($"**Q: {response.Result.Values["Question"]}**\n *A: {response.Result.Values["Answer"].TrimEnd()}*");
-            await response.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+            await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent("FAQ message edited").AsEphemeral());
         }
     }

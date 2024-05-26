@@ -1,0 +1,232 @@
+﻿@page
+@using TheCrewCommunity.Data.GameData
+@model TheCrewCommunity.Pages.Motorfest.ProSettings.AddCarProSettings
+
+@{
+    
+}
+<form id="proSubmitForm" method="post" asp-page-handler="SubmitProSettings">
+    <div class="vehicleSelectionBox">
+        <div class="selectWrapper">
+            <label for="discipline">Discipline:</label>
+            <select name="discipline" id="discipline" onchange="updateBrands(this.value)">
+                <option value="null">Select Discipline</option>
+                @{
+                    foreach (VehicleCategory vCat in Model.VCatList)
+                    {
+                        <option value="@vCat.Id">@vCat.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="selectWrapper">
+            <label for="brand">Brand:</label>
+            <select name="brand" id="brand" onchange="updateModelList(document.getElementById('discipline').value, this.value)">
+                <option value="null">Select Brand</option>
+                <!-- options will be dynamically populated -->
+            </select>
+        </div>
+        <div class="selectWrapper">
+            <label for="model">Model:</label>
+            <select name="VehicleId" id="model">
+                <option value="null">Select Model</option>
+                <!-- options will be dynamically populated -->
+            </select>
+        </div>
+    </div>
+    <div class="ProSettingsContainer">
+        <div class="vehicleBox vehicleBoxWithHeader">
+            <div class="proSettingsBox">
+                <h3>Transmission</h3>
+                <div class="proSettingsItem">
+                    <label for="finalDrive" class="sliderName">Final Drive</label>
+                    <span class="slider-value"></span>
+                    <input name="FinalDrive" class="proSlider sliderPercentage" id="finalDrive" type="range" min="-20" max="0" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="powerDistribution">Power Distribution</label>
+                    <span class="slider-value-front"></span>
+                    <input name="PowerToFront" class="proSlider sliderPercentage proDistribution" id="powerDistribution" type="range" min="20" max="60" value="40" step="1" disabled/>
+                    <span class="slider-value-rear"></span>
+                </div>
+                <h3>Tires</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="gripFront">Grip Front</label>
+                    <span class="slider-value"></span>
+                    <input name="GripFront" class="proSlider sliderPercentage" id="gripFront" type="range" min="-20" max="0" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="gripRear">Grip Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="GripRear" class="proSlider sliderPercentage" id="gripRear" type="range" min="-20" max="0" value="0" step="1"/>
+                </div>
+                <h3>Brakes</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="brakeBalance">Brake Balance</label>
+                    <span class="slider-value-front"></span>
+                    <input name="BrakeToFront" class="proSlider sliderPercentage proDistribution" id="brakeBalance" type="range" min="40" max="80" value="60" step="1"/>
+                    <span class="slider-value-rear"></span>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="brakePower">Brake Power</label>
+                    <span class="slider-value"></span>
+                    <input name="BrakePower" class="proSlider sliderPercentage" id="brakePower" type="range" min="-30" max="0" value="0" step="1"/>
+                </div>
+                <h3>Aero</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="loadFront">Load Front</label>
+                    <span class="slider-value"></span>
+                    <input name="LoadFront" class="proSlider sliderPercentage" id="loadFront" type="range" min="-30" max="0" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="loadRear">Load Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="LoadRear" class="proSlider sliderPercentage" id="loadRear" type="range" min="-30" max="0" value="0" step="1"/>
+                </div>
+                <h3>Suspension</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="springFront">Spring Front</label>
+                    <span class="slider-value"></span>
+                    <input name="SpringFront" class="proSlider sliderPercentage" id="springFront" type="range" min="-20" max="10" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="springRear">Spring Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="SpringRear" class="proSlider sliderPercentage" id="springRear" type="range" min="-20" max="10" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="damperCompressionFront">Damper Compression Front</label>
+                    <span class="slider-value"></span>
+                    <input name="DamperCompressionFront" class="proSlider sliderPercentage" id="damperCompressionFront" type="range" min="-20" max="20" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="damperCompressionRear">Damper Compression Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="DamperCompressionRear" class="proSlider sliderPercentage" id="damperCompressionRear" type="range" min="-20" max="20" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="damperReboundFront">Damper Rebound Front</label>
+                    <span class="slider-value"></span>
+                    <input name="DamperReboundFront" class="proSlider sliderPercentage" id="damperReboundFront" type="range" min="-20" max="20" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="damperReboundRear">Damper Rebound Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="DamperReboundRear" class="proSlider sliderPercentage" id="damperReboundRear" type="range" min="-20" max="20" value="0" step="1"/>
+                </div>
+                <h3>Anti Roll Bars</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="arbFront">ARB Front</label>
+                    <span class="slider-value"></span>
+                    <input name="AntiRollBarFront" class="proSlider sliderPercentage" id="arbFront" type="range" min="-20" max="10" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="arbRear">ARB Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="AntiRollBarRear" class="proSlider sliderPercentage" id="arbRear" type="range" min="-20" max="10" value="0" step="1"/>
+                </div>
+                <h3>Alignment</h3>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="camberFront">Camber Front</label>
+                    <span class="slider-value"></span>
+                    <input name="CamberFront" class="proSlider sliderDegree" id="camberFront" type="range" min="-25" max="25" value="0" step="1"/>
+                </div>
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="camberRear">Camber Rear</label>
+                    <span class="slider-value"></span>
+                    <input name="CamberRear" class="proSlider sliderDegree" id="camberRear" type="range" min="-25" max="25" value="0" step="1"/>
+                </div>
+            </div>
+        </div>
+        <div class="sideInfoBox">
+            <label for="Name">Name:</label>
+            <input name="Name" id="Name" class="proSettingsName" type="text" maxlength="40"/>
+            <span asp-validation-for="FormData.Name" class="text-danger"></span>
+            <label for="Description">Description:</label>
+            <textarea name="Description" id="Description" class="ProSettingsDescription" maxlength="500" value=""></textarea>
+            <button class="submitButton" type="submit">Submit Pro Settings</button>
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        </div>
+    </div>
+</form>
+<script>
+    // handle slider logic
+    window.onload = function() {
+        let sliders = document.querySelectorAll('.proSlider');
+        sliders.forEach(function(slider) {
+            let value = slider.value;
+            if (slider.classList.contains('sliderPercentage')){
+                value+='%';
+            }
+            else if (slider.classList.contains('sliderDegree'))
+            {
+                value = '0.'+value+'°'
+            }
+            if (slider.id ==="brakeBalance" || slider.id ==="powerDistribution"){
+                slider.parentElement.querySelector('.slider-value-front').innerText = value + ' Front';
+                slider.parentElement.querySelector('.slider-value-rear').innerText = (100 - slider.value) + '% Rear';
+            } else{
+                slider.previousElementSibling.innerText = value;
+            }
+
+            slider.oninput = function() {
+                let value = this.value;
+                if (slider.classList.contains('sliderPercentage')){
+                    value+='%';
+                }
+                else if (slider.classList.contains('sliderDegree'))
+                {
+                    value = '0.'+value+'°';
+                }
+                if (slider.id ==="brakeBalance" || slider.id ==="powerDistribution"){
+                    slider.parentElement.querySelector('.slider-value-front').innerText = value + ' Front';
+                    slider.parentElement.querySelector('.slider-value-rear').innerText = (100 - this.value) + ' Rear';
+                } else{
+                    this.previousElementSibling.innerText = value;
+                }
+            }
+        });
+    }
+    // handle selectors
+    function updateBrands(disciplineId) {
+        fetch(`/Motorfest/ProSettings/AddCarProSettings?handler=LoadBrands&vCatId=${disciplineId}`)
+            .then(response => response.json())
+            .then(data => {
+                let brandSelect = $('#brand');
+                brandSelect.html('<option value="">Select Brand</option>' + data.map(brand =>
+                    `<option value="${brand['id']}">${brand['name']}</option>`
+                ).join(''));
+                if(brandSelect.children('option').length > 1){
+                    updateModelList(disciplineId, brandSelect.find('option').eq(1).val());
+                }
+            });
+    }
+    function updateModelList(disciplineId, brandId) {
+    fetch(`/Motorfest/ProSettings/AddCarProSettings?handler=LoadVehicles&vCatId=${disciplineId}&brandId=${brandId}`)
+        .then(response => response.json())
+        .then(data => {
+            let vehicleSelect = $('#model');
+            vehicleSelect
+            .html('<option value="">Select Model</option>' + data
+                .map(vehicle =>`<option value="${vehicle['id']}">${vehicle['modelName']}</option>`)
+                .join('')
+            );
+            vehicleSelect.change(function () {
+                let selectedVehicle = $(this).children("option:selected").val();
+                updatePowerDistribution(data, selectedVehicle);
+            });
+        });
+    }
+    function updatePowerDistribution(vehicleData, selectedVehicleId) {
+        if (selectedVehicleId !== "") {
+            let selectedVehicleObj = vehicleData.find(vehicle => vehicle['id'] === selectedVehicleId);
+            if (selectedVehicleObj && selectedVehicleObj['transmission'] === '4wd') {
+                $('#powerDistribution').prop('disabled', false);
+            } else {
+                $('#powerDistribution').prop('disabled', true);
+            }
+        } else {
+            $('#powerDistribution').prop('disabled', true);
+        }
+    }
+</script>

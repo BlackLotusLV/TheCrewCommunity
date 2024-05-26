@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Text;
-using DSharpPlus;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
-using DSharpPlus.Commands.Trees.Attributes;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +19,9 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
         await ctx.DeferResponseAsync();
         List<DiscordButtonComponent> buttons =
         [
-            new DiscordButtonComponent(ButtonStyle.Primary, "left", "", false, new DiscordComponentEmoji("◀️")),
-            new DiscordButtonComponent(ButtonStyle.Danger, "end", "", false, new DiscordComponentEmoji("⏹")),
-            new DiscordButtonComponent(ButtonStyle.Primary, "right", "", false, new DiscordComponentEmoji("▶️"))
+            new DiscordButtonComponent(DiscordButtonStyle.Primary, "left", "", false, new DiscordComponentEmoji("◀️")),
+            new DiscordButtonComponent(DiscordButtonStyle.Danger, "end", "", false, new DiscordComponentEmoji("⏹")),
+            new DiscordButtonComponent(DiscordButtonStyle.Primary, "right", "", false, new DiscordComponentEmoji("▶️"))
         ];
         string board = await GenerateLeaderboardAsync(ctx, (int)page);
         DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(board).AddComponents(buttons));
@@ -69,7 +67,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
                     break;
             }
 
-            await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+            await result.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         } while (!end);
     }
     private async Task<string> GenerateLeaderboardAsync(AbstractContext ctx, int page)

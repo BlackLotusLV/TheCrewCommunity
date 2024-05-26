@@ -1,5 +1,5 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
+using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 

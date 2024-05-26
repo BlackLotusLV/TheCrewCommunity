@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 
 namespace TheCrewCommunity;
 
@@ -7,10 +6,10 @@ public class GeneralUtils
 {
     public bool CheckIfMemberAdmin(DiscordMember member)
     {
-        return member.Permissions.HasPermission(Permissions.ManageMessages) ||
-               member.Permissions.HasPermission(Permissions.KickMembers) ||
-               member.Permissions.HasPermission(Permissions.BanMembers) ||
-               member.Permissions.HasPermission(Permissions.Administrator);
+        return member.Permissions.HasPermission(DiscordPermissions.ManageMessages) ||
+               member.Permissions.HasPermission(DiscordPermissions.KickMembers) ||
+               member.Permissions.HasPermission(DiscordPermissions.BanMembers) ||
+               member.Permissions.HasPermission(DiscordPermissions.Administrator);
     }
     
     public int CalculateLevenshteinDistance(string a, string b)

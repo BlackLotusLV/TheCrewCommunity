@@ -161,7 +161,7 @@ public class LiveBotService : IHostedService, ILiveBotService
             );
         commandsExtension.AddCommands(typeof(LiveBotService).Assembly);
 
-        DiscordActivity botActivity = new("/send-modmail to open chat with moderators", ActivityType.Playing);
+        DiscordActivity botActivity = new("/send-modmail to open chat with moderators", DiscordActivityType.Playing);
         DiscordClient.Logger.LogInformation("LiveBot has started!");
         await DiscordClient.ConnectAsync(botActivity);
     }

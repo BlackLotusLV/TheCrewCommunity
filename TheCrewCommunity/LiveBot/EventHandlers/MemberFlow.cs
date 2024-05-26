@@ -74,8 +74,8 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         DiscordMessageBuilder messageBuilder = new DiscordMessageBuilder()
             .AddEmbed(embed)
             .AddComponents(
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{warningService.InfractionButtonPrefix}{e.Member.Id}", "Get infractions"),
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{warningService.UserInfoButtonPrefix}{e.Member.Id}", "Get User Info")
+                new DiscordButtonComponent(DiscordButtonStyle.Primary, $"{warningService.InfractionButtonPrefix}{e.Member.Id}", "Get infractions"),
+                new DiscordButtonComponent(DiscordButtonStyle.Primary, $"{warningService.UserInfoButtonPrefix}{e.Member.Id}", "Get User Info")
             );
         await userTraffic.SendMessageAsync(messageBuilder);
     }
@@ -105,8 +105,8 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         DiscordMessageBuilder messageBuilder = new DiscordMessageBuilder()
             .AddEmbed(embed)
             .AddComponents(
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{warningService.InfractionButtonPrefix}{e.Member.Id}", "Get infractions"),
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{warningService.UserInfoButtonPrefix}{e.Member.Id}", "Get User Info")
+                new DiscordButtonComponent(DiscordButtonStyle.Primary, $"{warningService.InfractionButtonPrefix}{e.Member.Id}", "Get infractions"),
+                new DiscordButtonComponent(DiscordButtonStyle.Primary, $"{warningService.UserInfoButtonPrefix}{e.Member.Id}", "Get User Info")
             );
         await userTraffic.SendMessageAsync(messageBuilder);
     }

@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using TheCrewCommunity.Data.WebData.ProSettings;
 
-namespace TheCrewCommunity.Data;
+namespace TheCrewCommunity.Data.WebData;
 
 public class ApplicationUser : IdentityUser
 {
@@ -20,4 +21,7 @@ public class ApplicationUser : IdentityUser
 
     public bool IsModerator { get; set; } = false;
     public User? User { get; set; }
+    
+    public ICollection<MtfstCarProSettings> MotorfestCarProSettings { get; set; }
+    public ICollection<MtfstCarProSettingsLikes> MotorfestCarProSettingLikes { get; set; }
 }

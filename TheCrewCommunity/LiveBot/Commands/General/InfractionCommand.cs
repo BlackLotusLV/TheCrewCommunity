@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
-using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.Attributes;
-using DSharpPlus.Commands.Trees.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using TheCrewCommunity.Services;
@@ -11,8 +9,8 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class InfractionCommand(IModeratorWarningService warningService)
 {
-    [Command("Infractions"), Description("Get the infractions of a user"), RequirePermissions(Permissions.ModerateMembers),
-     SlashCommandTypes(ApplicationCommandType.SlashCommand, ApplicationCommandType.UserContextMenu), RequireGuild]
+    [Command("Infractions"), Description("Get the infractions of a user"), RequirePermissions(DiscordPermissions.ModerateMembers),
+     SlashCommandTypes(DiscordApplicationCommandType.SlashCommand, DiscordApplicationCommandType.UserContextMenu), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, [Description("User to get the infractions for")] DiscordUser user)
     {
         await ctx.DeferResponseAsync(true);
@@ -27,7 +25,7 @@ public class InfractionCommand(IModeratorWarningService warningService)
             throw new NullReferenceException("Guild is null. This should not happen.");
         }
 
-        bool isModerator = ctx.Member.Permissions.HasPermission(Permissions.ModerateMembers);
+        bool isModerator = ctx.Member.Permissions.HasPermission(DiscordPermissions.ModerateMembers);
         var embeds = await warningService.BuildInfractionsEmbedsAsync(ctx.Guild, user, isModerator);
         webhookBuilder.AddEmbed(embeds[0]);
         if (embeds.Count > 1)
@@ -45,9 +43,9 @@ public class InfractionCommand(IModeratorWarningService warningService)
             rightButtonId = $"right_{ctx.User.Id}",
             stopButtonId = $"stop_{ctx.User.Id}";
         var currentPage = 1;
-        DiscordButtonComponent leftButton = new(ButtonStyle.Primary, leftButtonId, "", true, new DiscordComponentEmoji("⬅️")),
-            stopButton = new(ButtonStyle.Danger, stopButtonId, "", false, new DiscordComponentEmoji("⏹️")),
-            rightButton = new(ButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
+        DiscordButtonComponent leftButton = new(DiscordButtonStyle.Primary, leftButtonId, "", true, new DiscordComponentEmoji("⬅️")),
+            stopButton = new(DiscordButtonStyle.Danger, stopButtonId, "", false, new DiscordComponentEmoji("⏹️")),
+            rightButton = new(DiscordButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
 
         webhookBuilder.AddComponents(leftButton, stopButton, rightButton);
         DiscordMessage message = await ctx.EditResponseAsync(webhookBuilder);
@@ -95,7 +93,7 @@ public class InfractionCommand(IModeratorWarningService warningService)
                 .AddEmbeds(new[] { embeds[0], embeds[currentPage] })
                 .AddComponents(leftButton, stopButton, rightButton);
             await ctx.EditResponseAsync(webhookBuilder);
-            await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+            await result.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         }
     }
 }

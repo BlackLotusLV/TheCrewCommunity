@@ -32,8 +32,8 @@ public static class CreateTagCommand
         responseBuilder
             .WithTitle($"Create tag Named {name}")
             .WithCustomId(modalId)
-            .AddComponents(new TextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: TextInputStyle.Paragraph));
-        await ctx.Interaction.CreateResponseAsync(InteractionResponseType.Modal, responseBuilder);
+            .AddComponents(new DiscordTextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: DiscordTextInputStyle.Paragraph));
+        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, responseBuilder);
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var modalInteractivity = await interactivity.WaitForModalAsync(modalId,ctx.User);
