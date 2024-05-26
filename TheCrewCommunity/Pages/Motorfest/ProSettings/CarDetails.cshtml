@@ -4,97 +4,117 @@
 @{
     ViewData["Title"] = @Model.Title;
 }
-
-<div class="vehicleBox">
-    <div class="carInfoBox">
-        <h1>@Model.CarProSettings.Vehicle.Brand</h1>
-        <h2>@Model.CarProSettings.Vehicle.ModelName</h2>
-    </div>
-    <div class="proSettingsBox">
-        <h3>Transmission</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Final Drive</span>
-            <input type="range" min="-20" max="0" value="@Model.CarProSettings.FinalDrive" disabled/>
-        </div>
-        @if (Model.CarProSettings.Vehicle.Transmission == "4wd")
-        {
+<div class="ProSettingsContainer">
+    <div class="vehicleBox">
+        <div class="proSettingsBox">
+            <h3>Transmission</h3>
             <div class="proSettingsItem">
-                <span class="sliderName">Power Distribution</span>
-                <input type="range" min="20" max="60" value="@Model.CarProSettings.PowerToFront" disabled/>
+                <label for="finalDrive" class="sliderName">Final Drive</label>
+                <span class="slider-value">@Model.CarProSettings.FinalDrive%</span>
+                <input name="FinalDrive" class="proSlider sliderPercentage proSliderViewOnly" id="finalDrive" type="range" min="-20" max="0" value="@Model.CarProSettings.FinalDrive" step="1" disabled/>
             </div>
-        }
-        <h3>Tires</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Grip Front</span>
-            <input type="range" min="-20" max="0" value="@Model.CarProSettings.GripFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Grip Rear</span>
-            <input type="range" min="-20" max="0" value="@Model.CarProSettings.GripRear" disabled/>
-        </div>
-        <h3>Brakes</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Brake Balance</span>
-            <input type="range" min="40" max="80" value="@Model.CarProSettings.BrakeToFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Brake Power</span>
-            <input type="range" min="-30" max="0" value="@Model.CarProSettings.BrakePower" disabled/>
-        </div>
-        <h3>Aero Dynamics</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Load Front</span>
-            <input type="range" min="-30" max="0" value="@Model.CarProSettings.LoadFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Load Rear</span>
-            <input type="range" min="-30" max="0" value="@Model.CarProSettings.LoadRear" disabled/>
-        </div>
-        <h3>Suspension</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Spring Front</span>
-            <input type="range" min="-20" max="10" value="@Model.CarProSettings.SpringFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Spring Rear</span>
-            <input type="range" min="-20" max="10" value="@Model.CarProSettings.SpringRear" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Damper Compression Front</span>
-            <input type="range" min="-20" max="20" value="@Model.CarProSettings.DamperCompressionFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Damper Compression Rear</span>
-            <input type="range" min="-20" max="20" value="@Model.CarProSettings.DamperCompressionRear" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Damper Rebound Front</span>
-            <input type="range" min="-20" max="20" value="@Model.CarProSettings.DamperReboundFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Damper Rebound Rear</span>
-            <input type="range" min="-20" max="20" value="@Model.CarProSettings.DamperReboundRear" disabled/>
-        </div>
-        <h3>Anti Roll Bars</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">ARB Front</span>
-            <input type="range" min="-20" max="10" value="@Model.CarProSettings.AntiRollBarFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">ARB Rear</span>
-            <input type="range" min="-20" max="10" value="@Model.CarProSettings.AntiRollBarRear" disabled/>
-        </div>
-        <h3>Alignment</h3>
-        <div class="proSettingsItem">
-            <span class="sliderName">Camber Front</span>
-            <input type="range" min="-25" max="25" value="@Model.CarProSettings.CamberFront" disabled/>
-        </div>
-        <div class="proSettingsItem">
-            <span class="sliderName">Camber Rear</span>
-            <input type="range" min="-25" max="25" value="@Model.CarProSettings.CamberRear" disabled/>
+            @if (Model.CarProSettings.Vehicle.Transmission == "4wd")
+            {
+                <div class="proSettingsItem">
+                    <label class="sliderName" for="powerDistribution">Power Distribution</label>
+                    <span class="slider-value-front">@Model.CarProSettings.PowerToFront% Front</span>
+                    <input name="PowerToFront" class="proSlider sliderPercentage proDistribution proSliderViewOnly" id="powerDistribution" type="range" min="20" max="60" value="@Model.CarProSettings.PowerToFront" step="1" disabled/>
+                    <span class="slider-value-rear">@Model.PowerToRear% Rear</span>
+                </div>
+            }
+            <h3>Tires</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="gripFront">Grip Front</label>
+                <span class="slider-value">@Model.CarProSettings.GripFront%</span>
+                <input name="GripFront" class="proSlider sliderPercentage proSliderViewOnly" id="gripFront" type="range" min="-20" max="0" value="@Model.CarProSettings.GripFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="gripRear">Grip Rear</label>
+                <span class="slider-value">@Model.CarProSettings.GripRear%</span>
+                <input name="GripRear" class="proSlider sliderPercentage proSliderViewOnly" id="gripRear" type="range" min="-20" max="0" value="@Model.CarProSettings.GripRear" step="1" disabled/>
+            </div>
+            <h3>Brakes</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="brakeBalance">Brake Balance</label>
+                <span class="slider-value-front">@Model.CarProSettings.BrakeToFront% Front</span>
+                <input name="BrakeToFront" class="proSlider sliderPercentage proDistribution proSliderViewOnly" id="brakeBalance" type="range" min="40" max="80" value="@Model.CarProSettings.BrakeToFront" step="1" disabled/>
+                <span class="slider-value-rear">@Model.BrakesToRear% Rear</span>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="brakePower">Brake Power</label>
+                <span class="slider-value">@Model.CarProSettings.BrakePower%</span>
+                <input name="BrakePower" class="proSlider sliderPercentage proSliderViewOnly" id="brakePower" type="range" min="-30" max="0" value="@Model.CarProSettings.BrakePower" step="1" disabled/>
+            </div>
+            <h3>Aero</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="loadFront">Load Front</label>
+                <span class="slider-value">@Model.CarProSettings.LoadFront%</span>
+                <input name="LoadFront" class="proSlider sliderPercentage proSliderViewOnly" id="loadFront" type="range" min="-30" max="0" value="@Model.CarProSettings.LoadFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="loadRear">Load Rear</label>
+                <span class="slider-value">@Model.CarProSettings.LoadRear%</span>
+                <input name="LoadRear" class="proSlider sliderPercentage proSliderViewOnly" id="loadRear" type="range" min="-30" max="0" value="@Model.CarProSettings.LoadRear" step="1" disabled/>
+            </div>
+            <h3>Suspension</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="springFront">Spring Front</label>
+                <span class="slider-value">@Model.CarProSettings.SpringFront%</span>
+                <input name="SpringFront" class="proSlider sliderPercentage proSliderViewOnly" id="springFront" type="range" min="-20" max="10" value="@Model.CarProSettings.SpringFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="springRear">Spring Rear</label>
+                <span class="slider-value">@Model.CarProSettings.SpringRear%</span>
+                <input name="SpringRear" class="proSlider sliderPercentage proSliderViewOnly" id="springRear" type="range" min="-20" max="10" value="@Model.CarProSettings.SpringRear" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="damperCompressionFront">Damper Compression Front</label>
+                <span class="slider-value">@Model.CarProSettings.DamperCompressionFront%</span>
+                <input name="DamperCompressionFront" class="proSlider sliderPercentage proSliderViewOnly" id="damperCompressionFront" type="range" min="-20" max="20" value="@Model.CarProSettings.DamperCompressionFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="damperCompressionRear">Damper Compression Rear</label>
+                <span class="slider-value">@Model.CarProSettings.DamperCompressionRear%</span>
+                <input name="DamperCompressionRear" class="proSlider sliderPercentage proSliderViewOnly" id="damperCompressionRear" type="range" min="-20" max="20" value="@Model.CarProSettings.DamperCompressionRear" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="damperReboundFront">Damper Rebound Front</label>
+                <span class="slider-value">@Model.CarProSettings.DamperReboundFront%</span>
+                <input name="DamperReboundFront" class="proSlider sliderPercentage proSliderViewOnly" id="damperReboundFront" type="range" min="-20" max="20" value="@Model.CarProSettings.DamperReboundFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="damperReboundRear">Damper Rebound Rear</label>
+                <span class="slider-value">@Model.CarProSettings.DamperReboundRear%</span>
+                <input name="DamperReboundRear" class="proSlider sliderPercentage proSliderViewOnly" id="damperReboundRear" type="range" min="-20" max="20" value="@Model.CarProSettings.DamperReboundRear" step="1" disabled/>
+            </div>
+            <h3>Anti Roll Bars</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="arbFront">ARB Front</label>
+                <span class="slider-value">@Model.CarProSettings.AntiRollBarFront%</span>
+                <input name="AntiRollBarFront" class="proSlider sliderPercentage proSliderViewOnly" id="arbFront" type="range" min="-20" max="10" value="@Model.CarProSettings.AntiRollBarFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="arbRear">ARB Rear</label>
+                <span class="slider-value">@Model.CarProSettings.AntiRollBarRear%</span>
+                <input name="AntiRollBarRear" class="proSlider sliderPercentage proSliderViewOnly" id="arbRear" type="range" min="-20" max="10" value="@Model.CarProSettings.AntiRollBarRear" step="1" disabled/>
+            </div>
+            <h3>Alignment</h3>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="camberFront">Camber Front</label>
+                <span class="slider-value">0.@Model.CarProSettings.CamberFront°</span>
+                <input name="CamberFront" class="proSlider sliderDegree proSliderViewOnly" id="camberFront" type="range" min="-25" max="25" value="@Model.CarProSettings.CamberFront" step="1" disabled/>
+            </div>
+            <div class="proSettingsItem">
+                <label class="sliderName" for="camberRear">Camber Rear</label>
+                <span class="slider-value">0.@Model.CarProSettings.CamberRear°</span>
+                <input name="CamberRear" class="proSlider sliderDegree proSliderViewOnly" id="camberRear" type="range" min="-25" max="25" value="@Model.CarProSettings.CamberRear" step="1" disabled/>
+            </div>
         </div>
     </div>
-</div>
-<div class="userBox">
-    
+    <div class="sideInfoBox">
+        <div class="carInfoBox">
+            <h1>@Model.CarProSettings.Vehicle.Brand</h1>
+            <h2>@Model.CarProSettings.Vehicle.ModelName</h2>
+        </div>
+    </div>
 </div>

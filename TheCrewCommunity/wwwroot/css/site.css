@@ -25,9 +25,15 @@ body {
 main{
   height: 100%;
 }
+header{
+  height: 50px;
+  box-sizing: border-box;
+}
 footer{
   margin-top: auto;
   border-top: yellow solid 1px;
+  height: 50px;
+  box-sizing: border-box;
 }
 
 .map-background {
@@ -238,6 +244,9 @@ footer{
 .proSlider:disabled{
   opacity: 0.2;
 }
+.proSliderViewOnly{
+  opacity: 0.7 !important;
+}
 .proSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -272,9 +281,12 @@ footer{
 .vehicleBox{
   padding: 5px;
   overflow: auto;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   box-sizing: border-box;
   flex-grow: 2;
+}
+.vehicleBoxWithHeader{
+  height: calc(100vh - 165px);
 }
 ::-webkit-scrollbar {
    width: 10px;
@@ -296,6 +308,7 @@ footer{
   border-bottom: yellow solid 1px;
   padding: 5px;
   box-sizing: border-box;
+  height: 65px;
 }
 
 .vehicleSelectionBox .selectWrapper {

@@ -9,6 +9,8 @@ namespace TheCrewCommunity.Pages.Motorfest.ProSettings;
 public class CarDetails(IDbContextFactory<LiveBotDbContext> contextFactory) : PageModel
 {
     public string Title = "Details";
+    public int? PowerToRear;
+    public int BrakesToRear;
     public MtfstCarProSettings? CarProSettings { get; set; }
     public async Task<IActionResult> OnGetAsync(Guid? proSettingsId)
     {
@@ -29,6 +31,8 @@ public class CarDetails(IDbContextFactory<LiveBotDbContext> contextFactory) : Pa
         }
 
         Title = CarProSettings.Name;
+        PowerToRear = 100 - CarProSettings.PowerToFront;
+        BrakesToRear = 100 - CarProSettings.BrakeToFront;
         
         return Page();
     }
