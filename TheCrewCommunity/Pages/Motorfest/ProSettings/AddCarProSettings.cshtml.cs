@@ -90,15 +90,14 @@ public class AddCarProSettings(IDbContextFactory<LiveBotDbContext> dbContextFact
             logger.LogDebug("Pro settings model validation failed");
             if (FormData.VehicleId == Guid.Empty)
             {
-                ModelState.AddModelError(nameof(FormData.VehicleId), "You must select a vehicle!");
+                ModelState.AddModelError(nameof(CarProSettingsViewModel.VehicleId), "You must select a vehicle!");
                 logger.LogDebug("Pro settings creation stopped due to vehicle ID being empty");
             }
             if (string.IsNullOrEmpty(FormData.Name))
             {
-                ModelState.AddModelError(nameof(FormData.Name),"You must provide a name for the pro setting entry!");
+                ModelState.AddModelError(nameof(CarProSettingsViewModel.Name),"You must provide a name for the pro setting entry!");
                 logger.LogDebug("Pro settings name not provided, is empty or null");
             }
-
             await FetchVCatListAsync();
             return Page();
         }

@@ -27,6 +27,7 @@ main{
 }
 footer{
   margin-top: auto;
+  border-top: yellow solid 1px;
 }
 
 .map-background {
@@ -263,14 +264,31 @@ footer{
 .slider-value,
 .slider-value-front,
 .slider-value-rear{
-  width: 75px;
+  width: 80px;
   display: inline-block;
   text-align: right;
   padding: 5px;
 }
 .vehicleBox{
   padding: 5px;
+  overflow: auto;
+  height: calc(100vh - 160px);
+  box-sizing: border-box;
+  flex-grow: 2;
 }
+::-webkit-scrollbar {
+   width: 10px;
+ }
+::-webkit-scrollbar-track{
+  background: grey;
+}
+::-webkit-scrollbar-thumb{
+  background: #bfbf0c;
+}
+::-webkit-scrollbar-thumb:hover{
+  background: yellow;
+}
+
 .vehicleSelectionBox {
   width: 100%;
   display: flex;
@@ -286,7 +304,6 @@ footer{
   align-items: flex-start;
   width: 25%;
 }
-
 .vehicleSelectionBox label {
   margin-bottom: 5px;
 }
@@ -305,4 +322,49 @@ footer{
   background: #2a2a2a;
   height: 40px;
   font-size: 20px;
+}
+.sideInfoBox{
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  border-left: solid yellow 1px;
+  flex-grow: 1;
+  flex-basis: 30%;
+  padding: 5px;
+}
+.sideInfoBox label{
+  padding: 5px;
+}
+.proSettingsName,
+.ProSettingsDescription{
+  width: 100%;
+  background: #2a2a2a;
+  color: lightgrey;
+  font-size: 20px;
+  box-sizing: border-box;
+  padding: 5px;
+  vertical-align: top;
+  line-height: normal;
+  
+}
+.ProSettingsDescription{
+  height: 200px;
+}
+.submitButton{
+  background-color: #bfbf0c;
+  color: black;
+  border: none;
+  outline: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color 0.2s ease-in-out;
+}
+.submitButton:hover{
+  background-color: yellow;
 }
