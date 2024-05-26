@@ -9,9 +9,9 @@ public class MtfstCarProSettings
     public ulong DiscordId
     {
         get => _discordId;
-        set => _discordId = Convert.ToUInt64(value);
+        init => _discordId = Convert.ToUInt64(value);
     }
-    private ulong _discordId;
+    private readonly ulong _discordId;
     public Guid VehicleId { get; init; }
     [MaxLength(40)]
     public required string Name { get; set; }
@@ -23,41 +23,41 @@ public class MtfstCarProSettings
     public int LikesCount { get; set; } = 0;
     
     [Range(-20,0)]
-    public required sbyte FinalDrive { get; set; }
+    public required sbyte FinalDrive { get; init; }
     [Range(20,60)]
-    public byte? PowerToFront { get; set; }
+    public byte? PowerToFront { get; init; }
     [Range(-20,0)]
-    public required sbyte GripFront { get; set; }
+    public required sbyte GripFront { get; init; }
     [Range(-20,0)]
-    public required sbyte GripRear { get; set; }
+    public required sbyte GripRear { get; init; }
     [Range(40,80)]
-    public required byte BrakeToFront { get; set; }
+    public required byte BrakeToFront { get; init; }
     [Range(-30,0)]
-    public required sbyte BrakePower { get; set; }
+    public required sbyte BrakePower { get; init; }
     [Range(-30,0)]
-    public required sbyte LoadFront { get; set; }
+    public required sbyte LoadFront { get; init; }
     [Range(-30,0)]
-    public required sbyte LoadRear { get; set; }
+    public required sbyte LoadRear { get; init; }
     [Range(-20,10)]
-    public required sbyte SpringFront { get; set; }
+    public required sbyte SpringFront { get; init; }
     [Range(-20,10)]
-    public required sbyte SpringRear { get; set; }
+    public required sbyte SpringRear { get; init; }
     [Range(-20,20)]
-    public required sbyte DamperCompressionFront { get; set; }
+    public required sbyte DamperCompressionFront { get; init; }
     [Range(-20,20)]
-    public required sbyte DamperCompressionRear { get; set; }
+    public required sbyte DamperCompressionRear { get; init; }
     [Range(-20,20)]
-    public required sbyte DamperReboundFront { get; set; }
+    public required sbyte DamperReboundFront { get; init; }
     [Range(-20,20)]
-    public required sbyte DamperReboundRear { get; set; }
+    public required sbyte DamperReboundRear { get; init; }
     [Range(-20,10)]
-    public required sbyte AntiRollBarFront { get; set; }
+    public required sbyte AntiRollBarFront { get; init; }
     [Range(-20,10)]
-    public required sbyte AntiRollBarRear { get; set; }
+    public required sbyte AntiRollBarRear { get; init; }
     [Range(-25,25)]
-    public required sbyte CamberFront { get; set; }
+    public required sbyte CamberFront { get; init; }
     [Range(-25,25)]
-    public required sbyte CamberRear { get; set; }
+    public required sbyte CamberRear { get; init; }
     
     public Vehicle Vehicle { get; set; }
     public ApplicationUser ApplicationUser { get; set; }
