@@ -4,8 +4,8 @@ namespace TheCrewCommunity.Data.GameData;
 
 public class Brand
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    [MaxLength(25)]
+    public Guid Id { get; init; } = Guid.NewGuid();
+    [MaxLength(30)]
     public required string Name { get; set; }
     [MaxLength(2)]
     public string? CountryCode { get; set; }
