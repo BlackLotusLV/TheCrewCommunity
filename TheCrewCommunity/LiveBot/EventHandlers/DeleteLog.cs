@@ -25,7 +25,7 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await liveBotDbContext.Guilds.FindAsync(args.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(args.Guild.Id));
         if (guild.DeleteLogChannelId is null) return;
-        DiscordChannel deleteLogChannel = client.Guilds.FirstOrDefault(w => w.Value.Id == guild.Id).Value.GetChannel(guild.DeleteLogChannelId.Value);
+        DiscordChannel deleteLogChannel = await client.Guilds.FirstOrDefault(w => w.Value.Id == guild.Id).Value.GetChannelAsync(guild.DeleteLogChannelId.Value);
         
         if (args.Message.Author is null)
         {
@@ -140,7 +140,7 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guildSettings.DeleteLogChannelId == null) return;
         DiscordGuild guild = client.Guilds.FirstOrDefault(w => w.Value.Id == guildSettings.Id).Value;
-        DiscordChannel deleteLog = guild.GetChannel(guildSettings.DeleteLogChannelId.Value);
+        DiscordChannel deleteLog = await guild.GetChannelAsync(guildSettings.DeleteLogChannelId.Value);
         StringBuilder sb = new();
         foreach (DiscordMessage message in e.Messages.Reverse())
         {

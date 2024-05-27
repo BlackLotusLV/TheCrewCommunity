@@ -5,7 +5,7 @@ using TheCrewCommunity.Data;
 
 namespace TheCrewCommunity.LiveBot.Commands.TagCommands;
 
-public class SendTagCommand
+public static class SendTagCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, SlashCommandContext ctx, string tagId, bool isEphemeral, DiscordUser? target = null)
     {

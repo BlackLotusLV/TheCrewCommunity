@@ -16,7 +16,7 @@ public class MembershipScreening(IDbContextFactory<LiveBotDbContext> dbContextFa
             await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
             Guild? guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id);
             if (guild?.WelcomeChannelId == null || !guild.HasScreening) return;
-            DiscordChannel welcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(guild.WelcomeChannelId));
+            DiscordChannel welcomeChannel = await e.Guild.GetChannelAsync(Convert.ToUInt64(guild.WelcomeChannelId));
 
             if (guild.WelcomeMessage == null) return;
             string msg = guild.WelcomeMessage;

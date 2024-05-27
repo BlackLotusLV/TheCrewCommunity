@@ -46,7 +46,12 @@ public class RoleTagCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory
             return;
         }
 
-        DiscordRole role = ctx.Guild.GetRole(roleTagSettings.RoleId);
+        DiscordRole? role = ctx.Guild.GetRole(roleTagSettings.RoleId);
+        if (role is null)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Failed to get the role to tag."));
+            return;
+        }
 
         await new DiscordMessageBuilder()
             .WithContent($"{role.Mention} - {ctx.Member.Mention}: {roleTagSettings.Message}")

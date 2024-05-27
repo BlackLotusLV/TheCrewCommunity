@@ -10,7 +10,7 @@ public class UserNotesAutocompleteProvider(IDbContextFactory<LiveBotDbContext> d
     public async ValueTask<IReadOnlyDictionary<string,object>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-        var user = (ulong)ctx.Options.First(x => x.Name == "user").Value;
+        var user = (ulong?)ctx.Options.First(x => x.Name == "user").Value;
         var infractions = await dbContext.Infractions
             .Where(x => x.InfractionType == InfractionType.Note && x.AdminDiscordId == ctx.User.Id && x.UserId == user).ToListAsync();
         Dictionary<string, object> result = [];

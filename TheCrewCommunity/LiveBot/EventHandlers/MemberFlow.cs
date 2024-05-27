@@ -14,7 +14,7 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guild?.WelcomeChannelId == null || guild.HasScreening) return;
-        DiscordChannel welcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(guild.WelcomeChannelId));
+        DiscordChannel welcomeChannel = await e.Guild.GetChannelAsync(Convert.ToUInt64(guild.WelcomeChannelId));
 
         if (guild.WelcomeMessage == null) return;
         string msg = guild.WelcomeMessage;
@@ -32,7 +32,7 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         bool pendingCheck = guild is not null && !(guild.HasScreening && e.Member.IsPending == true);
         if (guild is { WelcomeChannelId: not null } && pendingCheck)
         {
-            DiscordChannel welcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(guild.WelcomeChannelId));
+            DiscordChannel welcomeChannel = await e.Guild.GetChannelAsync(Convert.ToUInt64(guild.WelcomeChannelId));
             if (guild.GoodbyeMessage != null)
             {
                 string msg = guild.GoodbyeMessage;
@@ -55,7 +55,7 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guildSettings.UserTrafficChannelId == null) return;
         DiscordGuild guild = client.Guilds.FirstOrDefault(w => w.Value.Id == guildSettings.Id).Value;
-        DiscordChannel userTraffic = guild.GetChannel(guildSettings.UserTrafficChannelId.Value);
+        DiscordChannel userTraffic = await guild.GetChannelAsync(guildSettings.UserTrafficChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
@@ -86,7 +86,7 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         Guild? guildSettings = await liveBotDbContext.Guilds.FirstOrDefaultAsync(x => x.Id == e.Guild.Id);
         if (guildSettings?.UserTrafficChannelId == null) return;
         DiscordGuild guild = client.Guilds.FirstOrDefault(w => w.Value.Id == guildSettings.Id).Value;
-        DiscordChannel userTraffic = guild.GetChannel(guildSettings.UserTrafficChannelId.Value);
+        DiscordChannel userTraffic = await guild.GetChannelAsync(guildSettings.UserTrafficChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Title = $"📤{e.Member.Username}({e.Member.Id}) has left the server",

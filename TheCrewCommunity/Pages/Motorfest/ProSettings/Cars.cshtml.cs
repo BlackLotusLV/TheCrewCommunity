@@ -33,12 +33,13 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
             .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.VCat)
             .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.Game)
             .Include(x => x.ApplicationUser)
-            .Where(x=>x.Vehicle.Game.Name.Contains("Motorfest"))
+            .Where(x=>x.Vehicle.Game != null && x.Vehicle.Game.Name.Contains("Motorfest"))
             .ToListAsync();
         
         foreach (MtfstCarProSettings item in ProSettingsList)
         {
-            ProSettingsDictionary.Add(item,$"{item.Vehicle.Brand.Name} {item.Vehicle.ModelName} {item.Name} {item.ApplicationUser.GlobalUsername}");
+            ProSettingsDictionary.Add(item,
+                $"{(item.Vehicle.Brand is not null ? item.Vehicle.Brand.Name : "[Brand Not Found]")} {item.Vehicle.ModelName} {item.Name} {item.ApplicationUser.GlobalUsername}");
         }
     }
 
@@ -50,7 +51,7 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
             .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.VCat)
             .Include(x=>x.Vehicle).ThenInclude(vehicle => vehicle.Game)
             .Include(x => x.ApplicationUser)
-            .Where(x=>x.Vehicle.Game.Name.Contains("Motorfest"))
+            .Where(x=>x.Vehicle.Game != null && x.Vehicle.Game.Name.Contains("Motorfest"))
             .ToListAsync();
         return list;
     }
@@ -70,14 +71,14 @@ public class Cars(IDbContextFactory<LiveBotDbContext> contextFactory, GeneralUti
             AuthorName = x.ApplicationUser.UserName,
             Vehicle = new
             {
-                BrandName = x.Vehicle.Brand.Name,
+                BrandName = x.Vehicle.Brand?.Name,
                 Model = x.Vehicle.ModelName,
                 x.Vehicle.Year,
                 x.Vehicle.VCatId
             },
             x.Name,
             x.LikesCount,
-            SearchKey = $"{x.Vehicle.Brand.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}".ToLower()
+            SearchKey = $"{x.Vehicle.Brand?.Name} {x.Vehicle.ModelName} {x.ApplicationUser.UserName} {x.Name} {x.Description}".ToLower()
         });
         if (string.IsNullOrEmpty(search)) return new JsonResult(result);
         string[] searchTokens = search.ToLower().Split(Separator, StringSplitOptions.RemoveEmptyEntries);

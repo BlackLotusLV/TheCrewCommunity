@@ -25,7 +25,7 @@ public static class AddNoteCommand
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})"));
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(ctx.Guild.Id));
-        DiscordChannel channel = ctx.Guild.GetChannel(Convert.ToUInt64(guild.ModerationLogChannelId));
+        DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
         moderatorLoggingService.AddToQueue(new ModLogItem(
             channel,
             user,

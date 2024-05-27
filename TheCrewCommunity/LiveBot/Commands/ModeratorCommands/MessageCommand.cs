@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Commands.Processors.SlashCommands;
+﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -46,7 +45,7 @@ public static class MessageCommand
 
         await member.SendMessageAsync(messageBuilder);
 
-        DiscordChannel modMailChannel = ctx.Guild.GetChannel(guildSettings.ModMailChannelId.Value);
+        DiscordChannel modMailChannel = await ctx.Guild.GetChannelAsync(guildSettings.ModMailChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Author = new DiscordEmbedBuilder.EmbedAuthor

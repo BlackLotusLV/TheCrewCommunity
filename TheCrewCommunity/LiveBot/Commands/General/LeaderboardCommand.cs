@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Text;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory)
 {
     [Command("leaderboard"), Description("Shows the leaderboard of the server"), RequireGuild]
-    public async Task ExecuteAsync(SlashCommandContext ctx, [SlashMinMaxValue(MinValue = 1)] long page = 1)
+    public async Task ExecuteAsync(SlashCommandContext ctx, [MinMaxValue(1)] long page = 1)
     {
         await ctx.DeferResponseAsync();
         List<DiscordButtonComponent> buttons =

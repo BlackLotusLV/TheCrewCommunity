@@ -13,7 +13,7 @@ public class AddCarProSettings(IDbContextFactory<LiveBotDbContext> dbContextFact
 {
     public List<VehicleCategory> VCatList { get; set; } = [];
     [BindProperty]
-    public CarProSettingsViewModel FormData { get; set; }
+    public CarProSettingsViewModel? FormData { get; set; }
     public async Task OnGetAsync()
     {
         if (User.Identity is null || User.Identity.IsAuthenticated is false)
@@ -42,7 +42,7 @@ public class AddCarProSettings(IDbContextFactory<LiveBotDbContext> dbContextFact
         LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         var result = dbContext.Brands
             .Include(x => x.Vehicles)
-            .Where(x => x.Vehicles.Any(vehicle=>vehicle.VCatId==vCatId))
+            .Where(x => x.Vehicles != null && x.Vehicles.Any(vehicle=>vehicle.VCatId==vCatId))
             .Select(x => new
             {
                 x.Id,
@@ -61,7 +61,7 @@ public class AddCarProSettings(IDbContextFactory<LiveBotDbContext> dbContextFact
             .Select(x => new
             {
                 x.Id,
-                BrandName = x.Brand.Name,
+                BrandName = x.Brand!.Name,
                 x.ModelName,
                 x.Transmission
             });
@@ -83,6 +83,11 @@ public class AddCarProSettings(IDbContextFactory<LiveBotDbContext> dbContextFact
         if (appUser is null)
         {
             return BadRequest("User not found. Please login");
+        }
+        if (FormData is null)
+        {
+            logger.LogDebug("Form data was null, returning");
+            return Page();
         }
         if (!ModelState.IsValid)
         {

@@ -63,7 +63,7 @@ public class ModeratorWarningService(
             return;
         }
 
-        DiscordChannel modLog = item.Guild.GetChannel(Convert.ToUInt64(guild.ModerationLogChannelId));
+        DiscordChannel modLog = await item.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
 
         Infraction newInfraction = new(item.Admin.Id, item.User.Id, item.Guild.Id, item.Reason, true, InfractionType.Warning);
         await DatabaseMethodService.AddInfractionsAsync(newInfraction);
@@ -118,7 +118,7 @@ public class ModeratorWarningService(
             }
             if (ban)
             {
-                await item.Guild.BanMemberAsync(item.User.Id, 0, "Exceeded warning limit!");
+                await item.Guild.BanMemberAsync(item.User, TimeSpan.Zero, "Exceeded warning limit!");
             }
         }
 
@@ -174,7 +174,7 @@ public class ModeratorWarningService(
                 modMessageBuilder.AppendLine($"{user.Mention} is no longer in the server.");
             }
 
-            DiscordChannel modLog = ctx.Guild.GetChannel(Convert.ToUInt64(guild.ModerationLogChannelId));
+            DiscordChannel modLog = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
             Infraction? entry = infractions.FirstOrDefault(f => f.IsActive && f.Id == warningId);
             entry ??= infractions.Where(f => f.IsActive).OrderBy(f => f.Id).First();
             entry.IsActive = false;

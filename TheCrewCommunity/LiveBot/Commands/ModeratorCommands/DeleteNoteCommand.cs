@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Commands.Processors.SlashCommands;
+﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -71,7 +70,7 @@ public static class DeleteNoteCommand
             );
         Guild? guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id);
         if (guild is null) return;
-        DiscordChannel channel = ctx.Guild.GetChannel(Convert.ToUInt64(guild.ModerationLogChannelId));
+        DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
         moderatorLoggingService.AddToQueue(new ModLogItem(
             channel,
             user,

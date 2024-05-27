@@ -10,5 +10,5 @@ public class Brand
     [MaxLength(2)]
     public required string CountryCode { get; set; }
     
-    public ICollection<Vehicle> Vehicles { get; set; }
+    public ICollection<Vehicle>? Vehicles { get; set; }
 }

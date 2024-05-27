@@ -45,7 +45,7 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         Guild guildSettings = await liveBotDbContext.Guilds.AsNoTracking().FirstOrDefaultAsync(x=>x.Id == guild.Id) ??
                               await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
         if (guildSettings.ModerationLogChannelId is null) return;
-        DiscordChannel modLogChannel = guild.GetChannel(guildSettings.ModerationLogChannelId.Value);
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         GuildUser guildUser = await liveBotDbContext.GuildUsers.FindAsync(targetUser.Id, guild.Id) ??
                               await databaseMethodService.AddGuildUsersAsync(new GuildUser(targetUser.Id, guild.Id));
@@ -86,7 +86,7 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(guild.Id) ??
                               await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
         if (guildSettings.ModerationLogChannelId is null) return;
-        DiscordChannel modLogChannel = guild.GetChannel(guildSettings.ModerationLogChannelId.Value);
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
         moderatorLoggingService.AddToQueue(new ModLogItem(
@@ -112,7 +112,7 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         
         Guild guildSettings= liveBotDbContext.Guilds.First(w => w.Id == guild.Id);
         if (guildSettings.ModerationLogChannelId is null) return;
-        DiscordChannel modLogChannel = guild.GetChannel(guildSettings.ModerationLogChannelId.Value);
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
         ModLogType modLogType;
@@ -194,7 +194,7 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         
         Guild guildSettings = await liveBotDbContext.Guilds.FirstOrDefaultAsync(w => w.Id == guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
         if (guildSettings.ModerationLogChannelId is null) return;
-        DiscordChannel modLogChannel = guild.GetChannel(guildSettings.ModerationLogChannelId.Value);
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
         moderatorLoggingService.AddToQueue(new ModLogItem(

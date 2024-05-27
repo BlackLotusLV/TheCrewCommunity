@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class Infraction
 {
@@ -30,6 +32,7 @@ public class Infraction
         set => _guildId = Convert.ToUInt64(value);
     }
 
+    [MaxLength(2000)]
     public string? Reason { get; set; }
     public bool IsActive { get; set; }
     public DateTimeOffset TimeCreated { get; set; } = DateTimeOffset.UtcNow;

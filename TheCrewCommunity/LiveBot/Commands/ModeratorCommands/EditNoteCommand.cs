@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Commands;
+﻿using DSharpPlus.Commands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -41,7 +40,7 @@ public static class EditNoteCommand
             new DiscordInteractionResponseBuilder().WithContent($"Note `#{infraction.Id}` content changed\nFrom:`{oldNote}`\nTo:`{infraction.Reason}`").AsEphemeral());
         Guild? guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id);
         if (guild is null) return;
-        DiscordChannel channel = ctx.Guild.GetChannel(Convert.ToUInt64(guild.ModerationLogChannelId));
+        DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
         moderatorLoggingService.AddToQueue(new ModLogItem(
             channel,
             user,
