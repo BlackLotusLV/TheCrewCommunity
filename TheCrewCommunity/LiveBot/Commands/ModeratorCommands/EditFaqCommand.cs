@@ -1,18 +1,17 @@
-﻿using DSharpPlus;
-using DSharpPlus.Commands.Processors.SlashCommands;
+﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
-public class EditFaqCommand
+public static class EditFaqCommand
 {
     public static async Task ExecuteAsync(SlashCommandContext ctx, string messageId)
     {
         DiscordMessage message = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(messageId));
         string ogMessage = message.Content.Replace("*", string.Empty);
-        string question = ogMessage.Substring(ogMessage.IndexOf(":", StringComparison.Ordinal) + 1, ogMessage.Length - (ogMessage[ogMessage.IndexOf("\n", StringComparison.Ordinal)..].Length + 2))
+        string question = ogMessage.Substring(ogMessage.IndexOf(':') + 1, ogMessage.Length - (ogMessage[ogMessage.IndexOf('\n')..].Length + 2))
             .TrimStart();
         string answer = ogMessage[(ogMessage.IndexOf("\n", StringComparison.Ordinal) + 4)..].TrimStart();
 

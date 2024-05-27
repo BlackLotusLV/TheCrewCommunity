@@ -6,7 +6,7 @@ using TheCrewCommunity.Data;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
-public class StatsCommand
+public static class StatsCommand
 {
     public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory,CommandContext ctx)
     {

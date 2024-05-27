@@ -1,13 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Security.Claims;
-using DSharpPlus;
 using DSharpPlus.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
 

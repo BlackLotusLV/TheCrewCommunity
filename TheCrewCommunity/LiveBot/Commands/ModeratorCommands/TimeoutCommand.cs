@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using DSharpPlus;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;

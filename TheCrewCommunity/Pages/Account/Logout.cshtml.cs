@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Pages.Account;

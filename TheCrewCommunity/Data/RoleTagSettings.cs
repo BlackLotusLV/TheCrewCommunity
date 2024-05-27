@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class RoleTagSettings
 {
@@ -27,7 +29,9 @@ public class RoleTagSettings
 
     public required int Cooldown { get; set; }
     public required DateTime LastTimeUsed { get; set; }
+    [MaxLength(2000)]
     public required string Message { get; set; }
+    [MaxLength(150)]
     public required string Description { get; set; }
 
     public Guild? Guild { get; set; }

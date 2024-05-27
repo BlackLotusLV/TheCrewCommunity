@@ -13,5 +13,5 @@ public class VehicleCategory
     [MaxLength(6)]
     public required string Type { get; set; }
     
-    public ICollection<Vehicle> Vehicles { get; set; }
+    public ICollection<Vehicle>? Vehicles { get; set; }
 }

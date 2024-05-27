@@ -1,4 +1,6 @@
-﻿namespace TheCrewCommunity.Data;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data;
 
 public class Guild
 {
@@ -73,7 +75,9 @@ public class Guild
     }
 
     private ulong? _welcomeChannelId;
+    [MaxLength(1000)]
     public string? WelcomeMessage { get; set; }
+    [MaxLength(1000)]
     public string? GoodbyeMessage { get; set; }
     public bool HasScreening { get; set; }
 

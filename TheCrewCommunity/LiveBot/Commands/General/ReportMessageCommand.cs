@@ -56,6 +56,6 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             
         DiscordChannel reportChannel = await ctx.Guild.GetChannelAsync(guild.UserReportsChannelId.Value);
         await reportChannel.SendMessageAsync(reportMessage);
-        await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Report sent. A Moderator will review it soon. *If actions are taken, you wil NOT be informed*").AsEphemeral());
+        await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Report sent. A Moderator will review it soon. *If actions are taken, you will NOT be informed*").AsEphemeral());
     }
 }

@@ -19,9 +19,9 @@ public class ApplicationUser : IdentityUser
     [MaxLength(2048)]
     public string? AvatarUrl { get; set; }
 
-    public bool IsModerator { get; set; } = false;
+    public bool IsModerator { get; set; }
     public User? User { get; set; }
     
-    public ICollection<MtfstCarProSettings> MotorfestCarProSettings { get; set; }
-    public ICollection<MtfstCarProSettingsLikes> MotorfestCarProSettingLikes { get; set; }
+    public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; set; }
+    public ICollection<MtfstCarProSettingsLikes>? MotorfestCarProSettingLikes { get; set; }
 }

@@ -13,7 +13,7 @@ public class ActiveWarningAutocompleteProvider(IDbContextFactory<LiveBotDbContex
     {
         await using LiveBotDbContext databaseContext = await dbContextFactory.CreateDbContextAsync();
         Dictionary<string, object> result = [];
-        var userId = (ulong)ctx.Options.First(x => x.Type == DiscordApplicationCommandOptionType.User).Value;
+        var userId = (ulong?)ctx.Options.First(x => x.Type == DiscordApplicationCommandOptionType.User).Value;
         //var userId = (ulong)ctx.Options.First(x => x.Name == "user").Value;
         if (ctx.Guild is null) return ReadOnlyDictionary<string, object>.Empty;
         foreach (Infraction item in databaseContext.Infractions.Where(w => w.GuildId == ctx.Guild.Id && w.UserId == userId && w.InfractionType == InfractionType.Warning && w.IsActive))

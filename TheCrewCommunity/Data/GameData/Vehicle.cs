@@ -22,9 +22,9 @@ public class Vehicle
     [MaxLength(3)]
     public required string Transmission { get; set; }
     
-    public Brand Brand { get; set; }
-    public VehicleCategory VCat { get; set; }
-    public Game Game { get; set; }
+    public Brand? Brand { get; set; }
+    public VehicleCategory? VCat { get; set; }
+    public Game? Game { get; set; }
     
     public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; set; }
 }
