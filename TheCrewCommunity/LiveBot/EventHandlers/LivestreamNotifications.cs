@@ -20,7 +20,7 @@ public class LivestreamNotifications(IStreamNotificationService streamNotificati
         if (streamNotifications.Count == 0) return;
         foreach (StreamNotifications streamNotification in streamNotifications)
         {
-            DiscordChannel channel = guild.GetChannel(streamNotification.ChannelId);
+            DiscordChannel channel = await guild.GetChannelAsync(streamNotification.ChannelId);
             LiveStreamer streamer = new()
             {
                 User = e.User,

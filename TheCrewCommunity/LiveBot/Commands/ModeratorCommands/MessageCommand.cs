@@ -46,7 +46,7 @@ public static class MessageCommand
 
         await member.SendMessageAsync(messageBuilder);
 
-        DiscordChannel modMailChannel = ctx.Guild.GetChannel(guildSettings.ModMailChannelId.Value);
+        DiscordChannel modMailChannel = await ctx.Guild.GetChannelAsync(guildSettings.ModMailChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Author = new DiscordEmbedBuilder.EmbedAuthor

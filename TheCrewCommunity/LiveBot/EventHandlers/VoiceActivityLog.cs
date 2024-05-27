@@ -15,7 +15,7 @@ public class VoiceActivityLog(IDbContextFactory<LiveBotDbContext> dbContextFacto
         Guild guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
 
         if (guild.VoiceActivityLogChannelId == null) return;
-        DiscordChannel vcActivityLogChannel = e.Guild.GetChannel(guild.VoiceActivityLogChannelId.Value);
+        DiscordChannel vcActivityLogChannel = await e.Guild.GetChannelAsync(guild.VoiceActivityLogChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Author = new DiscordEmbedBuilder.EmbedAuthor

@@ -70,7 +70,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
         ulong? modMailChannelId = liveBotDbContext.Guilds.First(w => w.Id == mmEntry.GuildId).ModMailChannelId;
         if (modMailChannelId is not null)
         {
-            DiscordChannel modMailChannel = guild.GetChannel(modMailChannelId.Value);
+            DiscordChannel modMailChannel = await guild.GetChannelAsync(modMailChannelId.Value);
             await modMailChannel.SendMessageAsync(embed: embed);
 
             client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", modMailChannel.Name,
@@ -90,7 +90,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
             client.Logger.LogWarning("User tried to close mod mail, mod mail channel was not found. Something is set up incorrectly. Server ID:{ServerId}",guild.Id);
             return;
         }
-        DiscordChannel modMailChannel = guild.GetChannel(dbGuild.ModMailChannelId.Value);
+        DiscordChannel modMailChannel = await guild.GetChannelAsync(dbGuild.ModMailChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Title = $"[CLOSED] #{modMail.Id} {closingText}",
@@ -207,7 +207,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
             ulong? modMailChannelId = liveBotDbContext.Guilds.First(w=>w.Id== guild.Id).ModMailChannelId;
             if (modMailChannelId != null)
             {
-                DiscordChannel modMailChannel = guild.GetChannel(modMailChannelId.Value);
+                DiscordChannel modMailChannel = await guild.GetChannelAsync(modMailChannelId.Value);
                 await new DiscordMessageBuilder()
                     .AddComponents(closeButton)
                     .AddEmbed(embed)

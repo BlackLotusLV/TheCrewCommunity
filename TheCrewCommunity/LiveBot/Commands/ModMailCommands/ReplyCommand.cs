@@ -56,7 +56,7 @@ public static class ReplyCommand
         {
 
             ulong channelId = guild.ModMailChannelId.Value;
-            DiscordChannel mmChannel = ctx.Guild.GetChannel(channelId);
+            DiscordChannel mmChannel = await ctx.Guild.GetChannelAsync(channelId);
             await mmChannel.SendMessageAsync(embed: embed);
             ctx.Client.Logger.LogInformation(CustomLogEvents.ModMail, "An admin has responded to Mod Mail entry #{EntryId}", entry.Id);
 

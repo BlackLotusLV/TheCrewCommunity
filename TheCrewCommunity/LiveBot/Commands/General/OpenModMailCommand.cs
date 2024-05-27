@@ -67,7 +67,7 @@ public class OpenModMailCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
             Description = subject
         };
 
-        DiscordChannel modMailChannel = ctx.Guild.GetChannel(guild.ModMailChannelId.Value);
+        DiscordChannel modMailChannel = await ctx.Guild.GetChannelAsync(guild.ModMailChannelId.Value);
         await new DiscordMessageBuilder()
             .AddComponents(closeButton)
             .AddEmbed(embed)
