@@ -75,7 +75,7 @@ public class LiveBotService : IHostedService, ILiveBotService
         CommandsConfiguration commandsConfiguration = new()
         {
             ServiceProvider = _serviceProvider,
-            DebugGuildId = guildId
+            DebugGuildId = 0
         };
         CommandsExtension commandsExtension = DiscordClient.UseCommands(commandsConfiguration);
         
