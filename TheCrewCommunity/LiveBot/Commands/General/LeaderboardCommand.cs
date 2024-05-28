@@ -14,7 +14,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory)
 {
     [Command("leaderboard"), Description("Shows the leaderboard of the server"), RequireGuild]
-    public async Task ExecuteAsync(SlashCommandContext ctx, [MinMaxValue(1)] long page = 1)
+    public async Task ExecuteAsync(SlashCommandContext ctx, [MinMaxValue(1)] int page = 1)
     {
         await ctx.DeferResponseAsync();
         List<DiscordButtonComponent> buttons =
@@ -23,7 +23,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
             new DiscordButtonComponent(DiscordButtonStyle.Danger, "end", "", false, new DiscordComponentEmoji("⏹")),
             new DiscordButtonComponent(DiscordButtonStyle.Primary, "right", "", false, new DiscordComponentEmoji("▶️"))
         ];
-        string board = await GenerateLeaderboardAsync(ctx, (int)page);
+        string board = await GenerateLeaderboardAsync(ctx, page);
         DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(board).AddComponents(buttons));
 
         var end = false;
