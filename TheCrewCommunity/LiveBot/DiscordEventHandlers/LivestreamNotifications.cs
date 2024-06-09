@@ -1,20 +1,25 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
 // Must re-write to use twitch api and youtube api to check if user is live, and what they are streaming.
 
-public class LivestreamNotifications(IStreamNotificationService streamNotificationService, IDbContextFactory<LiveBotDbContext> dbContextFactory)
+public static class LivestreamNotifications
 {
-    public async Task OnPresenceChange(object client, PresenceUpdateEventArgs e)
+    public static async Task OnPresenceChange(DiscordClient client, PresenceUpdatedEventArgs e)
     {
         if (e.User is null || e.User.IsBot || e.User.Presence is null) return;
         DiscordGuild guild = e.User.Presence.Guild;
         if (e.User.Presence.Activities.All(x => x.ActivityType != DiscordActivityType.Streaming)) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var streamNotificationService = client.ServiceProvider.GetRequiredService<IStreamNotificationService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var streamNotifications = liveBotDbContext.StreamNotifications.Where(w => w.GuildId == guild.Id).ToList();
         if (streamNotifications.Count == 0) return;

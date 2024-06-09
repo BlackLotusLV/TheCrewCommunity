@@ -5,19 +5,22 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class UserActivityTracker(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService)
+public static class UserActivityTracker
 {
     private static List<Cooldown> CoolDowns { get; set; } = [];
     
-    public async Task Add_Points(DiscordClient client, MessageCreateEventArgs e)
+    public static async Task OnMessageSend(DiscordClient client, MessageCreatedEventArgs e)
     {
         if (e.Guild is null || e.Author.IsBot) return;
 
         Cooldown? coolDown = CoolDowns.FirstOrDefault(w => w.User == e.Author && w.Guild == e.Guild);
         if (coolDown is not null && coolDown.Time.ToUniversalTime().AddMinutes(2) >= DateTime.UtcNow) return;
 
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         UserActivity userActivity =
             liveBotDbContext.UserActivity.FirstOrDefault(activity => activity.UserDiscordId == e.Author.Id && activity.GuildId == e.Guild.Id && activity.Date == DateTime.UtcNow.Date) ??

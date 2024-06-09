@@ -4,17 +4,20 @@ using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers.ComponentInteractionCreated;
 
-public class WhiteListButton(IDbContextFactory<LiveBotDbContext> dbContextFactory)
+public static class WhiteListCheck
 {
-    public async Task OnButtonClick(DiscordClient client, ComponentInteractionCreateEventArgs e)
+    public static async Task OnButtonClick(DiscordClient client, ComponentInteractionCreatedEventArgs e)
     {
-        if (e.Guild is null ||e.Interaction.Type != DiscordInteractionType.Component || e.Interaction.Data.CustomId != "Activate") return;
+        if (e.Guild is null) return;
         DiscordInteractionResponseBuilder responseBuilder = new()
         {
             IsEphemeral = true
         };
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var settingsList = await liveBotDbContext.WhiteListSettings.Where(x => x.GuildId == e.Guild.Id).ToListAsync();
         if (settingsList.Count==0)

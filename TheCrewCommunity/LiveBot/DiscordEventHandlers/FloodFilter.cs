@@ -6,16 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class FloodFilter(IModeratorWarningService warningService, IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, GeneralUtils generalUtils)
+public static class FloodFilter
 {
     private const int SpamInterval = 6;
     private const int SpamCount = 5;
-    private readonly List<DiscordMessage> _messageList = [];
-    public async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs eventArgs)
+    private static readonly List<DiscordMessage> MessageList = [];
+    public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs eventArgs)
     {
         if (eventArgs.Author.IsBot || eventArgs.Author.IsCurrent || eventArgs.Guild is null) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
+        var generalUtils = client.ServiceProvider.GetRequiredService<GeneralUtils>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await liveBotDbContext.Guilds.Include(x => x.SpamIgnoreChannels).FirstOrDefaultAsync(x => x.Id == eventArgs.Guild.Id);
         if (guild is null)
@@ -31,8 +37,8 @@ public class FloodFilter(IModeratorWarningService warningService, IDbContextFact
         DiscordMember member = await eventArgs.Guild.GetMemberAsync(eventArgs.Author.Id);
 
         if (generalUtils.CheckIfMemberAdmin(member)) return;
-        _messageList.Add(eventArgs.Message);
-        var duplicateMessages = _messageList.Where(w => w.Author is not null && w.Channel is not null && w.Author == eventArgs.Author && w.Content == eventArgs.Message.Content && eventArgs.Guild == w.Channel.Guild).ToList();
+        MessageList.Add(eventArgs.Message);
+        var duplicateMessages = MessageList.Where(w => w.Author is not null && w.Channel is not null && w.Author == eventArgs.Author && w.Content == eventArgs.Message.Content && eventArgs.Guild == w.Channel.Guild).ToList();
         int i = duplicateMessages.Count;
         if (i < SpamCount) return;
 

@@ -4,13 +4,15 @@ using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class MediaOnlyFilter(IDbContextFactory<LiveBotDbContext> dbContextFactory)
+public static class MediaOnlyFilter
 {
-    public async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs eventArgs)
+    public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs eventArgs)
     {
         if (eventArgs.Guild is null || eventArgs.Author.IsBot || eventArgs.Message.Attachments.Count!=0 || eventArgs.Message.Content.Split(' ').Any(x=>Uri.TryCreate(x, UriKind.Absolute, out _))) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
         LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await context.Guilds.Include(x => x.MediaOnlyChannels).FirstOrDefaultAsync(x => x.Id == eventArgs.Guild.Id);
         if (guild is null)

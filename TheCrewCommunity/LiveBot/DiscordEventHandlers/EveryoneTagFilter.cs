@@ -7,13 +7,16 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public partial class EveryoneTagFilter(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorWarningService warningService)
+public static partial class EveryoneTagFilter
 {
-    public async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs e)
+    public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs e)
     {
         if (e.Author.IsBot || e.Guild is null) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
 
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id);

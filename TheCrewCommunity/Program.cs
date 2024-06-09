@@ -1,5 +1,8 @@
+using DSharpPlus.Extensions;
 using Serilog;
+using Serilog.Events;
 using TheCrewCommunity;
+using TheCrewCommunity.LiveBot.LogEnrichers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +10,14 @@ builder.Host.UseSerilog()
     .UseConsoleLifetime();
 
 builder.Services.AddMyServices(builder);
+
+builder.Logging.ClearProviders();
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.With(new EventIdEnricher())
+    .WriteTo.Console(standardErrorFromLevel: LogEventLevel.Error, outputTemplate: "[{Timestamp:yyyy:MM:dd HH:mm:ss} {Level:u3}] [{FormattedEventId}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+builder.Logging.AddSerilog();
 
 WebApplication app = builder.Build();
 

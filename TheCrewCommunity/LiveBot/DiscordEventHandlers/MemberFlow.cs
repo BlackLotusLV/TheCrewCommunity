@@ -5,12 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModeratorWarningService warningService)
+public static class MemberFlow
 {
-    public async Task OnJoin(DiscordClient client, GuildMemberAddEventArgs e)
+    public static async Task OnJoin(DiscordClient client, GuildMemberAddedEventArgs e)
     {
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guild?.WelcomeChannelId == null || guild.HasScreening) return;
@@ -25,8 +28,11 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         DiscordRole role = e.Guild.GetRole(Convert.ToUInt64(guild.RoleId));
         await e.Member.GrantRoleAsync(role);
     }
-    public async Task OnLeave(DiscordClient client, GuildMemberRemoveEventArgs e)
+    public static async Task OnLeave(DiscordClient client, GuildMemberRemovedEventArgs e)
     {
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var modMailService = client.ServiceProvider.GetRequiredService<IModMailService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         bool pendingCheck = guild is not null && !(guild.HasScreening && e.Member.IsPending == true);
@@ -49,8 +55,11 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         }
     }
 
-    public async Task LogJoin(DiscordClient client, GuildMemberAddEventArgs e)
+    public static async Task LogJoin(DiscordClient client, GuildMemberAddedEventArgs e)
     {
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guildSettings.UserTrafficChannelId == null) return;
@@ -80,8 +89,11 @@ public class MemberFlow(IModMailService modMailService, IDbContextFactory<LiveBo
         await userTraffic.SendMessageAsync(messageBuilder);
     }
 
-    public async Task LogLeave(DiscordClient client, GuildMemberRemoveEventArgs e)
+    public static async Task LogLeave(DiscordClient client, GuildMemberRemovedEventArgs e)
     {
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild? guildSettings = await liveBotDbContext.Guilds.FirstOrDefaultAsync(x => x.Id == e.Guild.Id);
         if (guildSettings?.UserTrafficChannelId == null) return;
