@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, HttpClient httpClient)
+public static class DeleteLog
 {
     //private const int MaxTitleLength = 256;
     private const int MaxDescriptionLength = 4096;
@@ -17,11 +17,15 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
     //private const int MaxFieldValueLength = 1024;
     //private const int MaxFooterLength = 2048;
     //private const int MaxEmbedLength = 6000;
-    private readonly List<string> _imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".jfif", ".svg", ".ico"];
+    private static readonly List<string> ImageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".jfif", ".svg", ".ico"];
     
-    public async Task OnMessageDeleted(DiscordClient client, MessageDeleteEventArgs args)
+    public static async Task OnMessageDeleted(DiscordClient client, MessageDeletedEventArgs args)
     {
         if (args.Guild is null) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        HttpClient httpClient = client.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await liveBotDbContext.Guilds.FindAsync(args.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(args.Guild.Id));
         if (guild.DeleteLogChannelId is null) return;
@@ -97,7 +101,7 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
         foreach (DiscordAttachment messageAttachment in args.Message.Attachments)
         {
             attachmentNames.AppendLine($"- {messageAttachment.FileName}");
-            if (!_imageExtensions.Contains(Path.GetExtension(messageAttachment.FileName??""))) continue;
+            if (!ImageExtensions.Contains(Path.GetExtension(messageAttachment.FileName??""))) continue;
             HttpResponseMessage response = await httpClient.GetAsync(messageAttachment.Url);
             if (!response.IsSuccessStatusCode) continue;
             var uniqueFileName = $"{Guid.NewGuid()}-{messageAttachment.FileName}";
@@ -134,8 +138,11 @@ public class DeleteLog(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDa
         client.Logger.LogInformation(CustomLogEvents.DeleteLog, "{User}'s message was deleted in {Channel}", args.Message.Author.Username, args.Channel.Name);
     }
     
-    public async Task OnBulkDelete(DiscordClient client, MessageBulkDeleteEventArgs e)
+    public static async Task OnBulkDelete(DiscordClient client, MessagesBulkDeletedEventArgs e)
     {
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
         if (guildSettings.DeleteLogChannelId == null) return;

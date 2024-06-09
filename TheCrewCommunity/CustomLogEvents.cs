@@ -17,7 +17,6 @@ internal static class CustomLogEvents
     public static EventId LiveStream { get; } = new(212, "LiveStream");
     public static EventId AuditLogManager { get; } = new(213, "AuditLogManager");
     public static EventId ServiceError { get; } = new(214, "ServiceError");
-    public static EventId TcHub { get; } = new(300, "TCHub");
     public static EventId ModLog { get; } = new(215, "ModLog");
     public static EventId TagCommand { get; } = new(216, "TagCommand");
     public static EventId InviteLinkFilter { get; } = new(217, "InviteLinkFilter");

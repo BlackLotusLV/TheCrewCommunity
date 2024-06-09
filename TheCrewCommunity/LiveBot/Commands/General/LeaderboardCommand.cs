@@ -42,7 +42,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
                     if (page > 1)
                     {
                         page--;
-                        board = await GenerateLeaderboardAsync(ctx, (int)page);
+                        board = await GenerateLeaderboardAsync(ctx, page);
                         await message.ModifyAsync(board);
                     }
 
@@ -52,7 +52,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
                     page++;
                     try
                     {
-                        board = await GenerateLeaderboardAsync(ctx, (int)page);
+                        board = await GenerateLeaderboardAsync(ctx, page);
                         await message.ModifyAsync(board);
                     }
                     catch (Exception)

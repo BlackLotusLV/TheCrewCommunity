@@ -4,12 +4,14 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity.Extensions;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers.ComponentInteractionCreated;
 
-public class GetInfractionOnButton(IModeratorWarningService moderatorWarningService)
+public static class GetInfractionOnButton
 {
-    public async Task OnButtonClick(DiscordClient client, ComponentInteractionCreateEventArgs e)
+    public static async Task OnButtonClick(DiscordClient client, ComponentInteractionCreatedEventArgs e)
     {
+        var moderatorWarningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
+        
         if (e.Interaction is not { Type: DiscordInteractionType.Component, User.IsBot: false }|| !e.Interaction.Data.CustomId.Contains(moderatorWarningService.InfractionButtonPrefix) || e.Interaction.Guild is null) return;
         string idString = e.Interaction.Data.CustomId.Replace(moderatorWarningService.InfractionButtonPrefix, "");
         if(!ulong.TryParse(idString,out ulong userId)) return;

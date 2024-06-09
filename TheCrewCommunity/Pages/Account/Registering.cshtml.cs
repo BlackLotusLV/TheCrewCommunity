@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Security.Claims;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,14 @@ public class Registering : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILiveBotService _liveBotService;
     private readonly ILogger<Registering> _logger;
+    private readonly DiscordClient _discordClient;
     
-    public Registering(UserManager<ApplicationUser> userManager, ILiveBotService liveBotService, ILogger<Registering> logger)
+    public Registering(UserManager<ApplicationUser> userManager, ILiveBotService liveBotService, ILogger<Registering> logger, DiscordClient discordClient)
     {
         _userManager = userManager;
         _liveBotService = liveBotService;
         _logger = logger;
+        _discordClient = discordClient;
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -59,7 +62,7 @@ public class Registering : PageModel
         DiscordUser? discordUser = null;
         try
         {
-            discordUser = await _liveBotService.DiscordClient.GetUserAsync(discordId);
+            discordUser = await _discordClient.GetUserAsync(discordId);
         }
         catch
         {
@@ -98,7 +101,7 @@ public class Registering : PageModel
         DiscordMember? discordMember = null;
         try
         {
-            DiscordGuild guild = await _liveBotService.DiscordClient.GetGuildAsync(150283740172517376);
+            DiscordGuild guild = await _discordClient.GetGuildAsync(150283740172517376);
             discordMember = await guild.GetMemberAsync(discordId);
         }
         catch

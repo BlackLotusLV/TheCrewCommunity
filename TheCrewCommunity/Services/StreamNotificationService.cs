@@ -82,10 +82,10 @@ public class StreamNotificationService(IDbContextFactory<LiveBotDbContext> dbCon
         }
     }
 }
-public class StreamNotificationItem(StreamNotifications streamNotification, PresenceUpdateEventArgs eventArgs, DiscordGuild guild, DiscordChannel channel, LiveStreamer streamer)
+public class StreamNotificationItem(StreamNotifications streamNotification, PresenceUpdatedEventArgs eventArgs, DiscordGuild guild, DiscordChannel channel, LiveStreamer streamer)
 {
     public StreamNotifications StreamNotification { get; set; } = streamNotification;
-    public PresenceUpdateEventArgs EventArgs { get; set; } = eventArgs;
+    public PresenceUpdatedEventArgs EventArgs { get; set; } = eventArgs;
     public DiscordGuild Guild { get; set; } = guild;
     public DiscordChannel Channel { get; set; } = channel;
     public LiveStreamer Streamer { get; set; } = streamer;

@@ -20,7 +20,7 @@ public class CookieCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory,
         }
         if (ctx.Member == member)
         {
-            var response = new DiscordInteractionResponseBuilder()
+            DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder()
                 .WithContent("You can't give yourself a cookie")
                 .AsEphemeral();
             await ctx.RespondAsync(response);
@@ -32,7 +32,7 @@ public class CookieCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory,
         
         if (giver.CookieDate.Date == DateTime.UtcNow.Date)
         {
-            var response = new DiscordInteractionResponseBuilder()
+            DiscordInteractionResponseBuilder response = new DiscordInteractionResponseBuilder()
                 .WithContent($"Your cookie box is empty. You can give a cookie in {24 - DateTime.UtcNow.Hour} Hours, {59 - DateTime.UtcNow.Minute - 1} Minutes, {59 - DateTime.UtcNow.Second} Seconds.")
                 .AsEphemeral();
             await ctx.RespondAsync(response);
@@ -46,7 +46,7 @@ public class CookieCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory,
         dbContext.Users.UpdateRange(giver, receiver);
         await dbContext.SaveChangesAsync();
 
-        var followupMessage = new DiscordMessageBuilder()
+        DiscordMessageBuilder followupMessage = new DiscordMessageBuilder()
             .WithContent($"{member.Mention}, {ctx.Member.Mention} has given you a :cookie:")
             .WithAllowedMention(new UserMention());
         await ctx.RespondAsync(followupMessage);

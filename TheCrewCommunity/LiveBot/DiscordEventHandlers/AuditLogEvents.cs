@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService)
+public static class AuditLogEvents
 {
-    public async Task OnAuditLogCreated(DiscordClient client, GuildAuditLogCreatedEventArgs eventArgs)
+    public static async Task OnAuditLogCreated(DiscordClient client, GuildAuditLogCreatedEventArgs eventArgs)
     {
         if (eventArgs?.AuditLogEntry is null) return;
         switch (eventArgs.AuditLogEntry.ActionType)
@@ -34,13 +34,18 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         }
     }
     
-    private async Task KickManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogKickEntry? logEntry)
+    private static async Task KickManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogKickEntry? logEntry)
     {
         if (logEntry is null)
         {
             client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Kick event is null, skipping");
             return;
         }
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guildSettings = await liveBotDbContext.Guilds.AsNoTracking().FirstOrDefaultAsync(x=>x.Id == guild.Id) ??
                               await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
@@ -75,13 +80,18 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Kick logged for {User} in {Guild} by {ModUser}",targetUser.Username,guild.Name,responsibleUser.Username);
     }
 
-    private async Task UnBanManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogBanEntry? logEntry)
+    private static async Task UnBanManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogBanEntry? logEntry)
     {
         if (logEntry is null)
         {
             client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Unbanning event is null, skipping");
             return;
         }
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guildSettings = await liveBotDbContext.Guilds.FindAsync(guild.Id) ??
                               await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
@@ -100,7 +110,7 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Unban logged for {User} in {Guild} by {ModUser}",targetUser.Username,guild.Name,responsibleUser.Username);
     }
 
-    private async Task TimeOutLogger(DiscordClient client, DiscordGuild guild, DiscordAuditLogMemberUpdateEntry? logEntry)
+    private static async Task TimeOutLogger(DiscordClient client, DiscordGuild guild, DiscordAuditLogMemberUpdateEntry? logEntry)
     {
         if (logEntry is null)
         {
@@ -108,6 +118,11 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
             return;
         }
         if (logEntry.TimeoutChange.Before == logEntry.TimeoutChange.After) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         
         Guild guildSettings= liveBotDbContext.Guilds.First(w => w.Id == guild.Id);
@@ -178,13 +193,18 @@ public class AuditLogEvents(IModeratorLoggingService moderatorLoggingService, ID
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"{ModLogType} logged for {User} in {Guild} by {ModUser}",modLogType,targetUser.Username,guild.Name,responsibleUser.Username);
     }
     
-    private async Task BanManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogBanEntry? logEntry)
+    private static async Task BanManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogBanEntry? logEntry)
     {
         if (logEntry is null)
         {
             client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Ban event is null, skipping");
             return;
         }
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         GuildUser guildUser = await liveBotDbContext.GuildUsers.FindAsync(logEntry.Target.Id, guild.Id) ??
                               await databaseMethodService.AddGuildUsersAsync(new GuildUser(logEntry.Target.Id, guild.Id));

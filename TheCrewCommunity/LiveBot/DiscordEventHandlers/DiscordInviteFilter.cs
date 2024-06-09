@@ -7,16 +7,20 @@ using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
-namespace TheCrewCommunity.LiveBot.EventHandlers;
+namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
 
-public partial class DiscordInviteFilter(IModeratorWarningService warningService, IDbContextFactory<LiveBotDbContext> dbContextFactory, GeneralUtils generalUtils)
+public static partial class DiscordInviteFilter
 {
-    public async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs eventArgs)
+    public static async Task OnMessageCreated(DiscordClient client, MessageCreatedEventArgs eventArgs)
     {
         if (eventArgs.Author.IsBot || eventArgs.Guild is null || !InviteRegex().IsMatch(eventArgs.Message.Content)) return;
         client.Logger.LogDebug(CustomLogEvents.InviteLinkFilter, "Invite link detected in {GuildName}({GuildId}) by {Username}({UserId})",
             eventArgs.Guild.Name, eventArgs.Guild.Id, eventArgs.Author.Username, eventArgs.Author.Id);
         DiscordMember member = await eventArgs.Guild.GetMemberAsync(eventArgs.Author.Id);
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
+        var generalUtils = client.ServiceProvider.GetRequiredService<GeneralUtils>();
         if (generalUtils.CheckIfMemberAdmin(member)) return;
         
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
