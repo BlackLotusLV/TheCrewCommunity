@@ -5,15 +5,11 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
-using Serilog.Events;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
 using TheCrewCommunity.LiveBot.DiscordEventHandlers;
-using TheCrewCommunity.LiveBot.LogEnrichers;
 using TheCrewCommunity.Services;
-using ButtonRoles = TheCrewCommunity.LiveBot.DiscordEventHandlers.ComponentInteractionCreated.ButtonRoles;
 
 namespace TheCrewCommunity;
 

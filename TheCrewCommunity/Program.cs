@@ -1,4 +1,3 @@
-using DSharpPlus.Extensions;
 using Serilog;
 using Serilog.Events;
 using TheCrewCommunity;
