@@ -19,7 +19,6 @@ public interface ILiveBotService
 }
 public class LiveBotService : IHostedService, ILiveBotService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IModeratorLoggingService _moderatorLoggingService;
     private readonly IModeratorWarningService _moderatorWarningService;
     private readonly IStreamNotificationService _streamNotificationService;
@@ -30,7 +29,6 @@ public class LiveBotService : IHostedService, ILiveBotService
 
     public LiveBotService(
         IConfiguration configuration,
-        IServiceProvider serviceProvider,
         IModeratorLoggingService moderatorLoggingService,
         IModeratorWarningService moderatorWarningService,
         IStreamNotificationService streamNotificationService,
@@ -44,7 +42,6 @@ public class LiveBotService : IHostedService, ILiveBotService
             .CreateLogger();
         ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog();
         _discordClient = discordClient;
-        _serviceProvider = serviceProvider;
         _moderatorLoggingService = moderatorLoggingService;
         _moderatorWarningService = moderatorWarningService;
         _streamNotificationService = streamNotificationService;
