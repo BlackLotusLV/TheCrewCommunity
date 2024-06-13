@@ -30,8 +30,8 @@ public static class ServiceConfiguration
         services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
 
         services.AddSingleton<GeneralUtils>();
-        
-        services.AddSingleton<HttpClient>();
+
+        services.AddHttpClient();
         services.AddRazorPages();
         services.AddLogging();
         
