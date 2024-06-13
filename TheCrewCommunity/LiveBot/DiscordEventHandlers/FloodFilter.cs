@@ -29,11 +29,10 @@ public static class FloodFilter
             await databaseMethodService.AddGuildAsync(new Guild(eventArgs.Guild.Id));
             return;
         }
-        if (guild.SpamIgnoreChannels is null) return;
-        if (guild.SpamIgnoreChannels.Count == 0) return;
-        var spamIgnoreChannels = guild.SpamIgnoreChannels.ToImmutableArray();
+        //if (guild.SpamIgnoreChannels is null) return;
+        //if (guild.SpamIgnoreChannels.Count == 0) return;
 
-        if (guild?.ModerationLogChannelId == null || spamIgnoreChannels.Any(x=>x.ChannelId==eventArgs.Channel.Id)) return;
+        if (guild.ModerationLogChannelId == null || guild.SpamIgnoreChannels is not null && guild.SpamIgnoreChannels.Any(x=>x.ChannelId==eventArgs.Channel.Id)) return;
         DiscordMember member = await eventArgs.Guild.GetMemberAsync(eventArgs.Author.Id);
 
         if (generalUtils.CheckIfMemberAdmin(member)) return;
