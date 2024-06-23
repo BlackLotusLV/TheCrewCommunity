@@ -40,7 +40,7 @@ public class ModMailCleanupService : IHostedService
     {
         try
         {
-            _logger.LogDebug(CustomLogEvents.ModMail, "Mod Mail cleanup started");
+            _logger.LogDebug(CustomLogEvents.ModMailCleanup, "Mod Mail cleanup started");
             await using LiveBotDbContext liveBotDbContext = await _dbContextFactory.CreateDbContextAsync();
             foreach (ModMail modMail in liveBotDbContext.ModMail.Where(mMail => mMail.IsActive && mMail.LastMessageTime.AddMinutes(_modMailService.TimeoutMinutes) < DateTime.UtcNow).ToList())
             {
