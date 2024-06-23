@@ -10,5 +10,4 @@ public sealed class PingCommand
     {
         await ctx.RespondAsync("Pong!");
     }
-    
 }

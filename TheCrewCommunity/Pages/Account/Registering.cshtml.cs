@@ -14,14 +14,12 @@ namespace TheCrewCommunity.Pages.Account;
 public class Registering : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILiveBotService _liveBotService;
     private readonly ILogger<Registering> _logger;
     private readonly DiscordClient _discordClient;
     
-    public Registering(UserManager<ApplicationUser> userManager, ILiveBotService liveBotService, ILogger<Registering> logger, DiscordClient discordClient)
+    public Registering(UserManager<ApplicationUser> userManager, ILogger<Registering> logger, DiscordClient discordClient)
     {
         _userManager = userManager;
-        _liveBotService = liveBotService;
         _logger = logger;
         _discordClient = discordClient;
     }
