@@ -17,7 +17,6 @@ public class LiveBotService(
     IModeratorLoggingService moderatorLoggingService,
     IModeratorWarningService moderatorWarningService,
     IStreamNotificationService streamNotificationService,
-    IModMailService modMailService,
     DiscordClient discordClient)
     : IHostedService
 {
@@ -45,9 +44,7 @@ public class LiveBotService(
         streamNotificationService.StartService(discordClient);
 
         Timer streamCleanupTimer = new(_ => streamNotificationService.StreamListCleanup());
-        Timer modMailCleanupTimer = new(_ => modMailService.ModMailCleanupAsync(discordClient));
         streamCleanupTimer.Change(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(10));
-        modMailCleanupTimer.Change(TimeSpan.FromMinutes(0), TimeSpan.FromMinutes(2));
 
         commandsExtension.CommandExecuted += SystemEvents.CommandExecuted;
         commandsExtension.CommandErrored += SystemEvents.CommandErrored;

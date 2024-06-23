@@ -20,4 +20,5 @@ internal static class CustomLogEvents
     public static EventId ModLog { get; } = new(215, "ModLog");
     public static EventId TagCommand { get; } = new(216, "TagCommand");
     public static EventId InviteLinkFilter { get; } = new(217, "InviteLinkFilter");
+    public static EventId ModMailCleanup { get; } = new(218, "MMCleanup");
 }

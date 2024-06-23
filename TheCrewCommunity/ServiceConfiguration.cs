@@ -21,6 +21,7 @@ public static class ServiceConfiguration
         string token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!");
         services.AddDiscordClient(token, DiscordIntents.All);
         services.AddHostedService<LiveBotService>();
+        services.AddHostedService<ModMailCleanupService>();
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
