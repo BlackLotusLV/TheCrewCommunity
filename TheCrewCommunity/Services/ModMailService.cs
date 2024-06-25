@@ -16,7 +16,6 @@ public interface IModMailService
     Task OpenButton(DiscordClient client, ComponentInteractionCreatedEventArgs e);
     public string CloseButtonPrefix { get; }
     public string OpenButtonPrefix { get; }
-    Task ModMailCleanupAsync(DiscordClient client);
 }
 
 public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, ILoggerFactory loggerFactory)
@@ -210,17 +209,5 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
                     .AddEmbed(embed)
                     .SendAsync(modMailChannel);
             }
-    }
-
-    public async Task ModMailCleanupAsync(DiscordClient client)
-    {
-        _logger.LogDebug(CustomLogEvents.ModMail, "Mod Mail cleanup started");
-        await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
-        foreach (ModMail modMail in liveBotDbContext.ModMail.Where(mMail=>mMail.IsActive && mMail.LastMessageTime.AddMinutes(TimeoutMinutes) < DateTime.UtcNow).ToList())
-        {
-            await CloseModMailAsync(client, modMail, client.CurrentUser, " Mod Mail timed out.", "**Mod Mail timed out.**\n----------------------------------------------------");
-        }
-
-        _logger.LogDebug(CustomLogEvents.ModMail, "Mod Mail cleanup finished");
     }
 }

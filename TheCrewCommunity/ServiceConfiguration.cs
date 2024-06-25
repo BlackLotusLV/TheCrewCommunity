@@ -17,11 +17,11 @@ public static class ServiceConfiguration
 {
     public static IServiceCollection AddMyServices(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        services.AddSingleton<ILiveBotService, LiveBotService>();
-        services.AddHostedService<LiveBotService>();
         ConfigurationManager configuration = builder.Configuration;
         string token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!");
         services.AddDiscordClient(token, DiscordIntents.All);
+        services.AddHostedService<LiveBotService>();
+        services.AddHostedService<ModMailCleanupService>();
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
@@ -30,8 +30,8 @@ public static class ServiceConfiguration
         services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
 
         services.AddSingleton<GeneralUtils>();
-        
-        services.AddSingleton<HttpClient>();
+
+        services.AddHttpClient();
         services.AddRazorPages();
         services.AddLogging();
         
@@ -81,7 +81,6 @@ public static class ServiceConfiguration
             config.LogUnknownAuditlogs = false;
             config.LogUnknownEvents = false;
         });
-
         services.ConfigureEventHandlers(
             eventHandlingBuilder => eventHandlingBuilder
                 .HandleSessionCreated(SystemEvents.SessionCreated)
@@ -105,7 +104,6 @@ public static class ServiceConfiguration
                 .HandleMessageCreated(LiveBot.DiscordEventHandlers.MessageCreated.HandleEvent.OnMessageCreated)
 
         );
-        
         return services;
     }
 }
