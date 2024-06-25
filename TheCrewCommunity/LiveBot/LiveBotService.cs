@@ -6,10 +6,7 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.MessageCommands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.UserCommands;
-using Serilog;
-using Serilog.Events;
 using TheCrewCommunity.LiveBot.DiscordEventHandlers;
-using TheCrewCommunity.LiveBot.LogEnrichers;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot;
@@ -55,7 +52,6 @@ public class LiveBotService(
             new MessageCommandProcessor()
             );
         commandsExtension.AddCommands(typeof(LiveBotService).Assembly);
-
         DiscordActivity botActivity = new("/send-modmail to open chat with moderators", DiscordActivityType.Playing);
         discordClient.Logger.LogInformation("LiveBot has started!");
         await discordClient.ConnectAsync(botActivity);
