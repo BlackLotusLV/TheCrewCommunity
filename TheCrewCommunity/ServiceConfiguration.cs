@@ -22,7 +22,8 @@ public static class ServiceConfiguration
         services.AddDiscordClient(token, DiscordIntents.All);
         services.AddHostedService<LiveBotService>();
         services.AddHostedService<ModMailCleanupService>();
-        services.AddHostedService<StreamNotificationService>();
+        services.AddSingleton<StreamNotificationService>();
+        services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
