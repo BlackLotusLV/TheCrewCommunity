@@ -13,7 +13,6 @@ namespace TheCrewCommunity.LiveBot;
 public class LiveBotService(
     IModeratorLoggingService moderatorLoggingService,
     IModeratorWarningService moderatorWarningService,
-    IStreamNotificationService streamNotificationService,
     DiscordClient discordClient)
     : IHostedService
 {
@@ -38,10 +37,6 @@ public class LiveBotService(
 
         moderatorLoggingService.StartService(discordClient);
         moderatorWarningService.StartService(discordClient);
-        streamNotificationService.StartService(discordClient);
-
-        Timer streamCleanupTimer = new(_ => streamNotificationService.StreamListCleanup());
-        streamCleanupTimer.Change(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(10));
 
         commandsExtension.CommandExecuted += SystemEvents.CommandExecuted;
         commandsExtension.CommandErrored += SystemEvents.CommandErrored;
