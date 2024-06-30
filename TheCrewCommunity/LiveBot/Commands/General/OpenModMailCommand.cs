@@ -51,7 +51,9 @@ public class OpenModMailCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Mod Mail #{newEntry.Id} opened, please head over to your Direct Messages with Live Bot to chat to the moderator team!"));
 
-        await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(closeButton).WithContent($"**----------------------------------------------------**\n" +
+        DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.Member.Id);
+
+        await member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(closeButton).WithContent($"**----------------------------------------------------**\n" +
                                                                                                              $"Mod mail entry **open** with `{ctx.Guild.Name}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {modMailService.TimeoutMinutes} minutes after last message is sent.*\n" +
                                                                                                              $"**Subject: {subject}**"));
 
