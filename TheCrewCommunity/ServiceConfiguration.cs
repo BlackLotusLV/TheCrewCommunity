@@ -22,10 +22,11 @@ public static class ServiceConfiguration
         services.AddDiscordClient(token, DiscordIntents.All);
         services.AddHostedService<LiveBotService>();
         services.AddHostedService<ModMailCleanupService>();
+        services.AddSingleton<StreamNotificationService>();
+        services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
-        services.AddSingleton<IStreamNotificationService, StreamNotificationService>();
         services.AddSingleton<IModMailService, ModMailService>();
         services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
 

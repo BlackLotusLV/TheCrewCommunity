@@ -18,7 +18,7 @@ public static class LivestreamNotifications
         if (e.User.Presence.Activities.All(x => x.ActivityType != DiscordActivityType.Streaming)) return;
         
         var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
-        var streamNotificationService = client.ServiceProvider.GetRequiredService<IStreamNotificationService>();
+        var streamNotificationService = client.ServiceProvider.GetRequiredService<StreamNotificationService>();
         
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
         var streamNotifications = liveBotDbContext.StreamNotifications.Where(w => w.GuildId == guild.Id).ToList();
