@@ -15,11 +15,17 @@ public class TagAutoCompleteProvider(IDbContextFactory<LiveBotDbContext> dbConte
         if (ctx.Guild is null) return ReadOnlyDictionary<string, object>.Empty;
         Guild guild = dbContext.Guilds.Include(x=>x.Tags).First(x=>x.Id == ctx.Guild.Id);
         if (guild.Tags is null) return ReadOnlyDictionary<string, object>.Empty;
-        
-        var tags = guild.Tags.Where(x=>x.GuildId == ctx.Guild.Id)
-            .OrderBy(tag => generalUtils.CalculateLevenshteinDistance(ctx.UserInput.ToString()??"", tag.Name))
-            .ToImmutableList();
-        return tags.ToDictionary<Tag, string, object>(tag => $"{tag.Name} ({(tag.Content.Length > 50 ? tag.Content[..50] + "..." : tag.Content)})", tag => tag.Id.ToString());
+        string[] searchTokens = (ctx.UserInput.ToString() ?? "").ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var tags = guild.Tags.Select(x =>
+        {
+            string[] comparisonTokens = $"{x.Name} ({(x.Content.Length > 50 ? x.Content[..50] + "..." : x.Content)})".ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            int totalDistance = searchTokens.Sum(searchToken =>
+                comparisonTokens.Min(comparisonToken =>
+                    generalUtils.CalculateLevenshteinDistance(searchToken, comparisonToken)));
+            return (matchQuality: totalDistance, Result: x);
+        });
+        var orderedTag = tags.OrderBy(x => x.matchQuality).Select(x => x.Result);
+        return orderedTag.ToDictionary<Tag, string, object>(tag => $"{tag.Name} ({(tag.Content.Length > 50 ? tag.Content[..50] + "..." : tag.Content)})", tag => tag.Id.ToString());
     }
     
 }
