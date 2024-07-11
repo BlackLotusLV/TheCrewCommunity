@@ -78,7 +78,6 @@ public static class ServiceConfiguration
 
         services.Configure<DiscordConfiguration>(config =>
         {
-            config.ReconnectIndefinitely = true;
             config.LogUnknownAuditlogs = false;
             config.LogUnknownEvents = false;
         });
