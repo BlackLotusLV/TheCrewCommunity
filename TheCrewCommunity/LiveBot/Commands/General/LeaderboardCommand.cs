@@ -93,7 +93,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
         {
             DiscordUser user = await ctx.Client.GetUserAsync(activityList[i].UserID) ?? throw new Exception($"User with ID {activityList[i].UserID} not found");
             User? userInfo = await dbContext.Users.FindAsync(user.Id);
-            stringBuilder.Append(BuildLeaderboardString((page - 1 * 10)+ i,user,userInfo,activityList[i].Points));
+            stringBuilder.Append(BuildLeaderboardString(((page - 1) * 10)+ i + 1,user,userInfo,activityList[i].Points));
         }
 
         var rank = 0;
