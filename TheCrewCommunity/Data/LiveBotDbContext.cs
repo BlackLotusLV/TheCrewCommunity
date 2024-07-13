@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data.GameData;
+using TheCrewCommunity.Data.TableConfiguration;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.Data.WebData.ProSettings;
 
@@ -31,7 +32,9 @@ public class LiveBotDbContext : DbContext
     public DbSet<Vehicle> Vehicles { get; init; }
     public DbSet<VehicleCategory> VehicleCategories { get; init; }
     public DbSet<MtfstCarProSettings> MotorfestCarProSettings { get; init; }
-    public DbSet<MtfstCarProSettingsLikes> MotorfestCarProSettingsLikes { get; set; }
+    public DbSet<MtfstCarProSettingsLikes> MotorfestCarProSettingsLikes { get; init; }
+    public DbSet<UserImage> UserImages { get; init; }
+    public DbSet<ImageLike> ImageLikes { get; init; }
 
     public LiveBotDbContext()
     {
@@ -42,6 +45,8 @@ public class LiveBotDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfiguration(new ImageLikeConfig());
+        modelBuilder.ApplyConfiguration(new UserImageConfig());
         modelBuilder.Entity<ButtonRoles>().HasKey(x => x.Id);
         modelBuilder.Entity<Guild>().HasKey(x => x.Id);
         modelBuilder.Entity<GuildUser>().HasKey(x => new { x.UserDiscordId, x.GuildId });

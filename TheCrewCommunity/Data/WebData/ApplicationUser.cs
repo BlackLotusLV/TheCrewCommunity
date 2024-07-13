@@ -24,4 +24,7 @@ public class ApplicationUser : IdentityUser
     
     public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; set; }
     public ICollection<MtfstCarProSettingsLikes>? MotorfestCarProSettingLikes { get; set; }
+    
+    public ICollection<UserImage>? Images { get; set; }
+    public ICollection<ImageLike>? ImageLikes { get; set; }
 }
