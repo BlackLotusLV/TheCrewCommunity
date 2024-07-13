@@ -9,7 +9,12 @@ public class ImageLikeConfig : IEntityTypeConfiguration<ImageLike>
     public void Configure(EntityTypeBuilder<ImageLike> builder)
     {
         builder.HasKey(il => il.Id);
-        builder.HasOne(il => il.ApplicationUser).WithMany(au => au.ImageLikes).HasForeignKey(il => il.DiscordId);
-        builder.HasOne(il => il.UserImage).WithMany(ui => ui.ImageLikes).HasForeignKey(il => il.ImageId);
+        builder.HasOne(il => il.ApplicationUser)
+            .WithMany(au => au.ImageLikes)
+            .HasForeignKey(il => il.DiscordId)
+            .HasPrincipalKey(au=>au.DiscordId);
+        builder.HasOne(il => il.UserImage)
+            .WithMany(ui => ui.ImageLikes)
+            .HasForeignKey(il => il.ImageId);
     }
 }
