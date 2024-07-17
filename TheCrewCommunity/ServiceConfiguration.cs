@@ -35,6 +35,8 @@ public static class ServiceConfiguration
         services.AddHttpClient();
         services.AddRazorPages();
         services.AddLogging();
+        services.AddRazorComponents()
+            .AddInteractiveServerComponents();
         
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
