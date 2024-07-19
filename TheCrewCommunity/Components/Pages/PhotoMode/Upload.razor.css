@@ -1,0 +1,7 @@
+.draggable-zone {
+    min-height: 200px;
+    border: 1px dotted gray;
+}
+.full-width-button {
+    width: 100%;
+}

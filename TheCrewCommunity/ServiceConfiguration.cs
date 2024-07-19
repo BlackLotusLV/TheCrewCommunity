@@ -19,6 +19,7 @@ public static class ServiceConfiguration
     {
         ConfigurationManager configuration = builder.Configuration;
         string token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!");
+        services.AddDistributedMemoryCache();
         services.AddDiscordClient(token, DiscordIntents.All);
         services.AddHostedService<LiveBotService>();
         services.AddHostedService<ModMailCleanupService>();
@@ -33,8 +34,8 @@ public static class ServiceConfiguration
         services.AddSingleton<GeneralUtils>();
 
         services.AddHttpClient();
-        services.AddRazorPages();
         services.AddLogging();
+        services.AddRazorPages();
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
