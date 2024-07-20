@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Services;
 
@@ -19,6 +20,7 @@ public interface IDatabaseMethodService
     Task AddWhiteListSettingsAsync(WhiteListSettings whiteListSettings);
     Task AddRoleTagSettings(RoleTagSettings roleTagSettings);
     Task AddPhotoCompEntryAsync(PhotoCompEntries entry);
+    Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId);
 
 }
 
@@ -189,6 +191,20 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
             await AddUserAsync(new User(entry.UserId));
         }
         await context.PhotoCompEntries.AddAsync(entry);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage userImage = new()
+        {
+            DiscordId = user.DiscordId,
+            Id = imageId,
+            Title = title,
+            GameId = gameId
+        };
+        await context.UserImages.AddAsync(userImage);
         await context.SaveChangesAsync();
     }
 }

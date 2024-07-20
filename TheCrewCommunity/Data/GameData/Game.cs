@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Data.GameData;
 
@@ -11,4 +12,5 @@ public class Game
     
     public ICollection<Vehicle>? Vehicles { get; set; }
     public ICollection<VehicleCategory>? VehicleCategories { get; set; }
+    public ICollection<UserImage>? UserImages { get; set; }
 }
