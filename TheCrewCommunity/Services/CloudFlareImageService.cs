@@ -1,11 +1,12 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace TheCrewCommunity.Services;
 
 public interface ICloudFlareImageService
 {
-    Task<PostImageResponse> PostImage(byte[] image, bool requireSignedUrls = false);
+    Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false);
 }
 
 public class CloudFlareImageService : ICloudFlareImageService
@@ -21,7 +22,7 @@ public class CloudFlareImageService : ICloudFlareImageService
         _uploadImageUri = new Uri($"https://api.cloudflare.com/client/v4/accounts/{configuration["CloudFlare:AccountId"]}/images/v1");
     }
 
-    public async Task<PostImageResponse> PostImage(byte[] image, bool requireSignedUrls = false)
+    public async Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false)
     {
         using MultipartFormDataContent content = new();
         content.Add(new ByteArrayContent(image),"file");
@@ -34,6 +35,8 @@ public class CloudFlareImageService : ICloudFlareImageService
         }
 
         Stream jsonResponse = await responseMessage.Content.ReadAsStreamAsync();
+        string test = await responseMessage.Content.ReadAsStringAsync();
+        Console.WriteLine(test);
         var result = await JsonSerializer.DeserializeAsync<PostImageResponse>(jsonResponse);
         if(result == null)
         {
@@ -46,30 +49,44 @@ public class CloudFlareImageService : ICloudFlareImageService
 
 public class PostImageResponse
 {
+    [JsonPropertyName("result")]
     public CloudFlareImageResult? Result { get; init; }
+    [JsonPropertyName("errors")]
     public required CloudFlareError[] Errors { get; init; }
+    [JsonPropertyName("messages")]
     public required CloudFlareMessage[] Messages { get; init; }
+    [JsonPropertyName("success")]
     public required bool Success { get; init; }
 }
 
 public class CloudFlareImageResult
 {
-    public string FileName { get; init; }
+    [JsonPropertyName("filename")]
+    public string? FileName { get; init; }
+    [JsonPropertyName("id")]
     public string Id { get; init; }
+    [JsonPropertyName("meta")]
     public object Meta { get; init; }
+    [JsonPropertyName("requireSignedURLs")]
     public bool RequireSignedUrl { get; init; }
+    [JsonPropertyName("uploaded")]
     public DateTime Uploaded { get; init; }
+    [JsonPropertyName("variants")]
     public string[] Variants { get; init; }
 }
 
 public class CloudFlareError
 {
+    [JsonPropertyName("code")]
     public required int Code { get; init; }
+    [JsonPropertyName("message")]
     public required string Message { get; init; }
 }
 
 public class CloudFlareMessage
 {
+    [JsonPropertyName("code")]
     public required int Code { get; init; }
+    [JsonPropertyName("message")]
     public required string Message { get; init; }
 }

@@ -1,0 +1,14 @@
+﻿@page "/i/{Id}"
+
+@if (Id == null)
+{
+<p>Loading...</p>
+}
+else
+{
+<img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@Id/public" />
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+}
