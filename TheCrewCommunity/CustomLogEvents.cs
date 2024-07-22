@@ -24,4 +24,5 @@ internal static class CustomLogEvents
     public static EventId StreamNotification { get; } = new(219, "StreamNotification");
     public static EventId WebAccount { get; } = new(220, "WebAccount");
     public static EventId PhotoUpload { get; } = new(221, "PhotoUpload");
+    public static EventId PhotoBrowse { get; } = new(222, "PhotoBrowse");
 }

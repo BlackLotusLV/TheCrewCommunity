@@ -3,7 +3,7 @@ html, body {
     background-color: #2a2a2a;
     color: lightgrey;
     box-sizing: border-box;
-    width: 100vw;
+    width: 100%;
     margin:0;
 }
 
