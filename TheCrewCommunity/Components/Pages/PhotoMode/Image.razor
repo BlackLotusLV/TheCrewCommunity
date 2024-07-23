@@ -1,14 +1,95 @@
-﻿@page "/i/{Id}"
+﻿@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject NavigationManager NavigationManager
+@inject IDatabaseMethodService DbMethodService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@page "/i/{Id}"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData
+@using TheCrewCommunity.Services
+@rendermode InteractiveServer
 
-@if (Id == null)
+<PageTitle>@_title</PageTitle>
+
+@if (Id == string.Empty)
 {
-<p>Loading...</p>
+<p>No Image ID Provided!</p>
 }
 else
 {
-<img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@Id/public" />
+    @if (_image is not null)
+    {
+        <h1>@_image.Title</h1>
+    }
+    <div class="flex-container">
+        <div class="image-box">
+            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@Id/public" alt="PhotoMode image of the id:'@Id'"/>
+        </div>
+        <div class="info-box">
+            <h2>Author:</h2>
+            @if (_image?.ApplicationUser is not null)
+            {
+                <p>@_image.ApplicationUser.UserName</p>
+            }
+            <h2>Game:</h2>
+            @if (_image?.Game is not null)
+            {
+                <p>@_image.Game.Name</p>
+            }
+            <h2><i class="fa fa-heart" style="color: @(IsLiked?"red":"white")" @onclick="ToggleLike"></i> Likes:</h2>
+            <p>@LikesCount</p>
+        </div>
+    </div>
 }
 @code {
-    [Parameter]
-    public string Id { get; set; }
+    [Parameter] public string Id { get; set; } = string.Empty;
+    private int LikesCount { get; set; }
+    private bool IsLiked { get; set; }
+    
+
+    private string _title = "Loading";
+    private UserImage? _image;
+    private ApplicationUser? CurrentUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal user = authState.User;
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            CurrentUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+        }
+        _image = await dbContext.UserImages
+            .Include(x=>x.ApplicationUser)
+            .Include(x=>x.ImageLikes)
+            .Include(x=>x.Game)
+            .FirstOrDefaultAsync(x=>x.Id==Guid.Parse(Id));
+        if (_image is null)
+        {
+            NavigationManager.NavigateTo("/PhotoMode/Browse");
+            return;
+        }
+        _title = _image.Title;
+        LikesCount = _image.LikesCount;
+        if (CurrentUser is not null)
+        {
+            IsLiked = _image.ImageLikes!.Any(x => x.DiscordId == CurrentUser.DiscordId);
+        }
+    }
+
+    private async Task ToggleLike()
+    {
+        if (CurrentUser is null)
+        {
+            return;
+        }
+        await DbMethodService.ToggleImageLikeAsync(CurrentUser, _image!);
+        IsLiked = !IsLiked;
+        LikesCount = await DbMethodService.GetImageLikesCountAsync(_image!.Id);
+    }
+
 }

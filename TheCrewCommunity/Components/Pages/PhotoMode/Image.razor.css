@@ -1,0 +1,28 @@
+﻿h1{
+    font-size: calc(1rem + 3vw);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow:hidden;
+}
+.flex-container{
+    display: flex;
+}
+.image-box{
+    flex: 4;
+}
+.image-box img{
+    max-width: 100%;
+}
+.info-box{
+    flex: 1;
+}
+@media screen and (max-width: 700px){
+    .flex-container{
+        flex-direction: column;
+    }
+    .image-box,
+    .info-box {
+        flex: none;
+        width: 100%;
+    }
+}
