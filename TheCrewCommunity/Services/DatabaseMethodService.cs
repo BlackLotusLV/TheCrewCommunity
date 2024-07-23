@@ -21,10 +21,10 @@ public interface IDatabaseMethodService
     Task AddRoleTagSettings(RoleTagSettings roleTagSettings);
     Task AddPhotoCompEntryAsync(PhotoCompEntries entry);
     Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId);
-
+    Task ToggleImageLikeAsync(ApplicationUser user, UserImage image);
 }
 
-public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory) : IDatabaseMethodService
+public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, Logger<IDatabaseMethodService> logger) : IDatabaseMethodService
 {
     public async Task<Guild> AddGuildAsync(Guild guild)
     {
@@ -205,6 +205,44 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
             GameId = gameId
         };
         await context.UserImages.AddAsync(userImage);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task ToggleImageLikeAsync(ApplicationUser user, UserImage image)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        ImageLike? like = await context.ImageLikes.FirstOrDefaultAsync(x => x.DiscordId == user.DiscordId && x.ImageId == image.Id);
+        if (like is null)
+        {
+            ImageLike newEntry = new()
+            {
+                DiscordId = user.DiscordId,
+                ImageId = image.Id
+            };
+            await context.ImageLikes.AddAsync(newEntry);
+        }
+        else
+        {
+            context.Remove(like);
+        }
+
+        await context.SaveChangesAsync();
+        await UpdateImageLikeCountAsync(image.Id);
+    }
+
+    private async Task UpdateImageLikeCountAsync(Guid imageId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage? image = await context.UserImages
+            .Include(x => x.ImageLikes)
+            .FirstOrDefaultAsync(x => x.Id == imageId);
+        if (image is null)
+        {
+            logger.LogInformation(CustomLogEvents.DatabaseMethods, "Tried to update likes of an image but failed. Provided Id: {Id}",imageId);
+            return;
+        }
+        image.LikesCount = image.ImageLikes!.Count;
+        context.Update(image);
         await context.SaveChangesAsync();
     }
 }
