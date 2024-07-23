@@ -106,6 +106,6 @@ else
         {
             await DbMethodService.DeleteImageAsync(_image!.Id);
         }
-        ShowConfirmModal = false;
+        NavigationManager.NavigateTo("/PhotoMode/Browse");
     }
 }
