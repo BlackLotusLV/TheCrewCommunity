@@ -48,13 +48,6 @@
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         _images = dbContext.UserImages.OrderBy(x => x.UploadDateTime).ToList();
 
-        //debug testing, delete on prod
-        var debugList = _images;
-        for (var i = 0; i < 4; i++)
-        {
-            _images.AddRange(debugList);
-        }
-
         if (_images.Count<InitialLoadSize-1)
         {
             _currentLoadEnd = (uint)_images.Count;

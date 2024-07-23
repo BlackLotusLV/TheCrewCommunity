@@ -36,8 +36,6 @@ public class CloudFlareImageService : ICloudFlareImageService
         }
 
         Stream jsonResponse = await responseMessage.Content.ReadAsStreamAsync();
-        string test = await responseMessage.Content.ReadAsStringAsync();
-        Console.WriteLine(test);
         var result = await JsonSerializer.DeserializeAsync<PostImageResponse>(jsonResponse);
         if(result == null)
         {
@@ -73,47 +71,34 @@ public class CloudFlareImageService : ICloudFlareImageService
 
 public class PostImageResponse
 {
-    [JsonPropertyName("result")]
-    public CloudFlareImageResult? Result { get; init; }
-    [JsonPropertyName("errors")]
-    public required CodeMessageObject[] Errors { get; init; }
-    [JsonPropertyName("messages")]
-    public required CodeMessageObject[] Messages { get; init; }
-    [JsonPropertyName("success")]
-    public required bool Success { get; init; }
+    [JsonPropertyName("result")] public CloudFlareImageResult? Result { get; init; }
+    [JsonPropertyName("errors")] public required CodeMessageObject[] Errors { get; init; }
+    [JsonPropertyName("messages")] public required CodeMessageObject[] Messages { get; init; }
+    [JsonPropertyName("success")] public required bool Success { get; init; }
 }
 
-public abstract class CloudFlareImageResult
+public class CloudFlareImageResult
 {
-    [JsonPropertyName("filename")]
-    public string? FileName { get; init; }
-    [JsonPropertyName("id")]
-    public string Id { get; init; }
-    [JsonPropertyName("meta")]
-    public object Meta { get; init; }
-    [JsonPropertyName("requireSignedURLs")]
-    public bool RequireSignedUrl { get; init; }
-    [JsonPropertyName("uploaded")]
-    public DateTime Uploaded { get; init; }
-    [JsonPropertyName("variants")]
-    public string[] Variants { get; init; }
+    [JsonPropertyName("filename")] public string? FileName { get; init; }
+    [JsonPropertyName("id")] public string Id { get; init; }
+    [JsonPropertyName("meta")] public object Meta { get; init; }
+    [JsonPropertyName("requireSignedURLs")] public bool RequireSignedUrl { get; init; }
+    [JsonPropertyName("uploaded")] public DateTime Uploaded { get; init; }
+    [JsonPropertyName("variants")] public string[] Variants { get; init; }
 }
 
 public class DeleteImageResponse
 {
-    [JsonPropertyName("result")]
-    public required object? Result { get; init; }
-    [JsonPropertyName("errors")]
-    public required CodeMessageObject[] Errors { get; init; }
-    [JsonPropertyName("messages")]
-    public required CodeMessageObject[] Messages { get; init; }
+    [JsonPropertyName("result")] public required object? Result { get; init; }
+
+    [JsonPropertyName("errors")] public required CodeMessageObject[] Errors { get; init; }
+
+    [JsonPropertyName("messages")] public CodeMessageObject[] Messages { get; init; }
     [JsonPropertyName("success")] public required bool Success { get; init; }
 }
 
-public abstract class CodeMessageObject
+public class CodeMessageObject
 {
-    [JsonPropertyName("code")]
-    public required int Code { get; init; }
-    [JsonPropertyName("message")]
-    public required string Message { get; init; }
+    [JsonPropertyName("code")] public required int Code { get; init; }
+    [JsonPropertyName("message")] public required string Message { get; init; }
 }
