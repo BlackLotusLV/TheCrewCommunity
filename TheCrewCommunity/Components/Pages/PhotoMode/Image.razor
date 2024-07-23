@@ -2,6 +2,8 @@
 @inject NavigationManager NavigationManager
 @inject IDatabaseMethodService DbMethodService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICloudFlareImageService CloudFlareImageService
+@inject ILogger<Image> Logger
 @page "/i/{Id}"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
@@ -26,6 +28,7 @@ else
     <div class="flex-container">
         <div class="image-box">
             <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@Id/public" alt="PhotoMode image of the id:'@Id'"/>
+            <i class="fa fa-heart image-heart" style="color: @(IsLiked?"red":"white")" @onclick="ToggleLikeAsync"></i>
         </div>
         <div class="info-box">
             <h2>Author:</h2>
@@ -38,8 +41,7 @@ else
             {
                 <p>@_image.Game.Name</p>
             }
-            <h2><i class="fa fa-heart" style="color: @(IsLiked?"red":"white")" @onclick="ToggleLikeAsync"></i> Likes:</h2>
-            <p>@LikesCount</p>
+            <h2>Likes: @LikesCount</h2>
             @if (SeeTools)
             {
                 <div class="author-tools">
@@ -104,8 +106,15 @@ else
     {
         if (shouldDelete)
         {
-            await DbMethodService.DeleteImageAsync(_image!.Id);
+            Logger.LogDebug(CustomLogEvents.PhotoView,"Delete confirmation button pressed");
+            DeleteImageResponse response = await CloudFlareImageService.DeleteImageAsync(_image!.Id);
+            if (response.Success)
+            {
+                Logger.LogDebug(CustomLogEvents.PhotoView,"Response returned as success, removing from database");
+                await DbMethodService.DeleteImageAsync(_image!.Id);
+                NavigationManager.NavigateTo("/PhotoMode/Browse");
+            }
         }
-        NavigationManager.NavigateTo("/PhotoMode/Browse");
+        ShowConfirmModal = false;
     }
 }

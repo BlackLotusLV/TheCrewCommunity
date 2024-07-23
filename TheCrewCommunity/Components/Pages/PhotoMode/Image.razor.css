@@ -1,26 +1,46 @@
 ﻿h1{
-    font-size: calc(1rem + 3vw);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow:hidden;
+    max-height: 50px;
+    margin:10px;
+}
+h2, p{
+    margin: 5px;
 }
 .flex-container{
     display: flex;
+    border-top:solid yellow 1px;
 }
 .image-box{
     flex: 4;
+    position: relative;
+}
+.image-heart {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    opacity: 0.5;
+    font-size: 30px;
+    
 }
 .image-box img{
     max-width: 100%;
+    box-sizing: border-box;
 }
 .info-box{
     flex: 1;
+    padding: 5px;
 }
 .author-tools i{
     transition: all 0.1s ease;
     opacity: 0.8;
     cursor: pointer;
 }
+.image-heart:hover,
 .author-tools i:hover{
     transform: scale(1.05) translateZ(0);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
