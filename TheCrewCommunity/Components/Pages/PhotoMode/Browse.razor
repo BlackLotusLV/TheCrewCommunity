@@ -55,7 +55,14 @@
             _images.AddRange(debugList);
         }
 
-        _currentLoadEnd = InitialLoadSize - 1;
+        if (_images.Count<InitialLoadSize-1)
+        {
+            _currentLoadEnd = (uint)_images.Count;
+        }
+        else
+        {
+            _currentLoadEnd = InitialLoadSize - 1;
+        }
     }
 
     [JSInvokable]
