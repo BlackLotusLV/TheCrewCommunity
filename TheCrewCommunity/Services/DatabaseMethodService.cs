@@ -23,6 +23,7 @@ public interface IDatabaseMethodService
     Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId);
     Task ToggleImageLikeAsync(ApplicationUser user, UserImage image);
     Task<int> GetImageLikesCountAsync(Guid imageId);
+    Task DeleteImageAsync(Guid imageId);
 }
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
@@ -259,5 +260,17 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
         }
     
         return image.ImageLikes!.Count;
+    }
+
+    public async Task DeleteImageAsync(Guid imageId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage? image = await context.UserImages.FindAsync(imageId);
+        if (image is null)
+        {
+            throw new Exception($"Image not found with Id: {imageId}");
+        }
+        context.UserImages.Remove(image);
+        await context.SaveChangesAsync();
     }
 }
