@@ -24,7 +24,7 @@ public interface IDatabaseMethodService
     Task ToggleImageLikeAsync(ApplicationUser user, UserImage image);
 }
 
-public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, Logger<IDatabaseMethodService> logger) : IDatabaseMethodService
+public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
 {
     public async Task<Guild> AddGuildAsync(Guild guild)
     {
