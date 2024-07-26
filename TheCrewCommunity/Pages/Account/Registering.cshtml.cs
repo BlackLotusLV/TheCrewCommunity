@@ -7,42 +7,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data.WebData;
-using TheCrewCommunity.LiveBot;
 
 namespace TheCrewCommunity.Pages.Account;
 
-public class Registering : PageModel
+public class Registering(UserManager<ApplicationUser> userManager, DiscordClient discordClient, ILogger<Login> logger) : PageModel
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<Registering> _logger;
-    private readonly DiscordClient _discordClient;
-    
-    public Registering(UserManager<ApplicationUser> userManager, ILogger<Registering> logger, DiscordClient discordClient)
-    {
-        _userManager = userManager;
-        _logger = logger;
-        _discordClient = discordClient;
-    }
-
-    public async Task<IActionResult> OnGetAsync()
+    public async Task<IActionResult> OnGet()
     {
         string userId = User.Claims.First(claim => claim.Type is ClaimTypes.NameIdentifier).Value;
-        ApplicationUser? applicationUser = await _userManager.Users.FirstOrDefaultAsync(x => x.DiscordId == Convert.ToUInt64(userId));
-
+        ApplicationUser? applicationUser = await userManager.Users.FirstOrDefaultAsync(x => x.DiscordId == Convert.ToUInt64(userId));
         ExtractMessageClaim(out string? discordIdString, out ulong discordId, out string? userName, out string? email);
-
+            
         if (discordIdString is null)
         {
             return BadRequest("Error getting Discord ID");
         }
-
+            
         DiscordUser? discordUser = await FetchDiscordUserDetails(discordId);
         if (!await CreateAndUpdateUser(discordId, userName, email, discordUser, applicationUser))
         {
             return BadRequest("Error Creating/Updating or saving user");
         }
-
-        return RedirectToPage("./Profile");
+            
+        return Redirect("~/");
     }
     private void ExtractMessageClaim(out string? discordIdString, out ulong discordId, out string userName, out string email)
     {
@@ -60,11 +47,11 @@ public class Registering : PageModel
         DiscordUser? discordUser = null;
         try
         {
-            discordUser = await _discordClient.GetUserAsync(discordId);
+            discordUser = await discordClient.GetUserAsync(discordId);
         }
         catch
         {
-            _logger.LogDebug("Failed to get user of id {ID}", discordId);
+            logger.LogDebug("Failed to get user of id {ID}", discordId);
         }
         return discordUser;
     }
@@ -81,32 +68,20 @@ public class Registering : PageModel
         applicationUser.Email = email;
         applicationUser.GlobalUsername = discordUser?.GlobalName;
         applicationUser.AvatarUrl = discordUser?.AvatarUrl;
-        applicationUser.IsModerator = discordUser is not null && await ComputeModeratorStatus(discordUser, discordId);
+        applicationUser.IsModerator = false;
         if (create)
         {
-            IdentityResult createResult = await _userManager.CreateAsync(applicationUser);
+            IdentityResult createResult = await userManager.CreateAsync(applicationUser);
             if (!createResult.Succeeded)
             {
                 return false;
             }
+
+            logger.LogInformation(CustomLogEvents.WebAccount, "New user `{UserName}`({Id}) registered", applicationUser.UserName, applicationUser.DiscordId);
         }
         
-        IdentityResult saveResult = await _userManager.UpdateAsync(applicationUser);
+        IdentityResult saveResult = await userManager.UpdateAsync(applicationUser);
+        logger.LogDebug(CustomLogEvents.WebAccount,"Web user updated");
         return saveResult.Succeeded;
-    }
-    private async Task<bool> ComputeModeratorStatus(DiscordUser discordUser, ulong discordId)
-    {
-        DiscordMember? discordMember = null;
-        try
-        {
-            DiscordGuild guild = await _discordClient.GetGuildAsync(150283740172517376);
-            discordMember = await guild.GetMemberAsync(discordId);
-        }
-        catch
-        {
-            _logger.LogDebug("Failed to get member of id {ID}", discordId);
-        }
-
-        return discordMember is { Permissions: DiscordPermissions.ModerateMembers } or { Permissions: DiscordPermissions.All };
     }
 }

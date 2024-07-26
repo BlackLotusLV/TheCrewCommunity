@@ -11,6 +11,7 @@ using TheCrewCommunity.LiveBot;
 using TheCrewCommunity.LiveBot.DiscordEventHandlers;
 using TheCrewCommunity.Services;
 
+
 namespace TheCrewCommunity;
 
 public static class ServiceConfiguration
@@ -19,6 +20,7 @@ public static class ServiceConfiguration
     {
         ConfigurationManager configuration = builder.Configuration;
         string token = configuration.GetSection("Discord")["BotToken"] ?? throw new InvalidOperationException("Bot token not provided!");
+        services.AddDistributedMemoryCache();
         services.AddDiscordClient(token, DiscordIntents.All);
         services.AddHostedService<LiveBotService>();
         services.AddHostedService<ModMailCleanupService>();
@@ -29,13 +31,18 @@ public static class ServiceConfiguration
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
         services.AddSingleton<IModMailService, ModMailService>();
         services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
+        services.AddSingleton<ICloudFlareImageService, CloudFlareImageService>();
 
         services.AddSingleton<GeneralUtils>();
 
         services.AddHttpClient();
-        services.AddRazorPages();
         services.AddLogging();
-        
+        services.AddRazorPages();
+        services.AddRazorComponents()
+            .AddInteractiveServerComponents();
+                
+                
+                
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         

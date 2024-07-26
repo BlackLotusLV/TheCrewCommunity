@@ -1,0 +1,30 @@
+﻿@if (ShowDialog)
+{
+<div class="modal-background">
+    <div class="modal-content">
+        <h2 class="modal-title">@Title</h2>
+        <p class="modal-message">@Message</p>
+        <button @onclick="Confirm" class="confirm-btn">Yes</button>
+        <button @onclick="Cancel" class="cancel-btn">No</button>
+    </div>
+</div>
+}
+@code {
+    [Parameter] public required string Title { get; set; }
+    [Parameter] public required string Message { get; set; }
+    [Parameter] public EventCallback<bool> ConfirmationChanged { get; set; }
+    [Parameter] public bool ShowDialog { get; set; }
+
+    private void Confirm()
+    {
+        ShowDialog = false;
+        ConfirmationChanged.InvokeAsync(true);
+    }
+
+    private void Cancel()
+    {
+        ShowDialog = false;
+        ConfirmationChanged.InvokeAsync(false);
+    }
+    
+}

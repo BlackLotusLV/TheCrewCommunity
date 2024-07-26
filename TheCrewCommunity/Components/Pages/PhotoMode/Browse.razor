@@ -1,0 +1,146 @@
+﻿@page "/PhotoMode/Browse"
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.GameData
+@using TheCrewCommunity.Data.WebData
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@inject ILogger<Browse> Logger
+@rendermode InteractiveServer
+
+<PageTitle>Browsing Images</PageTitle>
+
+<div class="image-grid">
+    @for (var i = 0; i < _currentLoadEnd; i++)
+    {
+        Guid id = _images[i].Id;
+        Game game = _images[i].Game!;
+        <div class="image-container">
+            <img class="image-thumb" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" @onclick='@(_ => OpenImage(id))'/>
+            <img class="game-logo" src="assets/Icons/@game.IconFile" alt="@game.Name logo"/>
+        </div>
+    }
+</div>
+
+<div class="load-more">
+    @if (_isLoading)
+    {
+        <p>Loading images...</p>
+    }
+    else if (_currentLoadEnd == _images.Length)
+    {
+        <p>All images loaded</p>
+    }
+    else
+    {
+    <button class="load-more-button" @ref="_loadMoreButton" @onclick="LoadMoreImages">Load more</button>
+    }
+</div>
+@code {
+
+    private ElementReference _loadMoreButton;
+    private const int InitialLoadSize = 50;
+    private bool _isLoading;
+    private const uint ImageLoadSize = 30;
+    private uint _currentLoadEnd;
+
+    // thumbnail url template https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/<image_id>/Thumbnail
+    private UserImage[] _images = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        _images = dbContext.UserImages
+            .Include(x=>x.Game)
+            .OrderByDescending(x => x.UploadDateTime).ToArray();
+
+        if (_images.Length<InitialLoadSize-1)
+        {
+            _currentLoadEnd = (uint)_images.Length;
+        }
+        else
+        {
+            _currentLoadEnd = InitialLoadSize - 1;
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreImages()
+    {
+        _isLoading = true;
+        if (_currentLoadEnd >= _images.Length)
+        {
+            return;
+        }
+
+        _currentLoadEnd += ImageLoadSize;
+        if (_currentLoadEnd > _images.Length)
+        {
+            _currentLoadEnd = (uint)_images.Length;
+        }
+
+        await InvokeAsync(StateHasChanged);
+        Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Loaded more images");
+        await Task.Delay(100);
+        await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
+        Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Adding vertical class to images");
+        _isLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("OnLoad", DotNetObjectReference.Create(this), _loadMoreButton);
+        }
+    }
+
+    private Task OpenImage(Guid id)
+    {
+        NavigationManager.NavigateTo($"/i/{id}");
+        return Task.CompletedTask;
+    }
+
+}
+<script>
+    function InitInfiniteScroll(dotnetHelper,loadMoreButton) {
+        let options={
+        root: null,
+        rootMargin: '0px',
+        threshold: 1.0
+        }
+        let observer = new IntersectionObserver(function (entries, observer){
+            entries.forEach(entry=>{
+                if (entry.isIntersecting){
+                    dotnetHelper.invokeMethodAsync('LoadMoreImages');
+                }
+            })
+        }, options);
+        observer.observe(loadMoreButton);
+    }
+    
+    function applyOnLoadToImages() {
+        let images = document.querySelectorAll('.image-grid img:not(.processed-image):not(.game-logo)');
+        console.log('Iterating on all images');
+        images.forEach(function(img) {
+            img.onload = function() {
+                if (img.naturalHeight > img.naturalWidth) {
+                    img.classList.add('vertical-image');
+                    console.log('Added vertical image class to image');
+                }
+                img.classList.add('processed-image');
+                console.log('added processed-image')
+                img.onload = null;
+            };
+            // This forces the onload event if the image is loaded from the cache
+            if (img.complete) {
+                img.onload();
+            }
+        });
+    }
+    function OnLoad() {
+        applyOnLoadToImages();
+    }
+
+</script>

@@ -1,6 +1,7 @@
 using Serilog;
 using Serilog.Events;
 using TheCrewCommunity;
+using TheCrewCommunity.Components;
 using TheCrewCommunity.LiveBot.LogEnrichers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -38,8 +39,10 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.UseAntiforgery();
 
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+app.MapRazorPages();
 
 app.Run();

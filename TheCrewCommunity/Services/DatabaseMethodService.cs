@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Services;
 
@@ -19,10 +20,13 @@ public interface IDatabaseMethodService
     Task AddWhiteListSettingsAsync(WhiteListSettings whiteListSettings);
     Task AddRoleTagSettings(RoleTagSettings roleTagSettings);
     Task AddPhotoCompEntryAsync(PhotoCompEntries entry);
-
+    Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId);
+    Task ToggleImageLikeAsync(ApplicationUser user, UserImage image);
+    Task<int> GetImageLikesCountAsync(Guid imageId);
+    Task DeleteImageAsync(Guid imageId);
 }
 
-public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory) : IDatabaseMethodService
+public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
 {
     public async Task<Guild> AddGuildAsync(Guild guild)
     {
@@ -189,6 +193,84 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
             await AddUserAsync(new User(entry.UserId));
         }
         await context.PhotoCompEntries.AddAsync(entry);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task AddUserImageAsync(ApplicationUser user, Guid imageId, string title, Guid gameId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage userImage = new()
+        {
+            DiscordId = user.DiscordId,
+            Id = imageId,
+            Title = title,
+            GameId = gameId
+        };
+        await context.UserImages.AddAsync(userImage);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task ToggleImageLikeAsync(ApplicationUser user, UserImage image)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        ImageLike? like = await context.ImageLikes.FirstOrDefaultAsync(x => x.DiscordId == user.DiscordId && x.ImageId == image.Id);
+        if (like is null)
+        {
+            ImageLike newEntry = new()
+            {
+                DiscordId = user.DiscordId,
+                ImageId = image.Id
+            };
+            await context.ImageLikes.AddAsync(newEntry);
+        }
+        else
+        {
+            context.Remove(like);
+        }
+
+        await context.SaveChangesAsync();
+        await UpdateImageLikeCountAsync(image.Id);
+    }
+
+    private async Task UpdateImageLikeCountAsync(Guid imageId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage? image = await context.UserImages
+            .Include(x => x.ImageLikes)
+            .FirstOrDefaultAsync(x => x.Id == imageId);
+        if (image is null)
+        {
+            logger.LogInformation(CustomLogEvents.DatabaseMethods, "Tried to update likes of an image but failed. Provided Id: {Id}",imageId);
+            return;
+        }
+        image.LikesCount = image.ImageLikes!.Count;
+        context.Update(image);
+        await context.SaveChangesAsync();
+    }
+    public async Task<int> GetImageLikesCountAsync(Guid imageId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage? image = await context.UserImages
+            .Include(x => x.ImageLikes)
+            .FirstOrDefaultAsync(x => x.Id == imageId);
+        
+        if (image is null)
+        {
+            throw new Exception($"Image not found with Id: {imageId}");
+        }
+    
+        return image.ImageLikes!.Count;
+    }
+
+    public async Task DeleteImageAsync(Guid imageId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        UserImage? image = await context.UserImages.FindAsync(imageId);
+        if (image is null)
+        {
+            throw new Exception($"Image not found with Id: {imageId}");
+        }
+        context.UserImages.Remove(image);
         await context.SaveChangesAsync();
     }
 }

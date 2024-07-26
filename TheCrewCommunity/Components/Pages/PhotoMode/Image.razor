@@ -1,0 +1,120 @@
+﻿@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject NavigationManager NavigationManager
+@inject IDatabaseMethodService DbMethodService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICloudFlareImageService CloudFlareImageService
+@inject ILogger<Image> Logger
+@page "/i/{Id}"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData
+@using TheCrewCommunity.Services
+@rendermode InteractiveServer
+
+<PageTitle>@_title</PageTitle>
+
+@if (Id == string.Empty)
+{
+<p>No Image ID Provided!</p>
+}
+else
+{
+    @if (_image is not null)
+    {
+        <h1>@_image.Title</h1>
+    }
+    <div class="flex-container">
+        <div class="image-box">
+            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@Id/public" alt="PhotoMode image of the id:'@Id'"/>
+            <i class="fa fa-heart image-heart" style="color: @(IsLiked?"red":"white")" @onclick="ToggleLikeAsync"></i>
+        </div>
+        <div class="info-box">
+            <h2>Author:</h2>
+            @if (_image?.ApplicationUser is not null)
+            {
+                <p>@_image.ApplicationUser.UserName</p>
+            }
+            <h2>Game:</h2>
+            @if (_image?.Game is not null)
+            {
+                <p>@_image.Game.Name</p>
+            }
+            <h2>Likes: @LikesCount</h2>
+            @if (SeeTools)
+            {
+                <div class="author-tools">
+                    <i class="fa fa-trash" @onclick="(()=>ShowConfirmModal = true)"></i>
+                </div>
+                <ConfirmationDialog ShowDialog="@ShowConfirmModal" Title="Confirm Delete" Message="Are you sure you want to delete the image? This can't be reversed!" ConfirmationChanged="ConfirmDelete"/>
+            }
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+    private int LikesCount { get; set; }
+    private bool IsLiked { get; set; }
+    private bool SeeTools { get; set; }
+    private string _title = "Loading";
+    private UserImage? _image;
+    private ApplicationUser? CurrentUser { get; set; }
+    bool ShowConfirmModal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal user = authState.User;
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            CurrentUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+        }
+        _image = await dbContext.UserImages
+            .Include(x=>x.ApplicationUser)
+            .Include(x=>x.ImageLikes)
+            .Include(x=>x.Game)
+            .FirstOrDefaultAsync(x=>x.Id==Guid.Parse(Id));
+        if (_image is null)
+        {
+            NavigationManager.NavigateTo("/PhotoMode/Browse");
+            return;
+        }
+        _title = _image.Title;
+        LikesCount = _image.LikesCount;
+        if (CurrentUser is not null)
+        {
+            IsLiked = _image.ImageLikes!.Any(x => x.DiscordId == CurrentUser.DiscordId);
+            SeeTools = _image.ApplicationUser == CurrentUser || CurrentUser.IsModerator;
+        }
+    }
+
+    private async Task ToggleLikeAsync()
+    {
+        if (CurrentUser is null)
+        {
+            return;
+        }
+        await DbMethodService.ToggleImageLikeAsync(CurrentUser, _image!);
+        IsLiked = !IsLiked;
+        LikesCount = await DbMethodService.GetImageLikesCountAsync(_image!.Id);
+    }
+
+    async Task ConfirmDelete(bool shouldDelete)
+    {
+        if (shouldDelete)
+        {
+            Logger.LogDebug(CustomLogEvents.PhotoView,"Delete confirmation button pressed");
+            DeleteImageResponse response = await CloudFlareImageService.DeleteImageAsync(_image!.Id);
+            if (response.Success)
+            {
+                Logger.LogDebug(CustomLogEvents.PhotoView,"Response returned as success, removing from database");
+                await DbMethodService.DeleteImageAsync(_image!.Id);
+                NavigationManager.NavigateTo("/PhotoMode/Browse");
+            }
+        }
+        ShowConfirmModal = false;
+    }
+}

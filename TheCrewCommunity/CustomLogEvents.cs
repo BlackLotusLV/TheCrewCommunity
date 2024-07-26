@@ -22,4 +22,10 @@ internal static class CustomLogEvents
     public static EventId InviteLinkFilter { get; } = new(217, "InviteLinkFilter");
     public static EventId ModMailCleanup { get; } = new(218, "MMCleanup");
     public static EventId StreamNotification { get; } = new(219, "StreamNotification");
+    public static EventId WebAccount { get; } = new(220, "WebAccount");
+    public static EventId PhotoUpload { get; } = new(221, "PhotoUpload");
+    public static EventId PhotoBrowse { get; } = new(222, "PhotoBrowse");
+    public static EventId DatabaseMethods { get; } = new(223, "DB Methods");
+    public static EventId PhotoView { get; } = new(224, "PhotoView");
+    public static EventId CloudFlare { get; } = new(225, "CloudFlare");
 }
