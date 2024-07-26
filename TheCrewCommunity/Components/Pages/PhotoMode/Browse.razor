@@ -1,6 +1,7 @@
 ﻿@page "/PhotoMode/Browse"
 @using Microsoft.EntityFrameworkCore
 @using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.GameData
 @using TheCrewCommunity.Data.WebData
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject IJSRuntime JsRuntime
@@ -14,7 +15,11 @@
     @for (var i = 0; i < _currentLoadEnd; i++)
     {
         Guid id = _images[i].Id;
-        <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" @onclick='@(_ => OpenImage(id))'/>
+        Game game = _images[i].Game!;
+        <div class="image-container">
+            <img class="image-thumb" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" @onclick='@(_ => OpenImage(id))'/>
+            <img class="game-logo" src="assets/Icons/@game.IconFile" alt="@game.Name logo"/>
+        </div>
     }
 </div>
 
@@ -46,7 +51,9 @@
     protected override async Task OnInitializedAsync()
     {
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-        _images = dbContext.UserImages.OrderByDescending(x => x.UploadDateTime).ToArray();
+        _images = dbContext.UserImages
+            .Include(x=>x.Game)
+            .OrderByDescending(x => x.UploadDateTime).ToArray();
 
         if (_images.Length<InitialLoadSize-1)
         {
@@ -114,7 +121,7 @@
     }
     
     function applyOnLoadToImages() {
-        let images = document.querySelectorAll('.image-grid img:not(.processed-image)');
+        let images = document.querySelectorAll('.image-grid img:not(.processed-image):not(.game-logo)');
         console.log('Iterating on all images');
         images.forEach(function(img) {
             img.onload = function() {

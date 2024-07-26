@@ -6,14 +6,29 @@
     justify-items: center;
     overflow: hidden;
 }
-.image-grid img{
+.image-container{
+    position: relative;
+    display: inline-block;
+    transition: all 0.1s ease;
+}
+.image-thumb{
     max-width: 100%;
     height: auto;
     transition: all 0.1s ease;
 }
-.image-grid img:hover {
-    transform: scale(1.05) translateZ(0);
+.game-logo{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    height: 30px;
+    width: auto;
+}
+.image-thumb:hover{
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+
+.image-container:hover {
+    transform: scale(1.05) translateZ(0);
     z-index: 1;
 }
 .vertical-image{

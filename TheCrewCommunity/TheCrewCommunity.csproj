@@ -154,7 +154,6 @@
 
     <ItemGroup>
       <Folder Include="Pages\" />
-      <Folder Include="wwwroot\assets\Icons\" />
     </ItemGroup>
 
 </Project>
