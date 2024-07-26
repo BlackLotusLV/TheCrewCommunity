@@ -21,6 +21,23 @@ nav{
     height: 100%;
     box-sizing: border-box;
 }
+.hamburger{
+    display: none;
+    height: 100%;
+    background-color: #2a2a2a;
+    float: left;
+    width: 50px;
+    color: white;
+    padding: 10px;
+    border: none;
+}
+.hamburger:hover{
+    background-color: yellow;
+    color: black;
+}
+.hamburger i{
+    font-size: 25px;
+}
 .dropdown{
     float: left;
     overflow: hidden;
@@ -40,7 +57,7 @@ nav{
 .dropdown-content{
     display: none;
     position: absolute;
-    background-color: #2a2a2a;
+    background-color: inherit;
     min-width: 160px;
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
     z-index: 1;
@@ -66,4 +83,36 @@ nav{
 }
 .navbar-right .dropdown .dropdown-content{
     right: 0;
+}
+@media screen and (max-width: 600px){
+    .navbar a:not(.navbar-right a), .dropdown:not(.navbar-right .dropdown){
+        display: none;
+        
+    }
+    .responsive{
+        height: 100%;
+    }
+    .responsive a,
+    .responsive .dropdown{
+        display: block !important;
+        width: 100%;
+    }
+    .dropdown-content,
+    .dropdown-button{
+        width: 100%;
+    }
+    
+    .navbar a.icon{
+        float: right;
+        display: block;
+    }
+    .hamburger{
+        display: block;
+    }
+    .navbar-right{
+        position: absolute;
+        right: 0;
+        top:0;
+        height: 50px;
+    }
 }

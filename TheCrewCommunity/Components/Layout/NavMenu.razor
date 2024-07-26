@@ -2,40 +2,51 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 <CascadingAuthenticationState>
-<nav class="navbar">
-    <a href="/"><i class="fa fa-home"></i> Home</a>
-    <div class="dropdown">
-        <button class="dropdown-button" type="button"><i class="fa fa-camera"></i> Photo Mode <i class="fa fa-caret-down"></i></button>
-        <div class="dropdown-content">
-            <a href="/PhotoMode/Browse">Browse</a>
+    <nav class="navbar @NavBarClasses">
+        <button class="hamburger" type="button" @onclick="ToggleMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+        <a href="/"><i class="fa fa-home"></i> Home</a>
+        <div class="dropdown">
+            <button class="dropdown-button" type="button"><i class="fa fa-camera"></i> Photo Mode <i class="fa fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="/PhotoMode/Browse">Browse</a>
+                <AuthorizeView>
+                    <Authorized>
+                        <a href="/PhotoMode/Upload">Upload</a>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+        <div class="navbar-right">
             <AuthorizeView>
                 <Authorized>
-                    <a href="/PhotoMode/Upload">Upload</a>
+                    <div class="dropdown">
+                        <button class="dropdown-button" type="button">@_user.Identity.Name</button>
+                        <div class="dropdown-content">
+                            <a>place holder</a>
+                            <a href="/Account/Logout">Logout</a>
+                        </div>
+                    </div>
                 </Authorized>
+                <NotAuthorized>
+                    <a href="/Account/Login">Login with Discord</a>
+                </NotAuthorized>
             </AuthorizeView>
         </div>
-    </div>
-    <div class="navbar-right">
-        <AuthorizeView>
-            <Authorized>
-                <div class="dropdown">
-                    <button class="dropdown-button" type="button">@_user.Identity.Name</button>
-                    <div class="dropdown-content">
-                        <a>place holder</a>
-                        <a href="/Account/Logout">Logout</a>
-                    </div>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <a href="/Account/Login">Login with Discord</a>
-            </NotAuthorized>
-        </AuthorizeView>
-    </div>
-</nav>
+    </nav>
 </CascadingAuthenticationState>
 @code
 {
+    bool _isMenuOpen = false;
+    string NavBarClasses => _isMenuOpen ? "responsive" : string.Empty;
+
+    void ToggleMenu()
+    {
+        _isMenuOpen = !_isMenuOpen;
+    }
     ClaimsPrincipal? _user;
     protected override async Task OnInitializedAsync()
     {
