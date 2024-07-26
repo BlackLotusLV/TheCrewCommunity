@@ -23,7 +23,7 @@
     {
         <p>Loading images...</p>
     }
-    else if (_currentLoadEnd == _images.Count)
+    else if (_currentLoadEnd == _images.Length)
     {
         <p>All images loaded</p>
     }
@@ -41,16 +41,16 @@
     private uint _currentLoadEnd;
 
     // thumbnail url template https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/<image_id>/Thumbnail
-    private List<UserImage> _images = [];
+    private UserImage[] _images = [];
 
     protected override async Task OnInitializedAsync()
     {
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-        _images = dbContext.UserImages.OrderBy(x => x.UploadDateTime).ToList();
+        _images = dbContext.UserImages.OrderByDescending(x => x.UploadDateTime).ToArray();
 
-        if (_images.Count<InitialLoadSize-1)
+        if (_images.Length<InitialLoadSize-1)
         {
-            _currentLoadEnd = (uint)_images.Count;
+            _currentLoadEnd = (uint)_images.Length;
         }
         else
         {
@@ -62,15 +62,15 @@
     public async Task LoadMoreImages()
     {
         _isLoading = true;
-        if (_currentLoadEnd >= _images.Count)
+        if (_currentLoadEnd >= _images.Length)
         {
             return;
         }
 
         _currentLoadEnd += ImageLoadSize;
-        if (_currentLoadEnd > _images.Count)
+        if (_currentLoadEnd > _images.Length)
         {
-            _currentLoadEnd = (uint)_images.Count;
+            _currentLoadEnd = (uint)_images.Length;
         }
 
         await InvokeAsync(StateHasChanged);
