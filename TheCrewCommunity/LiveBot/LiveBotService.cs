@@ -13,7 +13,8 @@ namespace TheCrewCommunity.LiveBot;
 public class LiveBotService(
     IModeratorLoggingService moderatorLoggingService,
     IModeratorWarningService moderatorWarningService,
-    DiscordClient discordClient)
+    DiscordClient discordClient,
+    IUserActivityService userActivityService)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -37,6 +38,7 @@ public class LiveBotService(
 
         moderatorLoggingService.StartService(discordClient);
         moderatorWarningService.StartService(discordClient);
+        await userActivityService.StartAsync();
 
         commandsExtension.CommandExecuted += SystemEvents.CommandExecuted;
         commandsExtension.CommandErrored += SystemEvents.CommandErrored;

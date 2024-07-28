@@ -32,6 +32,7 @@ public static class ServiceConfiguration
         services.AddSingleton<IModMailService, ModMailService>();
         services.AddSingleton<IDatabaseMethodService, DatabaseMethodService>();
         services.AddSingleton<ICloudFlareImageService, CloudFlareImageService>();
+        services.AddSingleton<IUserActivityService, UserActivityService>();
 
         services.AddSingleton<GeneralUtils>();
 
@@ -40,7 +41,6 @@ public static class ServiceConfiguration
         services.AddRazorPages();
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
-                
                 
                 
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
