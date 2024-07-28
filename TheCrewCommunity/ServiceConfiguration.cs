@@ -93,7 +93,6 @@ public static class ServiceConfiguration
                 .HandleSessionCreated(SystemEvents.SessionCreated)
                 .HandleGuildAvailable(SystemEvents.GuildAvailable)
                 .HandleGuildAuditLogCreated(AuditLogEvents.OnAuditLogCreated)
-                .HandleMessageCreated(UserActivityTracker.OnMessageSend)
                 .HandleGuildMemberUpdated(MembershipScreening.OnAcceptRules)
                 .HandleGuildMemberAdded(MemberFlow.OnJoin)
                 .HandleGuildMemberAdded(MemberFlow.LogJoin)
