@@ -41,8 +41,14 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
 
         var activityKey = $"UserActivity:{user.Id}-{guild.Id}-{utcNow.Date}";
         var pastActivityKey = $"PastActivity:{user.Id}-{guild.Id}-{utcNow.Date}";
+        TimeSpan expirationTime = (DateTime.UtcNow.Date.AddDays(1) - DateTime.UtcNow).Add(TimeSpan.FromMinutes(5));
 
-        UserActivity? userActivity = await memoryCache.GetOrCreateAsync(activityKey, async _ => await GetOrCreateUserActivityAsync(user, guild, utcNow.Date));
+        UserActivity? userActivity = await memoryCache.GetOrCreateAsync(activityKey, async e =>
+        {
+            logger.LogDebug(CustomLogEvents.UserActivity,"Adding User activity to the cache. Item to expire after: {Time}",expirationTime.ToString());
+            e.SetAbsoluteExpiration(expirationTime);
+            return await GetOrCreateUserActivityAsync(user, guild, utcNow.Date);
+        });
         if (userActivity is null)
         {
             logger.LogDebug(CustomLogEvents.UserActivity, "UserActivity of {UserName}({UserId}) is null, should not be, ending early", user.GlobalName, user.Id);
@@ -63,7 +69,12 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
 
         _cooldownList.Add(new Cooldown(user, guild, DateTime.UtcNow));
 
-        long? pastPoints = await memoryCache.GetOrCreateAsync(pastActivityKey, async _ => await GetPastUserPointsAsync(user, guild, utcNow.Date));
+        long? pastPoints = await memoryCache.GetOrCreateAsync(pastActivityKey, async e =>
+        {
+            logger.LogDebug(CustomLogEvents.UserActivity,"Adding past points to the cache. Items to expire after: {Time}",expirationTime.ToString());
+            e.SetAbsoluteExpiration(expirationTime);
+            return await GetPastUserPointsAsync(user, guild, utcNow.Date);
+        });
         logger.LogDebug(CustomLogEvents.UserActivity, "Retrieved past points: {PastPoints}", pastPoints);
 
         long currentPoints = pastPoints.Value + userActivity.Points;
