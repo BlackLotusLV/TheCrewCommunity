@@ -15,6 +15,7 @@ public static class HandleEvent
         var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
         var modMailService = client.ServiceProvider.GetRequiredService<IModMailService>();
         var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
+        var userActivityService = client.ServiceProvider.GetRequiredService<IUserActivityService>();
         
         if (eventArgs.Guild is null)
         {
@@ -23,5 +24,7 @@ public static class HandleEvent
             if (mmEntry is not null)
                 await modMailService.ProcessModMailDm(client, eventArgs, mmEntry);
         }
+        if(eventArgs.Guild is null || eventArgs.Author.IsBot) return;
+        await userActivityService.UpdateUserActivityAsync(eventArgs.Author, eventArgs.Guild);
     }
 }
