@@ -98,13 +98,19 @@
         Logger.LogDebug(CustomLogEvents.PhotoUpload, "Image added to the form");
         _isLoading = true;
         string ext = Path.GetExtension(e.File.Name);
-        _title = Path.GetFileNameWithoutExtension(e.File.Name);
+        _title = FormatTitle(Path.GetFileNameWithoutExtension(e.File.Name));
         using MemoryStream ms = new();
         await e.File.OpenReadStream(10485760).CopyToAsync(ms);
         _uploadModel.Image = ms.ToArray();
         _isLoading = false;
         _isLoaded = true;
     }
+
+    private string FormatTitle(string input)
+    {
+        return input.Length > 40 ? input[..37]+"..." : input;
+    }
+    
 
     private async Task HandleUpload()
     {
