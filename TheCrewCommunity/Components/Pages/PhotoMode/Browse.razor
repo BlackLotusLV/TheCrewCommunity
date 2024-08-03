@@ -119,14 +119,13 @@
         }, options);
         observer.observe(loadMoreButton);
     }
-    
     function applyOnLoadToImages() {
         let images = document.querySelectorAll('.image-grid img:not(.processed-image):not(.game-logo)');
         console.log('Iterating on all images');
         images.forEach(function(img) {
             img.onload = function() {
                 if (img.naturalHeight > img.naturalWidth) {
-                    img.classList.add('vertical-image');
+                    img.parentNode.classList.add('vertical-image');
                     console.log('Added vertical image class to image');
                 }
                 img.classList.add('processed-image');

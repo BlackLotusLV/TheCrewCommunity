@@ -33,7 +33,11 @@
 }
 .vertical-image{
     grid-row: span 2;
-    max-width: 70% !important;
+    max-width: 90% !important;
+    min-height: 100%;
+}
+.processed-image{
+    min-height: 100%;
 }
 .load-more{
     display: flex;
@@ -55,7 +59,8 @@
 }
 
 @media only screen and (max-width: 400px) {
-    .vertical-image{
+    .vertical-image,
+    .processed-image{
         min-width: 100% !important;
     }
 }
