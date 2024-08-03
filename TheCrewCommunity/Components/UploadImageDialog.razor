@@ -15,45 +15,53 @@
 @if (ShowDialog && _isLoggedIn)
 {
     <div class="modal-background" @onclick="ToggleDialog">
-        <div class="modal-content" @onclick:stopPropagation="true" >
-            <div class="close" @onclick="ToggleDialog">
-                <i class="fa fa-x"></i>
-            </div>
-            <h2 class="modal-title"><i class="fa fa-upload"></i> Upload Image</h2>
-            <p class="modal-message">Select an image and the game that it belongs to</p>
-            <EditForm Model="_uploadModel" OnValidSubmit="HandleUpload" class="form-container">
-                <DataAnnotationsValidator/>
-                <ValidationSummary/>
-                <div class="form-group">
-                    <label for="Image">Image</label>
-                    <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
-                    @if (_isLoading)
-                    {
-                        <p>Loading file...</p>
-                    }
-                    @if (_isLoaded)
-                    {
-                        <span> <i class="fa fa-check" style="color: green"></i></span>
-                    }
-                    <ValidationMessage For="@(() => _uploadModel.Image)"/>
+        <div class="modal-content" @onclick:stopPropagation="true">
+            @if (_isUploading)
+            {
+                <div class="loading">
+                    <i class="fa fa-spinner fa-spin"></i>
                 </div>
-
-                <div class="form-group">
-                    <label for="GameId">Game</label>
-                    <select id="GameId" class="game-select" @bind="@_uploadModel.GameId">
-                        <option value="" disabled selected>-- Select a game --</option>
-                        @foreach (Game game in _games)
+            }
+            else
+            {
+                <div class="close" @onclick="ToggleDialog">
+                    <i class="fa fa-x"></i>
+                </div>
+                <h2 class="modal-title"><i class="fa fa-upload"></i> Upload Image</h2>
+                <p class="modal-message">Select an image and the game that it belongs to</p>
+                <EditForm Model="_uploadModel" OnValidSubmit="HandleUpload" class="form-container">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    <div class="form-group">
+                        <label for="Image">Image</label>
+                        <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
+                        @if (_isLoading)
                         {
-                            <option value="@game.Id">@game.Name</option>
+                            <span><i class="fa fa-spinner fa-spin-pulse" style="color: green"></i></span>
                         }
-                    </select>
-                    <ValidationMessage For="@(() => _uploadModel.GameId)"/>
-                </div>
-                <div>
-                    <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
-                </div>
+                        @if (_isLoaded)
+                        {
+                            <span><i class="fa fa-check" style="color: green"></i></span>
+                        }
+                        <ValidationMessage For="@(() => _uploadModel.Image)"/>
+                    </div>
 
-            </EditForm>
+                    <div class="form-group">
+                        <label for="GameId">Game</label>
+                        <select id="GameId" class="game-select" @bind="@_uploadModel.GameId">
+                            <option value="" disabled selected>-- Select a game --</option>
+                            @foreach (Game game in _games)
+                            {
+                                <option value="@game.Id">@game.Name</option>
+                            }
+                        </select>
+                        <ValidationMessage For="@(() => _uploadModel.GameId)"/>
+                    </div>
+                    <div>
+                        <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
+                    </div>
+                </EditForm>
+            }
         </div>
     </div>
 }
@@ -68,6 +76,7 @@
     bool _isLoading = false;
     bool _isLoaded = false;
     bool _isLoggedIn = false;
+    bool _isUploading = false;
 
     class UploadModel
     {
@@ -114,17 +123,20 @@
 
     private async Task HandleUpload()
     {
+        _isUploading = true;
         if (_user is null || !_uploadModel.GameId.HasValue)
         {
             ToggleDialog();
             return;
         }
+        Logger.LogDebug(CustomLogEvents.PhotoUpload,"Started Upload process of iamge");
         PostImageResponse response = await CfImageService.PostImageAsync(_uploadModel.Image);
         if (response is {Success: true, Result:not null})
         {
             await DatabaseMethodService.AddUserImageAsync(_user, Guid.Parse(response.Result.Id), _title, _uploadModel.GameId.Value);
             NavigationManager.NavigateTo($"/i/{response.Result.Id}");
         }
+        ToggleDialog();
     }
 
     public void ToggleDialog()
@@ -134,6 +146,7 @@
         _isLoaded = false;
         _uploadModel.Image = [];
         _uploadModel.GameId = null;
+        _isUploading = false;
     }
 
 }
