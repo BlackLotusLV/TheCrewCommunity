@@ -42,3 +42,8 @@
     background-color: #2f2f2f;
     color: white;
 }
+.loading i{
+    font-size: 50px;
+    left: 50%;
+    position: relative;
+}
