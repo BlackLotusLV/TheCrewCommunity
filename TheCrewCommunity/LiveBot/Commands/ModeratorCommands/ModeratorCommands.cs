@@ -51,13 +51,13 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
         [Description("The amount of messages to delete (1-100)")] long messageCount)
     => await PruneCommand.ExecuteAsync(ctx, messageCount);
     
-    // [Command("Prune"), SlashCommandTypes(ApplicationCommandType.MessageContextMenu), RequirePermissions(Permissions.ManageMessages)]
-    // public async Task PruneMenu(SlashCommandContext ctx, DiscordMessage targetMessage)
-    // => await PruneContextMenu.ExecuteAsync(ctx, targetMessage);
-    // 
-    // [Command("Prune-User"), SlashCommandTypes(ApplicationCommandType.MessageContextMenu), RequirePermissions(Permissions.ManageMessages)]
-    // public async Task PruneUserMenu(SlashCommandContext ctx, DiscordMessage targetMessage) 
-    //     => await PruneUserContextMenu.ExecuteAsync(ctx, targetMessage);
+    [Command("Prune"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequirePermissions(DiscordPermissions.ManageMessages)]
+    public async Task PruneMenu(SlashCommandContext ctx, DiscordMessage targetMessage)
+    => await PruneContextMenu.ExecuteAsync(ctx, targetMessage);
+    
+    [Command("Prune-User"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequirePermissions(DiscordPermissions.ManageMessages)]
+    public async Task PruneUserMenu(SlashCommandContext ctx, DiscordMessage targetMessage) 
+        => await PruneUserContextMenu.ExecuteAsync(ctx, targetMessage);
     
     [Command("whitelist-invite"), Description("Whitelist an invite code"), RequirePermissions(DiscordPermissions.ModerateMembers)]
     public async Task WhitelistInvite( SlashCommandContext ctx, [Description("The invite code to be whitelisted")] string code)
