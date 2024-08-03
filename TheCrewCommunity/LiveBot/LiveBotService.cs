@@ -43,7 +43,7 @@ public class LiveBotService(
         commandsExtension.CommandExecuted += SystemEvents.CommandExecuted;
         commandsExtension.CommandErrored += SystemEvents.CommandErrored;
         
-        await commandsExtension.AddProcessorsAsync(
+        commandsExtension.AddProcessors(
             new SlashCommandProcessor(),
             new UserCommandProcessor(),
             new MessageCommandProcessor()
