@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 <CascadingAuthenticationState>
+    <UploadImageDialog ShowDialog="false" @ref="_uploadImageDialog"/>
     <nav class="navbar @NavBarClasses">
         <button class="hamburger" type="button" @onclick="ToggleMenu">
             <i class="fa fa-bars"></i>
@@ -15,7 +16,7 @@
                 <a href="/PhotoMode/Browse">Browse</a>
                 <AuthorizeView>
                     <Authorized>
-                        <a href="/PhotoMode/Upload">Upload</a>
+                        <a @onclick="_uploadImageDialog!.ToggleDialog">Upload</a>
                     </Authorized>
                 </AuthorizeView>
             </div>
@@ -24,7 +25,7 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="dropdown">
-                        <button class="dropdown-button" type="button">@_user.Identity.Name</button>
+                        <button class="dropdown-button" type="button">@_user!.Identity!.Name</button>
                         <div class="dropdown-content">
                             <a>place holder</a>
                             <a href="/Account/Logout">Logout</a>
@@ -42,6 +43,7 @@
 {
     bool _isMenuOpen = false;
     string NavBarClasses => _isMenuOpen ? "responsive" : string.Empty;
+    UploadImageDialog? _uploadImageDialog;
 
     void ToggleMenu()
     {
