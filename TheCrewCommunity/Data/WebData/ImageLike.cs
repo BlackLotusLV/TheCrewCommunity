@@ -9,7 +9,8 @@ public class ImageLike
         init => _discordId = Convert.ToUInt64(value);
     }
     private readonly ulong _discordId;
-    public Guid ImageId { get; init; }
+    public required Guid ImageId { get; init; }
+    public DateTime Date { get; init; } = DateTime.UtcNow;
     
     public ApplicationUser? ApplicationUser { get; init; }
     public UserImage? UserImage { get; init; }
