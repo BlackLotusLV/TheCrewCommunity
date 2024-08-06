@@ -46,7 +46,7 @@ public static class ServiceConfiguration
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<LiveBotDbContext>();
         
         services.AddAuthentication(options =>

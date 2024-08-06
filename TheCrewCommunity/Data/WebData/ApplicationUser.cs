@@ -4,7 +4,7 @@ using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Data.WebData;
 
-public class ApplicationUser : IdentityUser
+public class ApplicationUser : IdentityUser<Guid>
 {
     public ulong DiscordId
     {
