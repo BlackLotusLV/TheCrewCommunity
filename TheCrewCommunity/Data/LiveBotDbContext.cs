@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data.GameData;
 using TheCrewCommunity.Data.TableConfiguration;
 using TheCrewCommunity.Data.WebData;
@@ -6,7 +8,7 @@ using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Data;
 
-public class LiveBotDbContext : DbContext
+public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<Guid>, Guid>
 {
     public DbSet<StreamNotifications> StreamNotifications { get; init; }
     public DbSet<User> Users { get; init; }
@@ -45,6 +47,8 @@ public class LiveBotDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        
         modelBuilder.ApplyConfiguration(new ImageLikeConfig());
         modelBuilder.ApplyConfiguration(new UserImageConfig());
         modelBuilder.Entity<ButtonRoles>().HasKey(x => x.Id);
