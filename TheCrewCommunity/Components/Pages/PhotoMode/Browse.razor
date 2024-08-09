@@ -13,6 +13,7 @@
 
 <PageTitle>Browsing Images</PageTitle>
 <div class="filters">
+    <h2>Filters:</h2>
     <select class="filter-select" @onchange="OnGameSelected">
         <option value="@Guid.Empty">All Games</option>
         @foreach (Game game in _games!)
