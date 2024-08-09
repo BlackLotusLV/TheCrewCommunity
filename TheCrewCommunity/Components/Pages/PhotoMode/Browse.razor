@@ -1,5 +1,6 @@
 ﻿@page "/PhotoMode/Browse"
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.GameData
 @using TheCrewCommunity.Data.WebData
@@ -7,13 +8,14 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject ILogger<Browse> Logger
+@inject IMemoryCache Cache
 @rendermode InteractiveServer
 
 <PageTitle>Browsing Images</PageTitle>
 <div class="filters">
     <select class="filter-select" @onchange="OnGameSelected">
         <option value="@Guid.Empty">All Games</option>
-        @foreach (Game game in _games)
+        @foreach (Game game in _games!)
         {
             <option value="@game.Id">@game.Name</option>
         }
@@ -56,7 +58,7 @@
     // thumbnail url template https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/<image_id>/Thumbnail
     private UserImage[] _images = [];
     UserImage[] _unfilteredImages = [];
-    Game[] _games = [];
+    Game[]? _games = [];
     Guid _selectedGameId;
 
     protected override async Task OnInitializedAsync()
@@ -65,11 +67,8 @@
         _unfilteredImages = dbContext.UserImages
             .Include(x=>x.Game)
             .OrderByDescending(x => x.UploadDateTime).ToArray();
-        for (int i = 0; i < 10; i++)
-        {
-            _unfilteredImages = _unfilteredImages.Concat(_unfilteredImages).ToArray();
-        }
-        _games = await dbContext.Games.ToArrayAsync();
+
+        _games = await Cache.GetOrCreateAsync("GameOptionsKey", async e => await dbContext.Games.ToArrayAsync());
         _images = _unfilteredImages;
 
         SetCurrentLoadEnd();
