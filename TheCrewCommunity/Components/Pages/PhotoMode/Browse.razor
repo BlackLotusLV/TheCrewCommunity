@@ -10,7 +10,15 @@
 @rendermode InteractiveServer
 
 <PageTitle>Browsing Images</PageTitle>
-
+<div class="filters">
+    <select class="filter-select" @onchange="OnGameSelected">
+        <option value="@Guid.Empty">All Games</option>
+        @foreach (Game game in _games)
+        {
+            <option value="@game.Id">@game.Name</option>
+        }
+    </select>
+</div>
 <div class="image-grid">
     @for (var i = 0; i < _currentLoadEnd; i++)
     {
@@ -47,14 +55,44 @@
 
     // thumbnail url template https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/<image_id>/Thumbnail
     private UserImage[] _images = [];
+    UserImage[] _unfilteredImages = [];
+    Game[] _games = [];
+    Guid _selectedGameId;
 
     protected override async Task OnInitializedAsync()
     {
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-        _images = dbContext.UserImages
+        _unfilteredImages = dbContext.UserImages
             .Include(x=>x.Game)
             .OrderByDescending(x => x.UploadDateTime).ToArray();
+        _games = await dbContext.Games.ToArrayAsync();
+        _images = _unfilteredImages;
 
+        SetCurrentLoadEnd();
+    }
+
+    void OnGameSelected(ChangeEventArgs e)
+    {
+        if (e.Value is null)
+        {
+            Logger.LogDebug("Value of selected object is null. Stopping process");
+            return;
+        }
+        _selectedGameId = Guid.Parse(e.Value.ToString() ?? string.Empty);
+        if (_selectedGameId == Guid.Empty)
+        {
+            _images = _unfilteredImages;
+            SetCurrentLoadEnd();
+            Logger.LogDebug(CustomLogEvents.PhotoBrowse,"No game selected, loading all images");
+            return;
+        }
+        _images = _unfilteredImages.Where(x => x.GameId == _selectedGameId).ToArray();
+        Logger.LogDebug(CustomLogEvents.PhotoBrowse, "Game filter set to {GameId}", _selectedGameId);
+        SetCurrentLoadEnd();
+    }
+
+    void SetCurrentLoadEnd()
+    {
         if (_images.Length<InitialLoadSize-1)
         {
             _currentLoadEnd = (uint)_images.Length;
