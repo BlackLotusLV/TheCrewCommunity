@@ -65,13 +65,17 @@
         _unfilteredImages = dbContext.UserImages
             .Include(x=>x.Game)
             .OrderByDescending(x => x.UploadDateTime).ToArray();
+        for (int i = 0; i < 10; i++)
+        {
+            _unfilteredImages = _unfilteredImages.Concat(_unfilteredImages).ToArray();
+        }
         _games = await dbContext.Games.ToArrayAsync();
         _images = _unfilteredImages;
 
         SetCurrentLoadEnd();
     }
 
-    void OnGameSelected(ChangeEventArgs e)
+    async Task OnGameSelected(ChangeEventArgs e)
     {
         if (e.Value is null)
         {
@@ -83,12 +87,16 @@
         {
             _images = _unfilteredImages;
             SetCurrentLoadEnd();
+            await Task.Delay(10);
+            await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
             Logger.LogDebug(CustomLogEvents.PhotoBrowse,"No game selected, loading all images");
             return;
         }
         _images = _unfilteredImages.Where(x => x.GameId == _selectedGameId).ToArray();
         Logger.LogDebug(CustomLogEvents.PhotoBrowse, "Game filter set to {GameId}", _selectedGameId);
         SetCurrentLoadEnd();
+        await Task.Delay(10);
+        await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
     }
 
     void SetCurrentLoadEnd()
@@ -120,7 +128,7 @@
 
         await InvokeAsync(StateHasChanged);
         Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Loaded more images");
-        await Task.Delay(100);
+        await Task.Delay(10);
         await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
         Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Adding vertical class to images");
         _isLoading = false;
@@ -158,9 +166,18 @@
         observer.observe(loadMoreButton);
     }
     function applyOnLoadToImages() {
-        let images = document.querySelectorAll('.image-grid img:not(.processed-image):not(.game-logo)');
+        let images = document.querySelectorAll('.image-grid img:not(.game-logo)');
         console.log('Iterating on all images');
         images.forEach(function(img) {
+            // remove the processed-image class if it is present
+            if (img.classList.contains('processed-image')) {
+                img.classList.remove('processed-image');
+            }
+
+            // remove the vertical-image class from the image parent node if it is present
+            if (img.parentNode.classList.contains('vertical-image')) {
+                img.parentNode.classList.remove('vertical-image');
+            }
             img.onload = function() {
                 if (img.naturalHeight > img.naturalWidth) {
                     img.parentNode.classList.add('vertical-image');
