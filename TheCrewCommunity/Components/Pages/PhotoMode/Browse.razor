@@ -1,4 +1,5 @@
 ﻿@page "/PhotoMode/Browse"
+@using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Data
@@ -19,6 +20,12 @@
         @foreach (Game game in _games!)
         {
             <option value="@game.Id">@game.Name</option>
+        }
+    </select>
+    <select class="filter-select" @onchange="OnSortModeSelectedAsync">
+        @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
+        {
+            <option value="@option">@(option.ToString())</option>
         }
     </select>
 </div>
@@ -61,15 +68,17 @@
     UserImage[] _unfilteredImages = [];
     Game[]? _games = [];
     Guid _selectedGameId;
+    SortMode _selectedSortMode = SortMode.New;
 
     protected override async Task OnInitializedAsync()
     {
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         _unfilteredImages = dbContext.UserImages
             .Include(x=>x.Game)
+            .Include(x=>x.ImageLikes)
             .OrderByDescending(x => x.UploadDateTime).ToArray();
 
-        _games = await Cache.GetOrCreateAsync("GameOptionsKey", async e => await dbContext.Games.ToArrayAsync());
+        _games = await Cache.GetOrCreateAsync("GameOptionsKey", async _ => await dbContext.Games.ToArrayAsync());
         _images = _unfilteredImages;
 
         SetCurrentLoadEnd();
@@ -83,20 +92,86 @@
             return;
         }
         _selectedGameId = Guid.Parse(e.Value.ToString() ?? string.Empty);
+        await ApplyFilterAsync();
+    }
+
+    async Task OnSortModeSelectedAsync(ChangeEventArgs e)
+    {
+        _selectedSortMode = Enum.TryParse(typeof(SortMode), e.Value?.ToString() ?? "New", out object? mode) ? (SortMode)mode : SortMode.New;
+        await ApplyFilterAsync();
+    }
+
+    async Task ApplyFilterAsync()
+    {
         if (_selectedGameId == Guid.Empty)
         {
             _images = _unfilteredImages;
-            SetCurrentLoadEnd();
-            await Task.Delay(10);
-            await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
             Logger.LogDebug(CustomLogEvents.PhotoBrowse,"No game selected, loading all images");
-            return;
         }
-        _images = _unfilteredImages.Where(x => x.GameId == _selectedGameId).ToArray();
-        Logger.LogDebug(CustomLogEvents.PhotoBrowse, "Game filter set to {GameId}", _selectedGameId);
+        else
+        {
+            _images = _unfilteredImages.Where(x => x.GameId == _selectedGameId).ToArray();
+            Logger.LogDebug(CustomLogEvents.PhotoBrowse, "Game filter set to {GameId}", _selectedGameId);
+        }
+
+        switch (_selectedSortMode)
+        {
+            case SortMode.New:
+                _images = _images.OrderByDescending(x => x.UploadDateTime).ToArray();
+                break;
+            case SortMode.Hot:
+                SortImagesByHotness();
+                break;
+            case SortMode.TopToday:
+                SortImagesByLikes(365);
+                break;
+            case SortMode.TopWeek:
+                SortImagesByLikes(365);
+                break;
+            case SortMode.TopMonth:
+                SortImagesByLikes(365);
+                break;
+            case SortMode.TopYear:
+                SortImagesByLikes(365);
+                break;
+            case SortMode.TopAllTime:
+                _images = _images.OrderByDescending(x => x.ImageLikes).ToArray();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
         SetCurrentLoadEnd();
         await Task.Delay(10);
         await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
+    }
+
+    void SortImagesByHotness()
+    {
+        var imagesAndLikes = _images.Select(x =>
+        {
+            return new
+            {
+                Image = x,
+                Weighting = x.ImageLikes!.Where(like => like.Date > DateTime.UtcNow.AddHours(-5))
+                    .Select(like => new LikeWeighting { Likes = x.ImageLikes!.Count(imageLike => imageLike.Date.Date >= DateTime.UtcNow.Date.AddHours(-1)), Recency = DateTime.Now - like.Date})
+                    .Sum(lw => lw.HotScore)
+            };
+        });
+        _images = imagesAndLikes.OrderByDescending(x => x.Weighting).Select(x => x.Image).ToArray();
+    }
+
+    void SortImagesByLikes(int days)
+    {
+        var imagesAndLikes = _images.Select(x =>
+        {
+            return new
+            {
+                Image = x,
+                Likes = x.ImageLikes!.Count(like => like.Date.Date >= DateTime.UtcNow.Date.AddDays(-days))
+            };
+        });
+        _images = imagesAndLikes.OrderByDescending(x => x.Likes).Select(x => x.Image).ToArray();
     }
 
     void SetCurrentLoadEnd()
@@ -146,6 +221,30 @@
     {
         NavigationManager.NavigateTo($"/i/{id}");
         return Task.CompletedTask;
+    }
+
+    enum SortMode
+    {
+        [Display(Name = "New")]
+        New,
+        [Display(Name = "Hot")]
+        Hot,
+        [Display(Name = "New Today")]
+        TopToday,
+        [Display(Name = "Top this week")]
+        TopWeek,
+        [Display(Name = "Top this month")]
+        TopMonth,
+        [Display(Name = "Top this year")]
+        TopYear,
+        [Display(Name = "Top of all Time")]
+        TopAllTime
+    }
+    public class LikeWeighting
+    {
+        public int Likes { get; init; }
+        public TimeSpan Recency { get; init; }
+        public double HotScore => Likes / Recency.TotalHours;
     }
 
 }
