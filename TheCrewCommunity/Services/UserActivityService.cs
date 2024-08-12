@@ -120,8 +120,8 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
     }
     private sealed class Cooldown(DiscordUser user, DiscordGuild guild, DateTime time)
     {
-        public DiscordUser User { get; init; } = user;
-        public DiscordGuild Guild { get; init; } = guild;
-        public DateTime Time { get; set; } = time;
+        public DiscordUser User { get; } = user;
+        public DiscordGuild Guild { get; } = guild;
+        public DateTime Time { get; } = time;
     }
 }

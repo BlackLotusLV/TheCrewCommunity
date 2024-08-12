@@ -9,24 +9,24 @@ public class RankRoles
         ServerRank = serverRank;
     }
 
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
-    private ulong _guildId;
+    private readonly ulong _guildId;
 
     public ulong RoleId
     {
         get => _roleId;
-        set => _roleId = Convert.ToUInt64(value);
+        init => _roleId = Convert.ToUInt64(value);
     }
 
-    private ulong _roleId;
-    public long ServerRank { get; set; }
+    private readonly ulong _roleId;
+    public long ServerRank { get; init; }
 
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
 }

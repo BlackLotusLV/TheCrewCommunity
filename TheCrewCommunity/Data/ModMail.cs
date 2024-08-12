@@ -13,21 +13,21 @@ public class ModMail
         IsActive = isActive;
     }
 
-    private ulong _guildId;
-    private ulong _userDiscordId;
+    private readonly ulong _guildId;
+    private readonly ulong _userDiscordId;
 
-    public long Id { get; set; }
+    public long Id { get; init; }
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
     public ulong UserDiscordId
     {
         get => _userDiscordId;
-        set => _userDiscordId = Convert.ToUInt64(value);
+        init => _userDiscordId = Convert.ToUInt64(value);
     }
 
     public DateTime LastMessageTime { get; set; }
@@ -35,7 +35,7 @@ public class ModMail
     public bool IsActive { get; set; }
     
     [MaxLength(7)]
-    public string ColorHex { get; set; }
+    public string ColorHex { get; init; }
 
-    public GuildUser? GuildUser { get; set; }
+    public GuildUser? GuildUser { get; init; }
 }

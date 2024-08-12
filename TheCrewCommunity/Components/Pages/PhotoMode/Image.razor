@@ -45,7 +45,7 @@ else
             @if (SeeTools)
             {
                 <div class="author-tools">
-                    <i class="fa fa-trash" @onclick="(()=>ShowConfirmModal = true)"></i>
+                    <i class="fa fa-trash" @onclick="()=>ShowConfirmModal = true"></i>
                 </div>
                 <ConfirmationDialog ShowDialog="@ShowConfirmModal" Title="Confirm Delete" Message="Are you sure you want to delete the image? This can't be reversed!" ConfirmationChanged="ConfirmDelete"/>
             }

@@ -4,13 +4,12 @@ using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
 namespace TheCrewCommunity.LiveBot.Commands.General;
 
-public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory)
+public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory, InteractivityExtension interactivity)
 {
     [Command("Report"), Description("Report a message so moderators can take a look"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, DiscordMessage targetMessage)
@@ -39,7 +38,6 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             );
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,modal);
         
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(modal.CustomId, ctx.User);
         if (response.TimedOut) return;
         

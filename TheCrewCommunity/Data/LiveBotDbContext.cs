@@ -11,7 +11,7 @@ namespace TheCrewCommunity.Data;
 public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<Guid>, Guid>
 {
     public DbSet<StreamNotifications> StreamNotifications { get; init; }
-    public DbSet<User> Users { get; init; }
+    public new DbSet<User> Users { get; init; }
     public DbSet<GuildUser> GuildUsers { get; init; }
     public DbSet<Infraction> Infractions { get; init; }
     public DbSet<Guild> Guilds { get; init; }

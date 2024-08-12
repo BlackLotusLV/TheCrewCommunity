@@ -12,29 +12,29 @@ public sealed class User
     public ulong DiscordId
     {
         get => _discordId;
-        set => _discordId = Convert.ToUInt64(value);
+        init => _discordId = Convert.ToUInt64(value);
     }
 
-    private ulong _discordId;
+    private readonly ulong _discordId;
     public int CookiesGiven { get; set; }
     public int CookiesTaken { get; set; }
     public DateTime CookieDate { get; set; }
     [MaxLength(5)]
-    public string? Locale { get; set; }
+    public string? Locale { get; init; }
 
     public ulong? ParentDiscordId
     {
         get => _parentDiscordId;
-        set => _parentDiscordId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _parentDiscordId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
     }
 
-    private ulong? _parentDiscordId;
+    private readonly ulong? _parentDiscordId;
 
-    public User? Parent { get; set; }
+    public User? Parent { get; init; }
     
-    public ICollection<UbiInfo>? UbiInfo { get; set; }
-    public ICollection<User>? ChildUsers { get; set; }
-    public ICollection<GuildUser>? UserGuilds { get; set; }
-    public ICollection<PhotoCompEntries>? PhotoCompEntries { get; set; }
-    public ICollection<Tag>? Tags { get; set; }
+    public ICollection<UbiInfo>? UbiInfo { get; init; }
+    public ICollection<User>? ChildUsers { get; init; }
+    public ICollection<GuildUser>? UserGuilds { get; init; }
+    public ICollection<PhotoCompEntries>? PhotoCompEntries { get; init; }
+    public ICollection<Tag>? Tags { get; init; }
 }

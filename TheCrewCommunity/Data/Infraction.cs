@@ -14,37 +14,37 @@ public class Infraction
         InfractionType = infractionType;
     }
 
-    private ulong _guildId;
-    private ulong _userId;
-    private ulong _adminDiscordId;
+    private readonly ulong _guildId;
+    private readonly ulong _userId;
+    private readonly ulong _adminDiscordId;
 
-    public long Id { get; set; }
+    public long Id { get; init; }
 
     public ulong UserId
     {
         get => _userId;
-        set => _userId = Convert.ToUInt64(value);
+        init => _userId = Convert.ToUInt64(value);
     }
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
     [MaxLength(2000)]
     public string? Reason { get; set; }
     public bool IsActive { get; set; }
-    public DateTimeOffset TimeCreated { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset TimeCreated { get; init; } = DateTimeOffset.UtcNow;
 
     public ulong AdminDiscordId
     {
         get => _adminDiscordId;
-        set => _adminDiscordId = Convert.ToUInt64(value);
+        init => _adminDiscordId = Convert.ToUInt64(value);
     }
 
-    public InfractionType InfractionType { get; set; }
-    public GuildUser? GuildUser { get; set; }
+    public InfractionType InfractionType { get; init; }
+    public GuildUser? GuildUser { get; init; }
 }
 
 public enum InfractionType

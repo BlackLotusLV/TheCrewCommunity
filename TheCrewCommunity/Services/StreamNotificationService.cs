@@ -11,9 +11,9 @@ public class StreamNotificationService(ILoggerFactory loggerFactory) : IHostedSe
     private Timer? _cleanupTimer;
     private readonly ILogger<StreamNotificationService> _logger = loggerFactory.CreateLogger<StreamNotificationService>();
     private Task? _task;
-    public static List<LiveStreamer> LiveStreamerList { get; set; } = [];
-    public static int StreamCheckDelay { get; } = 5;
-    
+    public static List<LiveStreamer> LiveStreamerList { get; } = [];
+    public static int StreamCheckDelay => 5;
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation(CustomLogEvents.StreamNotification,"Stream notification service starting");

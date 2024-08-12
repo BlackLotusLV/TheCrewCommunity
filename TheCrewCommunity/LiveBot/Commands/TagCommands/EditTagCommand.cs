@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
-using DSharpPlus;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
@@ -12,7 +10,7 @@ namespace TheCrewCommunity.LiveBot.Commands.TagCommands;
 
 public static class EditTagCommand
 {
-    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService methodService, SlashCommandContext ctx, string tagId)
+    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService methodService, InteractivityExtension interactivity, SlashCommandContext ctx, string tagId)
     {
         if (ctx.Guild is null)
         {
@@ -44,7 +42,7 @@ public static class EditTagCommand
 
         DiscordInteractionResponseBuilder responseBuilder = new();
 
-        const string modalId = $"tag_edit";
+        const string modalId = "tag_edit";
         responseBuilder
             .WithTitle("Edit Tag")
             .WithCustomId(modalId)
@@ -53,7 +51,6 @@ public static class EditTagCommand
 
         await ctx.RespondAsync(responseBuilder);
         
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var result = await interactivity.WaitForModalAsync(modalId,ctx.User);
         if (result.TimedOut)
         {

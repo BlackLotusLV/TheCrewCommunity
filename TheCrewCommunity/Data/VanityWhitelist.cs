@@ -4,14 +4,14 @@ namespace TheCrewCommunity.Data;
 
 public class VanityWhitelist
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    private readonly ulong _guildId;
+    public Guid Id { get; init; } = Guid.NewGuid();
     public required ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
-    private ulong _guildId;
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
     [MaxLength(25)]
-    public required string VanityCode { get; set; }
+    public required string VanityCode { get; init; }
 }

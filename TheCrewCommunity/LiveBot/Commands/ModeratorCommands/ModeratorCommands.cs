@@ -4,6 +4,7 @@ using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
@@ -11,7 +12,7 @@ using TheCrewCommunity.Services;
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
 [Command("Mod"), Description("Moderator commands"), RequireGuild]
-public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModeratorWarningService warningService, IModeratorLoggingService moderatorLoggingService, IModMailService modMailService)
+public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModeratorWarningService warningService, IModeratorLoggingService moderatorLoggingService, IModMailService modMailService, InteractivityExtension interactivity)
 {
     [Command("warn"), Description("Warns a user"), RequirePermissions(DiscordPermissions.KickMembers)]
     public async Task Warn(SlashCommandContext ctx,
@@ -38,13 +39,13 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
     public async Task DeleteNote(SlashCommandContext ctx,
         [Description("User who's note to delete")] DiscordUser user,
         [Description("The ID of the note to delete"), SlashAutoCompleteProvider(typeof(UserNotesAutocompleteProvider))] long noteId)
-    => await DeleteNoteCommand.ExecuteAsync(dbContextFactory, moderatorLoggingService, ctx, user, noteId);
+    => await DeleteNoteCommand.ExecuteAsync(dbContextFactory, moderatorLoggingService,interactivity, ctx, user, noteId);
     
     [Command("editnote"), Description("Edit a note"), RequirePermissions(DiscordPermissions.ModerateMembers)]
     public async Task EditNote(SlashCommandContext ctx,
         [Description("User who's note to edit")] DiscordUser user,
         [Description("The ID of the note to edit"), SlashAutoCompleteProvider(typeof(UserNotesAutocompleteProvider))] long noteId)
-    => await EditNoteCommand.ExecuteAsync(dbContextFactory, moderatorLoggingService, ctx, user, noteId);
+    => await EditNoteCommand.ExecuteAsync(dbContextFactory, moderatorLoggingService,interactivity, ctx, user, noteId);
     
     [Command("Prune"),Description("Prune the message in the channel"),RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task Prune(SlashCommandContext ctx,
@@ -73,11 +74,11 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
     
     [Command("faq-create"), Description("Creates a new FAQ message"), RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task CreateFaqAsync(SlashCommandContext ctx)
-    => await CreateFaqCommand.ExecuteAsync(ctx);
+    => await CreateFaqCommand.ExecuteAsync(interactivity, ctx);
 
     [Command("faq-edit"), Description("Edits an existing FAQ message, using the message ID"), RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task EditFaqAsync(SlashCommandContext ctx, [Description("The message ID to edit")] string messageId)
-    => await EditFaqCommand.ExecuteAsync(ctx, messageId);
+    => await EditFaqCommand.ExecuteAsync(interactivity, ctx, messageId);
     
     [Command("Say"), Description("Bot says a something"), RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task SayAsync(SlashCommandContext ctx, [Description("The message what the bot should say.")] string message,
@@ -89,5 +90,5 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
         [Description("User to timeout")] DiscordMember user,
         [Description("How long the timeout will last")] string duration,
         [Description("Reason for the timeout")] string reason)
-    => await TimeoutCommand.ExecuteAsync(ctx, user, duration, reason);
+    => await TimeoutCommand.ExecuteAsync(interactivity, ctx, user, duration, reason);
 }

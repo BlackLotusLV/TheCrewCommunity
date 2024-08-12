@@ -1,6 +1,10 @@
-﻿using System.Security.Claims;
-using DSharpPlus;
+﻿using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.MessageCommands;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
+using DSharpPlus.Interactivity.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
@@ -66,12 +70,10 @@ public static class ServiceConfiguration
                 options.SaveTokens = true;
                 options.Events = new OAuthEvents
                 {
-                    OnTicketReceived = async context =>
+                    OnTicketReceived = context =>
                     {
-                        string? discordId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-                        var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
-                        ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
                         context.ReturnUri = "/Account/Registering";
+                        return Task.CompletedTask;
                     }
                 };
             });
@@ -108,8 +110,29 @@ public static class ServiceConfiguration
                 .HandleMessageCreated(DiscordInviteFilter.OnMessageCreated)
                 .HandleComponentInteractionCreated(LiveBot.DiscordEventHandlers.ComponentInteractionCreated.HandleEvent.OnButtonPress)
                 .HandleMessageCreated(LiveBot.DiscordEventHandlers.MessageCreated.HandleEvent.OnMessageCreated)
-
         );
+        ulong guildId = 0;
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            guildId = 282478449539678210;
+        }
+        CommandsConfiguration commandsConfiguration = new()
+        {
+            DebugGuildId = guildId
+        };
+        services.AddCommandsExtension(extension =>
+            {
+                extension.CommandExecuted += SystemEvents.CommandExecuted;
+                extension.CommandErrored += SystemEvents.CommandErrored;
+                extension.AddProcessors(
+                    new SlashCommandProcessor(),
+                    new UserCommandProcessor(),
+                    new MessageCommandProcessor()
+                );
+                extension.AddCommands(typeof(LiveBotService).Assembly);
+            },
+            commandsConfiguration);
+        services.AddInteractivityExtension();
         return services;
     }
 }

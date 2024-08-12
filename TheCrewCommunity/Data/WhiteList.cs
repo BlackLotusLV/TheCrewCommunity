@@ -2,9 +2,9 @@
 
 public class WhiteList
 {
-    public long Id { get; set; }
+    public long Id { get; init; }
     
-    public string? UbisoftName { get; set; }
+    public string? UbisoftName { get; init; }
     private ulong? _discordId;
 
     public ulong? DiscordId
@@ -12,7 +12,7 @@ public class WhiteList
         get=>_discordId; 
         set=> _discordId=Convert.ToUInt64(value);
     }
-    public int WhiteListSettingsId { get; set; }
+    public int WhiteListSettingsId { get; init; }
     
-    public WhiteListSettings? Settings { get; set; }
+    public WhiteListSettings? Settings { get; init; }
 }

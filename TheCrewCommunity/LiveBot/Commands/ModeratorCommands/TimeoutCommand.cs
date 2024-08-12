@@ -2,13 +2,12 @@
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
 public static partial class TimeoutCommand
 {
-    public static async Task ExecuteAsync(SlashCommandContext ctx, DiscordMember member, string duration, string reason)
+    public static async Task ExecuteAsync(InteractivityExtension interactivity, SlashCommandContext ctx, DiscordMember member, string duration, string reason)
     {
         await ctx.DeferResponseAsync(true);
         if (ctx.Guild is null)
@@ -39,7 +38,6 @@ public static partial class TimeoutCommand
             .AddEmbed(embed)
             .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, "confirm", "Confirm"), new DiscordButtonComponent(DiscordButtonStyle.Danger, "cancel", "Cancel"));
         DiscordMessage confirmationMessage = await ctx.EditResponseAsync(confirmationResponse);
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var interaction = await interactivity.WaitForButtonAsync(confirmationMessage, ctx.User);
         if (interaction.TimedOut)
         {
@@ -70,36 +68,14 @@ public static partial class TimeoutCommand
             double value = double.Parse(match.Groups[1].Value);
             string unit = match.Groups[2].Value;
 
-            switch (unit)
+            timeOutTime = unit switch
             {
-                case "d":
-                case "day":
-                case "days":
-                    timeOutTime = timeOutTime.AddDays(value);
-                    break;
-                case "h":
-                case "hour":
-                case "hours":
-                    timeOutTime = timeOutTime.AddHours(value);
-                    break;
-                case "m":
-                case "min":
-                case "mins":
-                case "minute":
-                case "minutes":
-                    timeOutTime = timeOutTime.AddMinutes(value);
-                    break;
-                case "s":
-                case "sec":
-                case "secs":
-                case "second":
-                case "seconds":
-                    timeOutTime = timeOutTime.AddSeconds(value);
-                    break;
-                default:
-                    timeOutTime = timeOutTime.AddSeconds(0);
-                    break;
-            }
+                "d" or "day" or "days" => timeOutTime.AddDays(value),
+                "h" or "hour" or "hours" => timeOutTime.AddHours(value),
+                "m" or "min" or "mins" or "minute" or "minutes" => timeOutTime.AddMinutes(value),
+                "s" or "sec" or "secs" or "second" or "seconds" => timeOutTime.AddSeconds(value),
+                _ => timeOutTime.AddSeconds(0)
+            };
         }
 
         return timeOutTime;

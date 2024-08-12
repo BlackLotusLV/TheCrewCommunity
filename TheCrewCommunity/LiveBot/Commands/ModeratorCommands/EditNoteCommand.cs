@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Commands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
@@ -9,7 +8,7 @@ using TheCrewCommunity.Services;
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 public static class EditNoteCommand
 {
-    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService,CommandContext ctx, DiscordUser user, long noteId)
+    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService, InteractivityExtension interactivity,CommandContext ctx, DiscordUser user, long noteId)
     {
         if (ctx.Member is null || ctx.Guild is null)
         {
@@ -30,7 +29,6 @@ public static class EditNoteCommand
             .AddComponents(new DiscordTextInputComponent("Content", "Content", null, oldNote, true, DiscordTextInputStyle.Paragraph));
         await ctx.RespondAsync(modal);
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (response.TimedOut) return;
         infraction.Reason = response.Result.Values["Content"];

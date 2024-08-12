@@ -7,22 +7,21 @@ public class WhiteListSettings
         GuildId = guildId;
         RoleId = roleId;
     }
-    public int Id { get; set; }
-    private ulong _guildId;
+    private readonly ulong _guildId;
+    private readonly ulong _roleId;
+    public int Id { get; init; }
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
-
-    private ulong _roleId;
 
     public ulong RoleId
     {
         get => _roleId;
-        set => _roleId = Convert.ToUInt64(value);
+        init => _roleId = Convert.ToUInt64(value);
     }
-    public ICollection<WhiteList>? WhitelistedUsers { get; set; }
-    public Guild? Guild { get; set; }
+    public ICollection<WhiteList>? WhitelistedUsers { get; init; }
+    public Guild? Guild { get; init; }
 }

@@ -29,8 +29,8 @@ public class ModeratorWarningService(
 {
     private const string _infractionButtonPrefix = "GetInfractions-";
     private const string _userInfoButtonPrefix = "GetUserInfo-";
-    public string InfractionButtonPrefix { get; } = _infractionButtonPrefix;
-    public string UserInfoButtonPrefix { get; } = _userInfoButtonPrefix;
+    public string InfractionButtonPrefix => _infractionButtonPrefix;
+    public string UserInfoButtonPrefix => _userInfoButtonPrefix;
 
     private const string NotConfiguredMessage = "This server has not set up this feature!";
     private const string KickMessage = "Due to you exceeding the Infraction threshold, you have been kicked";
@@ -72,7 +72,7 @@ public class ModeratorWarningService(
         int infractionLevel = await dbContext.Infractions.CountAsync(w => w.UserId == item.User.Id && w.GuildId == item.Guild.Id && w.InfractionType == InfractionType.Warning && w.IsActive);
         DiscordEmbedBuilder embedToUser = new()
         {
-            Author = new DiscordEmbedBuilder.EmbedAuthor()
+            Author = new DiscordEmbedBuilder.EmbedAuthor
             {
                 Name = item.Guild.Name,
                 IconUrl = item.Guild.IconUrl
@@ -108,10 +108,11 @@ public class ModeratorWarningService(
         {
             embedToUser.WithFooter(AutoModeratorMessage);
         }
-        
+
+        string? content = null;
         if (member is not null)
         {
-            await TrySendInfractionMessage(member, embedToUser.Build());
+            content = await TrySendInfractionMessage(member, embedToUser.Build());
             if (kick)
             {
                 await member.RemoveAsync("Exceeded warning limit!");
@@ -122,7 +123,7 @@ public class ModeratorWarningService(
             }
         }
 
-        moderatorLoggingService.AddToQueue(new ModLogItem(modLog, item.User, warningDescription, ModLogType.Warning, "",item.Attachment));
+        moderatorLoggingService.AddToQueue(new ModLogItem(modLog, item.User, warningDescription, ModLogType.Warning, content, item.Attachment));
 
         if (item.InteractionContext == null)
         {
@@ -263,7 +264,7 @@ public class ModeratorWarningService(
                 Title = "Infraction History",
                 Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                 {
-                    Url = user.AvatarUrl,
+                    Url = user.AvatarUrl
                 }
             };
             const int pageCap = 6;
@@ -314,7 +315,7 @@ public class ModeratorWarningService(
             };
         }
 
-    private async Task<string> TrySendInfractionMessage(DiscordMember member, DiscordEmbed embed)
+    private static async Task<string> TrySendInfractionMessage(DiscordMember member, DiscordEmbed embed)
     {
         try
         {

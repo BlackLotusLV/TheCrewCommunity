@@ -8,6 +8,6 @@ public class Login : PageModel
 {
     public IActionResult OnGet(string returnUrl = "/")
     {
-        return Challenge(new AuthenticationProperties() { RedirectUri = "/" }, "Discord");
+        return Challenge(new AuthenticationProperties { RedirectUri = "/" }, "Discord");
     }
 }

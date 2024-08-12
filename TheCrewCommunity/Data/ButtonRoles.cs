@@ -7,31 +7,31 @@ public class ButtonRoles
         GuildId = guildId;
     }
 
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     public ulong ButtonId
     {
         get => _buttonId;
-        set => _buttonId = Convert.ToUInt64(value);
+        init => _buttonId = Convert.ToUInt64(value);
     }
 
-    private ulong _buttonId;
+    private readonly ulong _buttonId;
 
-    private ulong _guildId;
+    private readonly ulong _guildId;
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
-    private ulong _channelId;
+    private readonly ulong _channelId;
 
     public ulong ChannelId
     {
         get => _channelId;
-        set => _channelId = Convert.ToUInt64(value);
+        init => _channelId = Convert.ToUInt64(value);
     }
 
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
 }
