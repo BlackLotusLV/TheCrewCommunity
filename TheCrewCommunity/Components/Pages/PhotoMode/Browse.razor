@@ -1,16 +1,32 @@
 ﻿@page "/PhotoMode/Browse"
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.GameData
-@using TheCrewCommunity.Data.WebData
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject ILogger<Browse> Logger
+@inject IMemoryCache Cache
 @rendermode InteractiveServer
 
 <PageTitle>Browsing Images</PageTitle>
-
+<div class="filters">
+    <h2>Filters:</h2>
+    <select class="filter-select" @onchange="OnGameSelected">
+        <option value="@Guid.Empty">All Games</option>
+        @foreach (Game game in _games!)
+        {
+            <option value="@game.Id">@game.Name</option>
+        }
+    </select>
+    <select class="filter-select" @onchange="OnSortModeSelectedAsync">
+        @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
+        {
+            <option value="@option">@(option.ToString())</option>
+        }
+    </select>
+</div>
 <div class="image-grid">
     @for (var i = 0; i < _currentLoadEnd; i++)
     {
@@ -39,68 +55,7 @@
 </div>
 @code {
 
-    private ElementReference _loadMoreButton;
-    private const int InitialLoadSize = 50;
-    private bool _isLoading;
-    private const uint ImageLoadSize = 30;
-    private uint _currentLoadEnd;
-
-    // thumbnail url template https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/<image_id>/Thumbnail
-    private UserImage[] _images = [];
-
-    protected override async Task OnInitializedAsync()
-    {
-        LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-        _images = dbContext.UserImages
-            .Include(x=>x.Game)
-            .OrderByDescending(x => x.UploadDateTime).ToArray();
-
-        if (_images.Length<InitialLoadSize-1)
-        {
-            _currentLoadEnd = (uint)_images.Length;
-        }
-        else
-        {
-            _currentLoadEnd = InitialLoadSize - 1;
-        }
-    }
-
-    [JSInvokable]
-    public async Task LoadMoreImages()
-    {
-        _isLoading = true;
-        if (_currentLoadEnd >= _images.Length)
-        {
-            return;
-        }
-
-        _currentLoadEnd += ImageLoadSize;
-        if (_currentLoadEnd > _images.Length)
-        {
-            _currentLoadEnd = (uint)_images.Length;
-        }
-
-        await InvokeAsync(StateHasChanged);
-        Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Loaded more images");
-        await Task.Delay(100);
-        await JsRuntime.InvokeVoidAsync("applyOnLoadToImages");
-        Logger.LogDebug(CustomLogEvents.PhotoBrowse,"Adding vertical class to images");
-        _isLoading = false;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JsRuntime.InvokeVoidAsync("OnLoad", DotNetObjectReference.Create(this), _loadMoreButton);
-        }
-    }
-
-    private Task OpenImage(Guid id)
-    {
-        NavigationManager.NavigateTo($"/i/{id}");
-        return Task.CompletedTask;
-    }
+    
 
 }
 <script>
@@ -120,9 +75,18 @@
         observer.observe(loadMoreButton);
     }
     function applyOnLoadToImages() {
-        let images = document.querySelectorAll('.image-grid img:not(.processed-image):not(.game-logo)');
+        let images = document.querySelectorAll('.image-grid img:not(.game-logo)');
         console.log('Iterating on all images');
         images.forEach(function(img) {
+            // remove the processed-image class if it is present
+            if (img.classList.contains('processed-image')) {
+                img.classList.remove('processed-image');
+            }
+
+            // remove the vertical-image class from the image parent node if it is present
+            if (img.parentNode.classList.contains('vertical-image')) {
+                img.parentNode.classList.remove('vertical-image');
+            }
             img.onload = function() {
                 if (img.naturalHeight > img.naturalWidth) {
                     img.parentNode.classList.add('vertical-image');
