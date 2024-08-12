@@ -1,12 +1,5 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Commands;
-using DSharpPlus.Commands.Processors.MessageCommands;
-using DSharpPlus.Commands.Processors.SlashCommands;
-using DSharpPlus.Commands.Processors.UserCommands;
-using TheCrewCommunity.LiveBot.DiscordEventHandlers;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot;

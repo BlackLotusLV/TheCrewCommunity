@@ -25,7 +25,7 @@ public static class CreateTagCommand
             return;
         }
         
-        const string modalId = $"tag_create";
+        const string modalId = "tag_create";
         DiscordInteractionResponseBuilder responseBuilder = new();
         responseBuilder
             .WithTitle($"Create tag Named {name}")

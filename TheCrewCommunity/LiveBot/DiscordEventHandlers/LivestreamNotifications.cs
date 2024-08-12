@@ -49,12 +49,12 @@ public static class LivestreamNotifications
             switch (itemIndex)
             {
                 case >= 0
-                    when e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == null:
+                    when e.User.Presence.Activities.FirstOrDefault(w => w.Name.Equals("twitch", StringComparison.CurrentCultureIgnoreCase) || w.Name.Equals("youtube", StringComparison.CurrentCultureIgnoreCase)) == null:
                 {
                     //removes user from list
                     if (StreamNotificationService.LiveStreamerList[itemIndex].Time.AddHours(StreamNotificationService.StreamCheckDelay) < DateTime.UtcNow
-                        && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == StreamNotificationService.LiveStreamerList[itemIndex]
-                            .User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube"))
+                        && e.User.Presence.Activities.FirstOrDefault(w => w.Name.Equals("twitch", StringComparison.CurrentCultureIgnoreCase) || w.Name.Equals("youtube", StringComparison.CurrentCultureIgnoreCase)) == StreamNotificationService.LiveStreamerList[itemIndex]
+                            .User.Presence.Activities.FirstOrDefault(w => w.Name.Equals("twitch", StringComparison.CurrentCultureIgnoreCase) || w.Name.Equals("youtube", StringComparison.CurrentCultureIgnoreCase)))
                     {
                         StreamNotificationService.LiveStreamerList.RemoveAt(itemIndex);
                     }

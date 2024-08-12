@@ -26,10 +26,10 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
         {
             Color = color,
             Description = item.Description,
-            Author = new DiscordEmbedBuilder.EmbedAuthor()
+            Author = new DiscordEmbedBuilder.EmbedAuthor
             {
                 IconUrl = item.TargetUser.AvatarUrl,
-                Name = $"{item.TargetUser.Username} ({item.TargetUser.Id})",
+                Name = $"{item.TargetUser.Username} ({item.TargetUser.Id})"
             },
             Footer = new DiscordEmbedBuilder.EmbedFooter
             {
@@ -77,7 +77,7 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
 
     private static DiscordColor GetLogTypeColor(ModLogType type)
     {
-        var colourMap = new Dictionary<ModLogType, DiscordColor>()
+        var colourMap = new Dictionary<ModLogType, DiscordColor>
         {
             { ModLogType.Kick, new DiscordColor(0xf90707) },
             { ModLogType.Ban, new DiscordColor(0xf90707) },
@@ -94,7 +94,7 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
     }
     private static string GetLogTypeFooterText(ModLogType type)
     {
-        var footerText = new Dictionary<ModLogType,string>()
+        var footerText = new Dictionary<ModLogType,string>
         {
             {ModLogType.Kick,"User Kicked"},
             {ModLogType.Ban,"User Banned"},

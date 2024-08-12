@@ -7,34 +7,34 @@ public class StreamNotifications
         GuildId = guildId;
     }
 
-    public int Id { get; set; }
+    private readonly ulong _guildId;
+    private readonly ulong[]? _roleIds;
+    private readonly ulong _channelId;
+
+    public int Id { get; init; }
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
-    private ulong _guildId;
-    public string[]? Games { get; set; }
+    public string[]? Games { get; init; }
 
     public ulong[]? RoleIds
     {
         get => _roleIds;
-        set
+        init
         {
             if (value != null) _roleIds = value.Select(Convert.ToUInt64).ToArray();
         }
     }
 
-    private ulong[]? _roleIds;
-
     public ulong ChannelId
     {
         get => _channelId;
-        set => _channelId = Convert.ToUInt64(value);
+        init => _channelId = Convert.ToUInt64(value);
     }
 
-    private ulong _channelId;
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
 }

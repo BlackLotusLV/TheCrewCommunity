@@ -7,18 +7,18 @@ public class MediaOnlyChannels
     public required ulong ChannelId
     {
         get => _channelId;
-        set => _channelId = Convert.ToUInt64(value);
+        init => _channelId = Convert.ToUInt64(value);
     }
-    private ulong _channelId;
+    private readonly ulong _channelId;
     public required ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
-    private ulong _guildId;
+    private readonly ulong _guildId;
     
     [MaxLength(1000)]
-    public required string ResponseMessage { get; set; }
+    public required string ResponseMessage { get; init; }
     
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
 }

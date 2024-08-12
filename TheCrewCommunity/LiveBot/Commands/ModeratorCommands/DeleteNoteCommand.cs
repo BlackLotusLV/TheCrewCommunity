@@ -35,14 +35,14 @@ public static class DeleteNoteCommand
                 IconUrl = user.AvatarUrl,
                 Name = user.Username
             },
-            Title = $"Do you want to delete this note?",
+            Title = "Do you want to delete this note?",
             Description = $"- **Note:** {infraction.Reason}\n" +
                           $"- **Date:** <t:{infraction.TimeCreated.ToUnixTimeSeconds()}:f>"
         };
         DiscordWebhookBuilder responseBuilder = new DiscordWebhookBuilder()
             .AddEmbed(embed)
-            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, $"yes", "Yes"),
-                new DiscordButtonComponent(DiscordButtonStyle.Danger, $"no", "No"));
+            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, "yes", "Yes"),
+                new DiscordButtonComponent(DiscordButtonStyle.Danger, "no", "No"));
         
         DiscordMessage message = await ctx.EditResponseAsync(responseBuilder);
         var response = await interactivity.WaitForButtonAsync(message, ctx.Member, TimeSpan.FromSeconds(30));

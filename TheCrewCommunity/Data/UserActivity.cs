@@ -10,32 +10,32 @@ public class UserActivity
         Date = date;
     }
 
-    public long Id { get; set; }
+    public long Id { get; init; }
 
     public ulong UserDiscordId
     {
         get => _userDiscordId;
-        set => _userDiscordId = Convert.ToUInt64(value);
+        init => _userDiscordId = Convert.ToUInt64(value);
     }
 
-    private ulong _userDiscordId;
+    private readonly ulong _userDiscordId;
 
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
 
-    private ulong _guildId;
+    private readonly ulong _guildId;
     public int Points { get; set; }
 
     public DateTime Date
     {
         get => _date;
-        set => _date = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        init => _date = DateTime.SpecifyKind(value, DateTimeKind.Utc);
     }
 
-    private DateTime _date;
+    private readonly DateTime _date;
 
-    public GuildUser? GuildUser { get; set; }
+    public GuildUser? GuildUser { get; init; }
 }

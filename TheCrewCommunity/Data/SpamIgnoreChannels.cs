@@ -7,18 +7,18 @@ public class SpamIgnoreChannels
         GuildId = guildId;
         ChannelId = channelId;
     }
-    private ulong _guildId;
-    private ulong _channelId;
-    public int Id { get; set; }
+    private readonly ulong _guildId;
+    private readonly ulong _channelId;
+    public int Id { get; init; }
     public ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
     public ulong ChannelId
     {
         get => _channelId;
-        set => _channelId = Convert.ToUInt64(value);
+        init => _channelId = Convert.ToUInt64(value);
     }
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
 }

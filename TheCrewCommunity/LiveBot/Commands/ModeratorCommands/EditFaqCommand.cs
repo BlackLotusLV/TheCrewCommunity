@@ -12,7 +12,7 @@ public static class EditFaqCommand
         string ogMessage = message.Content.Replace("*", string.Empty);
         string question = ogMessage.Substring(ogMessage.IndexOf(':') + 1, ogMessage.Length - (ogMessage[ogMessage.IndexOf('\n')..].Length + 2))
             .TrimStart();
-        string answer = ogMessage[(ogMessage.IndexOf("\n", StringComparison.Ordinal) + 4)..].TrimStart();
+        string answer = ogMessage[(ogMessage.IndexOf('\n') + 4)..].TrimStart();
 
         var customId = $"FAQ-Editor-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("FAQ Editor").WithCustomId(customId)

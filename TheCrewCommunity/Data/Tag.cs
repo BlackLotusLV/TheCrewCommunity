@@ -4,7 +4,10 @@ namespace TheCrewCommunity.Data;
 
 public class Tag
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    private readonly ulong _ownerId;
+    private readonly ulong _guildId;
+    
+    public Guid Id { get; init; } = Guid.NewGuid();
     
     [MaxLength(30)]
     public required string Name { get; set; }
@@ -14,15 +17,13 @@ public class Tag
     public required ulong GuildId
     {
         get => _guildId;
-        set => _guildId = Convert.ToUInt64(value);
+        init => _guildId = Convert.ToUInt64(value);
     }
-    private ulong _guildId;
-    public Guild? Guild { get; set; }
+    public Guild? Guild { get; init; }
     public required ulong OwnerId
     {
         get => _ownerId;
-        set => _ownerId = Convert.ToUInt64(value);
+        init => _ownerId = Convert.ToUInt64(value);
     }
-    private ulong _ownerId;
-    public User? Owner { get; set; }
+    public User? Owner { get; init; }
 }

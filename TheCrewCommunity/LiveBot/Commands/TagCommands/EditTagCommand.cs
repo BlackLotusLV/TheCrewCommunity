@@ -42,7 +42,7 @@ public static class EditTagCommand
 
         DiscordInteractionResponseBuilder responseBuilder = new();
 
-        const string modalId = $"tag_edit";
+        const string modalId = "tag_edit";
         responseBuilder
             .WithTitle("Edit Tag")
             .WithCustomId(modalId)

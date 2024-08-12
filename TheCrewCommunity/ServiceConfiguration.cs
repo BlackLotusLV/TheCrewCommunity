@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.MessageCommands;
 using DSharpPlus.Commands.Processors.SlashCommands;
@@ -71,12 +70,10 @@ public static class ServiceConfiguration
                 options.SaveTokens = true;
                 options.Events = new OAuthEvents
                 {
-                    OnTicketReceived = async context =>
+                    OnTicketReceived = context =>
                     {
-                        string? discordId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-                        var dbContext = context.HttpContext.RequestServices.GetRequiredService<LiveBotDbContext>();
-                        ApplicationUser? user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId.ToString() == discordId);
                         context.ReturnUri = "/Account/Registering";
+                        return Task.CompletedTask;
                     }
                 };
             });
