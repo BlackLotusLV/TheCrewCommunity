@@ -1,13 +1,12 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
 public static class EditFaqCommand
 {
-    public static async Task ExecuteAsync(SlashCommandContext ctx, string messageId)
+    public static async Task ExecuteAsync(InteractivityExtension interactivity, SlashCommandContext ctx, string messageId)
     {
         DiscordMessage message = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(messageId));
         string ogMessage = message.Content.Replace("*", string.Empty);
@@ -22,7 +21,6 @@ public static class EditFaqCommand
 
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (!response.TimedOut)
         {

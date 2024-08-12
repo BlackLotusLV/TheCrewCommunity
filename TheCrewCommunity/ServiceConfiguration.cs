@@ -1,6 +1,11 @@
 ﻿using System.Security.Claims;
 using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.MessageCommands;
+using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
+using DSharpPlus.Interactivity.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
@@ -108,8 +113,29 @@ public static class ServiceConfiguration
                 .HandleMessageCreated(DiscordInviteFilter.OnMessageCreated)
                 .HandleComponentInteractionCreated(LiveBot.DiscordEventHandlers.ComponentInteractionCreated.HandleEvent.OnButtonPress)
                 .HandleMessageCreated(LiveBot.DiscordEventHandlers.MessageCreated.HandleEvent.OnMessageCreated)
-
         );
+        ulong guildId = 0;
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            guildId = 282478449539678210;
+        }
+        CommandsConfiguration commandsConfiguration = new()
+        {
+            DebugGuildId = guildId
+        };
+        services.AddCommandsExtension(extension =>
+            {
+                extension.CommandExecuted += SystemEvents.CommandExecuted;
+                extension.CommandErrored += SystemEvents.CommandErrored;
+                extension.AddProcessors(
+                    new SlashCommandProcessor(),
+                    new UserCommandProcessor(),
+                    new MessageCommandProcessor()
+                );
+                extension.AddCommands(typeof(LiveBotService).Assembly);
+            },
+            commandsConfiguration);
+        services.AddInteractivityExtension();
         return services;
     }
 }

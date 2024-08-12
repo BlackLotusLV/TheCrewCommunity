@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
@@ -9,7 +8,7 @@ namespace TheCrewCommunity.LiveBot.Commands.TagCommands;
 
 public static class CreateTagCommand
 {
-    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory,SlashCommandContext ctx, string name)
+    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, InteractivityExtension interactivity, SlashCommandContext ctx, string name)
     {
         if (ctx.Guild is null)
         {
@@ -34,7 +33,6 @@ public static class CreateTagCommand
             .AddComponents(new DiscordTextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: DiscordTextInputStyle.Paragraph));
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, responseBuilder);
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var modalInteractivity = await interactivity.WaitForModalAsync(modalId,ctx.User);
         if (modalInteractivity.TimedOut)
         {

@@ -3,11 +3,10 @@ using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 
 namespace TheCrewCommunity.LiveBot.Commands.General;
 
-public class AddButtonCommand
+public class AddButtonCommand(InteractivityExtension interactivity)
 {
     [Command("AddButton"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(DiscordPermissions.ManageMessages)]
     public async Task AddButton(SlashCommandContext ctx, DiscordMessage targetMessage)
@@ -29,7 +28,6 @@ public class AddButtonCommand
         response.AddComponents(new DiscordTextInputComponent("Emoji", "emoji", required: false));
 
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, response);
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var modalResponse = await interactivity.WaitForModalAsync(customId, ctx.User);
 
         if (modalResponse.TimedOut) return;

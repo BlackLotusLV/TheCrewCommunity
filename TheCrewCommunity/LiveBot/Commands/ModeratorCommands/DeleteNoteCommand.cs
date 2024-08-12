@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
@@ -9,7 +8,7 @@ using TheCrewCommunity.Services;
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 public static class DeleteNoteCommand
 {
-    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService,SlashCommandContext ctx, DiscordUser user, long noteId)
+    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService, InteractivityExtension interactivity,SlashCommandContext ctx, DiscordUser user, long noteId)
     {
         if (ctx.Guild is null)
         {
@@ -46,7 +45,6 @@ public static class DeleteNoteCommand
                 new DiscordButtonComponent(DiscordButtonStyle.Danger, $"no", "No"));
         
         DiscordMessage message = await ctx.EditResponseAsync(responseBuilder);
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         var response = await interactivity.WaitForButtonAsync(message, ctx.Member, TimeSpan.FromSeconds(30));
         if (response.TimedOut) return;
         if (response.Result.Id == "no")
