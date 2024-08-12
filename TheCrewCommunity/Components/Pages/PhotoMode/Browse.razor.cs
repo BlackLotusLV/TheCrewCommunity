@@ -88,7 +88,7 @@ public partial class Browse : ComponentBase
                 SortImagesByLikes(365);
                 break;
             case SortMode.TopAllTime:
-                _images = _images.OrderByDescending(x => x.ImageLikes).ToArray();
+                _images = _images.OrderByDescending(x => x.LikesCount).ToArray();
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
