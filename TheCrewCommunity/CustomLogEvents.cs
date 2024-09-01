@@ -29,4 +29,5 @@ internal static class CustomLogEvents
     public static EventId PhotoView { get; } = new(224, "PhotoView");
     public static EventId CloudFlare { get; } = new(225, "CloudFlare");
     public static EventId UserActivity { get; } = new(226, "User Activity");
+    public static EventId WebRoleManager { get; } = new(227, "Role Manager");
 }

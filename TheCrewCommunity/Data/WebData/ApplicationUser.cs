@@ -18,13 +18,11 @@ public class ApplicationUser : IdentityUser<Guid>
     
     [MaxLength(2048)]
     public string? AvatarUrl { get; set; }
-
-    public bool IsModerator { get; set; }
-    public User? User { get; set; }
+    public User? User { get; init; }
     
-    public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; set; }
-    public ICollection<MtfstCarProSettingsLikes>? MotorfestCarProSettingLikes { get; set; }
+    public ICollection<MtfstCarProSettings>? MotorfestCarProSettings { get; init; }
+    public ICollection<MtfstCarProSettingsLikes>? MotorfestCarProSettingLikes { get; init; }
     
-    public ICollection<UserImage>? Images { get; set; }
-    public ICollection<ImageLike>? ImageLikes { get; set; }
+    public ICollection<UserImage>? Images { get; init; }
+    public ICollection<ImageLike>? ImageLikes { get; init; }
 }

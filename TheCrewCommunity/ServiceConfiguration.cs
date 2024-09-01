@@ -30,6 +30,7 @@ public static class ServiceConfiguration
         services.AddHostedService<ModMailCleanupService>();
         services.AddSingleton<StreamNotificationService>();
         services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
+        services.AddHostedService<WebRoleManagerService>();
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
@@ -51,6 +52,7 @@ public static class ServiceConfiguration
         services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+            .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<LiveBotDbContext>();
         
         services.AddAuthentication(options =>
