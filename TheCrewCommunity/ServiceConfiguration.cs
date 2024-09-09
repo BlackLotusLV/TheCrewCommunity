@@ -54,6 +54,7 @@ public static class ServiceConfiguration
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<LiveBotDbContext>();
+        services.AddCascadingAuthenticationState();
         
         services.AddAuthentication(options =>
             {
