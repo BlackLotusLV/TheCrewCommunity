@@ -48,7 +48,7 @@ public static class FloodFilter
         await member.TimeoutAsync(DateTimeOffset.UtcNow + TimeSpan.FromHours(1), "Spam filter triggered - flood");
         foreach (DiscordChannel channel in channelList.OfType<DiscordChannel>())
         {
-            await channel.DeleteMessagesAsync(duplicateMessages.GetRange(i - SpamCount, SpamCount));
+            await channel.DeleteMessagesAsync(duplicateMessages.GetRange(i - SpamCount, SpamCount).Where(x => x.Channel is not null && x.Channel == channel).ToList());
         }
 
         int infractionLevel = liveBotDbContext.Infractions.Count(w => w.UserId == member.Id && w.GuildId == eventArgs.Guild.Id && w.InfractionType == InfractionType.Warning && w.IsActive);
