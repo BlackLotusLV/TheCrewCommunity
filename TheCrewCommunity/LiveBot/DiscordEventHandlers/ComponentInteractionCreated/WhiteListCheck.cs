@@ -57,7 +57,7 @@ public static class WhiteListCheck
             return;
         }
 
-        DiscordRole role = e.Guild.GetRole(entry.Settings.RoleId);
+        DiscordRole role = await e.Guild.GetRoleAsync(entry.Settings.RoleId);
         await member.GrantRoleAsync(role);
         entry.DiscordId = member.Id;
         liveBotDbContext.WhiteLists.Update(entry);

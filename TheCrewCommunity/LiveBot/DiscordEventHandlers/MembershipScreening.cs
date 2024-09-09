@@ -26,7 +26,7 @@ public static class MembershipScreening
             await welcomeChannel.SendMessageAsync(msg);
 
             if (guild.RoleId == null) return;
-            DiscordRole? role = e.Guild.GetRole(Convert.ToUInt64(guild.RoleId));
+            DiscordRole? role = await e.Guild.GetRoleAsync(Convert.ToUInt64(guild.RoleId));
             if (role is null)
             {
                 client.Logger.LogWarning("Could not find role of id: {RoleId} in guild {GuildName}. Check if it exists. User join role not added",guild.RoleId,e.Guild.Name);

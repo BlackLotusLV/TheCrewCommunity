@@ -25,7 +25,7 @@ public static class MemberFlow
         await welcomeChannel.SendMessageAsync(msg);
 
         if (guild.RoleId == null) return;
-        DiscordRole role = e.Guild.GetRole(Convert.ToUInt64(guild.RoleId));
+        DiscordRole role = await e.Guild.GetRoleAsync(Convert.ToUInt64(guild.RoleId));
         await e.Member.GrantRoleAsync(role);
     }
     public static async Task OnLeave(DiscordClient client, GuildMemberRemovedEventArgs e)
