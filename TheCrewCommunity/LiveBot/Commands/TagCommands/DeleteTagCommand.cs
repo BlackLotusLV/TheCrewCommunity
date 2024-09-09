@@ -16,7 +16,7 @@ public static class DeleteTagCommand
         await ctx.DeferResponseAsync(true);
         ctx.Client.Logger.LogDebug(CustomLogEvents.TagCommand, "User {User} in Guild {Guild} started deleting a tag", ctx.User.Id, ctx.Guild.Id);
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
-        Tag? tag = await liveBotDbContext.Tags.FindAsync(tagId) ?? null;
+        Tag? tag = await liveBotDbContext.Tags.FindAsync(Guid.Parse(tagId)) ?? null;
         if (tag is null)
         {
             await ctx.EditResponseAsync("Tag not found");
