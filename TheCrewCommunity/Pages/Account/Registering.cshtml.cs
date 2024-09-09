@@ -68,7 +68,6 @@ public class Registering(UserManager<ApplicationUser> userManager, DiscordClient
         applicationUser.Email = email;
         applicationUser.GlobalUsername = discordUser?.GlobalName;
         applicationUser.AvatarUrl = discordUser?.AvatarUrl;
-        applicationUser.IsModerator = false;
         if (create)
         {
             IdentityResult createResult = await userManager.CreateAsync(applicationUser);

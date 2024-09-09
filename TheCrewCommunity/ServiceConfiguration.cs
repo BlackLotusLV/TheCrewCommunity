@@ -1,11 +1,11 @@
-﻿using DSharpPlus;
+﻿using System.Security.Claims;
+using DSharpPlus;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.MessageCommands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
 using DSharpPlus.Interactivity.Extensions;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +30,7 @@ public static class ServiceConfiguration
         services.AddHostedService<ModMailCleanupService>();
         services.AddSingleton<StreamNotificationService>();
         services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
+        services.AddHostedService<WebRoleManagerService>();
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
@@ -51,13 +52,15 @@ public static class ServiceConfiguration
         services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
         
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+            .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<LiveBotDbContext>();
+        services.AddCascadingAuthenticationState();
         
         services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultAuthenticateScheme = IdentityConstants.ExternalScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ExternalScheme;
             })
             .AddCookie()
             .AddDiscord(options =>
@@ -77,6 +80,10 @@ public static class ServiceConfiguration
                     }
                 };
             });
+        services.Configure<IdentityOptions>(o =>
+        {
+            o.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
+        });
         
         services.AddSession(options =>
         {

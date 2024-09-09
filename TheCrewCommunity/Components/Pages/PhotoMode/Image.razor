@@ -1,12 +1,13 @@
 ﻿@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject NavigationManager NavigationManager
 @inject IDatabaseMethodService DbMethodService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ICloudFlareImageService CloudFlareImageService
 @inject ILogger<Image> Logger
+@inject UserManager<ApplicationUser> UserManager
 @page "/i/{Id}"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.WebData
@@ -54,6 +55,8 @@ else
 }
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
     private int LikesCount { get; set; }
     private bool IsLiked { get; set; }
     private bool SeeTools { get; set; }
@@ -64,7 +67,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (AuthenticationState is null)
+        {
+            throw new Exception("Authentication state was null, stopping");
+        }
+        AuthenticationState authState = await AuthenticationState;
         ClaimsPrincipal user = authState.User;
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         if (user.Identity is { IsAuthenticated: true })
@@ -87,7 +94,9 @@ else
         if (CurrentUser is not null)
         {
             IsLiked = _image.ImageLikes!.Any(x => x.DiscordId == CurrentUser.DiscordId);
-            SeeTools = _image.ApplicationUser == CurrentUser || CurrentUser.IsModerator;
+            var userRoles = await UserManager.GetRolesAsync(CurrentUser);
+            
+            SeeTools = _image.ApplicationUser == CurrentUser || userRoles.Any(x=>x is "Administrator" or "Moderator");
         }
     }
 
