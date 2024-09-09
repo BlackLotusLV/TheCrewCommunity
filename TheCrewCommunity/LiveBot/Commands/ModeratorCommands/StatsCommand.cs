@@ -36,16 +36,7 @@ public static class StatsCommand
         leaderboardBuilder.AppendLine("User".PadRight(30) + "Warnings".PadRight(10) + "Kicks".PadRight(10) + "Bans".PadRight(10));
         foreach (var user in groupedLeaderboard)
         {
-            DiscordUser discordUser;
-            try
-            {
-                discordUser = await ctx.Client.GetUserAsync(user.UserId);
-            }
-            catch (Exception e)
-            {
-                ctx.Client.Logger.LogError(e, "Failed to get user from Discord API. User ID: {ID}", user.UserId);
-                continue;
-            }
+            DiscordUser discordUser = await ctx.Client.GetUserAsync(user.UserId);
             leaderboardBuilder.AppendLine($"{discordUser.Username}#{discordUser.Discriminator}".PadRight(30) + $"{user.Warnings}".PadRight(10) + $"{user.Kicks}".PadRight(10) +
                                           $"{user.Bans}".PadRight(10));
         }
