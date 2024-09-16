@@ -17,6 +17,8 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
     private readonly List<Cooldown> _cooldownList = [];
     private const int PointsMinimum = 25;
     private const int PointsMaximum = 50;
+    private const int BoosterBonus = 25;
+    private const int SupporterMultiplier = 2;
     
     public async Task StartAsync()
     {
@@ -54,8 +56,22 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
             logger.LogDebug(CustomLogEvents.UserActivity, "UserActivity of {UserName}({UserId}) is null, should not be, ending early", user.GlobalName, user.Id);
             return;
         }
+        DiscordMember member = await guild.GetMemberAsync(user.Id);
+        
+        int points = new Random().Next(PointsMinimum, PointsMaximum);
+        if (member.PremiumSince is not null)
+        {
+            logger.LogDebug(CustomLogEvents.UserActivity, "Premium user({UserName}) just sent a message in {Guild}, adding the bonus", user.GlobalName,guild.Name);
+            points += BoosterBonus;
+        }
 
-        userActivity.Points += new Random().Next(PointsMinimum, PointsMaximum);
+        Guild? guildSettings = await dbContext.Guilds.FindAsync(guild.Id);
+        if (guildSettings?.SupporterRoleId is not null && member.Roles.Any(x=>x.Id == guildSettings.SupporterRoleId))
+        {
+            points *= SupporterMultiplier;
+        }
+
+        userActivity.Points += points;
         dbContext.UserActivity.Update(userActivity);
         await dbContext.SaveChangesAsync();
         logger.LogDebug(CustomLogEvents.UserActivity, "Points added to database for {UserName}", user.Username);
@@ -83,8 +99,6 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
             .OrderByDescending(x => x.ServerRank)
             .ToArray();
         var rolesOver = _rankRolesArray.Except(rolesUnder);
-
-        DiscordMember member = await guild.GetMemberAsync(user.Id);
 
         var matchingRoles = member.Roles.Where(x =>
             rolesUnder.Skip(1).Any(y => y.RoleId == x.Id) ||
