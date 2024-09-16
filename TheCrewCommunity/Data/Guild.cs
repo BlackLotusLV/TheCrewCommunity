@@ -104,6 +104,14 @@ public class Guild
     }
     private readonly ulong? _userReportsChannelId;
 
+    public ulong? SupporterRoleId
+    {
+        get => _supporterRoleId;
+        init => _supporterRoleId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+    }
+
+    private readonly ulong? _supporterRoleId;
+
     public ICollection<GuildUser>? GuildUsers { get; init; }
     public ICollection<RankRoles>? RankRoles { get; init; }
     public ICollection<ButtonRoles>? ButtonRoles { get; init; }
