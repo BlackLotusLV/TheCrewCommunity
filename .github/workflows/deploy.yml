@@ -1,0 +1,33 @@
+name: Deploy .NET App
+
+on:
+  push:
+    branches:
+      -master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions.setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.8'
+
+    - name: Build the application
+      run: dotnet publish -c Release -o out
+
+    - name: Deploy to server
+      uses: appleboy/.scp-action@v0.1.0
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.REMOTE_SSH_KEY }}
+        source: "out/"
+        target: "/path/to/your/server/directory"
+
+    - name: Restart application
+      run: ssh -i ${{ secrets.REMOTE_SSH_KEY }} ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} 'sudo systemctl restart your-service'
