@@ -34,4 +34,4 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         source: "./output/*"
-        target: "/home/deploy/tcc"
+        target: "tcc"
