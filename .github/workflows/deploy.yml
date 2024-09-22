@@ -35,3 +35,4 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         source: "./output/*"
         target: "tcc"
+        debug: true
