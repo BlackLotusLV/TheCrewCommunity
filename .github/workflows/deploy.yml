@@ -32,7 +32,6 @@ jobs:
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
+        password: ${{ secrets.USER_PASS }}
         source: "./output/*"
         target: "tcc"
-        debug: true
