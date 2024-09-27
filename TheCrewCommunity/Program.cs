@@ -17,7 +17,6 @@ Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.With(new EventIdEnricher())
     .WriteTo.Console(standardErrorFromLevel: LogEventLevel.Error, outputTemplate: "[{Timestamp:yyyy:MM:dd HH:mm:ss} {Level:u3}] [{FormattedEventId}] {Message:lj}{NewLine}{Exception}")
-    .WriteTo.GrafanaLoki(builder.Configuration["Grafana:LokiIp"]?? throw new Exception("Grafana ip not provided"))
     .CreateLogger();
 builder.Logging.AddSerilog();
 
