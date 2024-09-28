@@ -49,7 +49,7 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
         {
             logger.LogDebug(CustomLogEvents.UserActivity,"Adding User activity to the cache. Item to expire after: {Time}",expirationTime.ToString());
             e.SetAbsoluteExpiration(expirationTime);
-            return await GetOrCreateUserActivityAsync(user, guild, utcNow.Date);
+            return await GetOrCreateUserActivityAsync(user, guild, utcNow.Date, dbContext);
         });
         if (userActivity is null)
         {
@@ -65,7 +65,7 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
             points += BoosterBonus;
         }
 
-        Guild? guildSettings = await dbContext.Guilds.FindAsync(guild.Id);
+        Guild? guildSettings = await dbContext.Guilds.AsNoTracking().FirstOrDefaultAsync(x => x.Id == guild.Id);
         if (guildSettings?.SupporterRoleId is not null && member.Roles.Any(x=>x.Id == guildSettings.SupporterRoleId))
         {
             points *= SupporterMultiplier;
@@ -89,7 +89,7 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
         {
             logger.LogDebug(CustomLogEvents.UserActivity,"Adding past points to the cache. Items to expire after: {Time}",expirationTime.ToString());
             e.SetAbsoluteExpiration(expirationTime);
-            return await GetPastUserPointsAsync(user, guild, utcNow.Date);
+            return await GetPastUserPointsAsync(user, guild, utcNow.Date, dbContext);
         });
         logger.LogDebug(CustomLogEvents.UserActivity, "Retrieved past points: {PastPoints}", pastPoints);
 
@@ -112,25 +112,23 @@ public class UserActivityService(IDbContextFactory<LiveBotDbContext> dbContextFa
         }
 
         if (rolesUnder.Length is 0 || member.Roles.Any(x => x.Id == rolesUnder.First().RoleId)) return;
-        logger.LogDebug(CustomLogEvents.UserActivity, "Granting a rank role to {MemberName}", member.Username);
+        logger.LogInformation(CustomLogEvents.UserActivity, "User {UserName}({UserId}) reached points threshold({UserPoints}) for role grant({RoleId})", member.Username, member.Id, currentPoints, rolesUnder.First().RoleId);
         await member.GrantRoleAsync(guild.Roles.Values.First(role => role.Id == rolesUnder.First().RoleId));
     }
 
-    private async Task<UserActivity> GetOrCreateUserActivityAsync(DiscordUser user, DiscordGuild guild, DateTime date)
+    private async Task<UserActivity> GetOrCreateUserActivityAsync(DiscordUser user, DiscordGuild guild, DateTime date, LiveBotDbContext dbContext)
     {
         logger.LogDebug(CustomLogEvents.UserActivity,"Getting user: {UserName}({UserId}) activity of today", user.GlobalName, user.Id);
-        await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         return await dbContext.UserActivity.FirstOrDefaultAsync(x => x.UserDiscordId == user.Id && x.GuildId == guild.Id && x.Date == date)
                ?? await dbMethodService.AddUserActivityAsync(new UserActivity(user.Id, guild.Id, 0, date));
     }
 
-    private async Task<long> GetPastUserPointsAsync(DiscordUser user, DiscordGuild guild, DateTime date)
+    private async Task<long> GetPastUserPointsAsync(DiscordUser user, DiscordGuild guild, DateTime date, LiveBotDbContext dbContext)
     {
         logger.LogDebug(CustomLogEvents.UserActivity, "Getting user past scores from the database");
-        await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-        return dbContext.UserActivity
+        return await dbContext.UserActivity
             .Where(w => w.Date > date.AddDays(-30) && w.Date != date && w.GuildId == guild.Id && w.UserDiscordId == user.Id)
-            .Sum(w => w.Points);
+            .SumAsync(w => w.Points);
     }
     private sealed class Cooldown(DiscordUser user, DiscordGuild guild, DateTime time)
     {
