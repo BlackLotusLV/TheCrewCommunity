@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
+using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 
@@ -10,13 +11,13 @@ public class UserNotesAutocompleteProvider(IDbContextFactory<LiveBotDbContext> d
     public async ValueTask<IReadOnlyDictionary<string,object>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-        var user = (ulong?)ctx.Options.First(x => x.Name == "user").Value;
+        var user = (ulong?)ctx.Options.First(x => x.Type == DiscordApplicationCommandOptionType.User).Value;
         var infractions = await dbContext.Infractions
             .Where(x => x.InfractionType == InfractionType.Note && x.AdminDiscordId == ctx.User.Id && x.UserId == user).ToListAsync();
         Dictionary<string, object> result = [];
         foreach (Infraction infraction in infractions)
         {
-            result.Add($"#{infraction.Id} - {infraction.Reason}", infraction.Id);
+            result.Add($"#{infraction.Id} - {infraction.Reason}", infraction.Id.ToString());
         }
         return result;
     }
