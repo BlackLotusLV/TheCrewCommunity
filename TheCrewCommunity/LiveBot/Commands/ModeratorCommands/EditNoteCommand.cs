@@ -1,4 +1,4 @@
-﻿using DSharpPlus.Commands;
+﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ using TheCrewCommunity.Services;
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 public static class EditNoteCommand
 {
-    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService, InteractivityExtension interactivity,CommandContext ctx, DiscordUser user, long noteId)
+    public static async Task ExecuteAsync(IDbContextFactory<LiveBotDbContext> dbContextFactory, IModeratorLoggingService moderatorLoggingService, InteractivityExtension interactivity,SlashCommandContext ctx, DiscordUser user, long noteId)
     {
         if (ctx.Member is null || ctx.Guild is null)
         {
@@ -25,9 +25,11 @@ public static class EditNoteCommand
 
         string oldNote = infraction.Reason??"*No note content*";
         var customId = $"EditNote-{ctx.User.Id}";
-        DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("Edit users note").WithCustomId(customId)
+        DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
+            .WithTitle("Edit users note")
+            .WithCustomId(customId)
             .AddComponents(new DiscordTextInputComponent("Content", "Content", null, oldNote, true, DiscordTextInputStyle.Paragraph));
-        await ctx.RespondAsync(modal);
+        await ctx.RespondWithModalAsync(modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (response.TimedOut) return;
