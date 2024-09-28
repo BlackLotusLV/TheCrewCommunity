@@ -1,6 +1,5 @@
 using Serilog;
 using Serilog.Events;
-using Serilog.Sinks.Grafana.Loki;
 using TheCrewCommunity;
 using TheCrewCommunity.Components;
 using TheCrewCommunity.LiveBot.LogEnrichers;
@@ -17,6 +16,7 @@ Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.With(new EventIdEnricher())
     .WriteTo.Console(standardErrorFromLevel: LogEventLevel.Error, outputTemplate: "[{Timestamp:yyyy:MM:dd HH:mm:ss} {Level:u3}] [{FormattedEventId}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Seq(builder.Configuration.GetSection("Seq")["Url"]!, apiKey:builder.Configuration.GetSection("Seq")["Key"])
     .CreateLogger();
 builder.Logging.AddSerilog();
 
