@@ -77,13 +77,13 @@ public partial class Browse : ComponentBase
                 SortImagesByHotness();
                 break;
             case SortMode.TopToday:
-                SortImagesByLikes(365);
+                SortImagesByLikes(1);
                 break;
             case SortMode.TopWeek:
-                SortImagesByLikes(365);
+                SortImagesByLikes(7);
                 break;
             case SortMode.TopMonth:
-                SortImagesByLikes(365);
+                SortImagesByLikes(30);
                 break;
             case SortMode.TopYear:
                 SortImagesByLikes(365);
