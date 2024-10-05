@@ -23,7 +23,7 @@
     <select class="filter-select" @onchange="OnSortModeSelectedAsync">
         @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
         {
-            <option value="@option">@(option.ToString())</option>
+            <option value="@option">@(GetEnumName(option))</option>
         }
     </select>
 </div>

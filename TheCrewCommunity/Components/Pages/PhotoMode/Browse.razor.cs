@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -76,13 +77,13 @@ public partial class Browse : ComponentBase
                 SortImagesByHotness();
                 break;
             case SortMode.TopToday:
-                SortImagesByLikes(365);
+                SortImagesByLikes(1);
                 break;
             case SortMode.TopWeek:
-                SortImagesByLikes(365);
+                SortImagesByLikes(7);
                 break;
             case SortMode.TopMonth:
-                SortImagesByLikes(365);
+                SortImagesByLikes(30);
                 break;
             case SortMode.TopYear:
                 SortImagesByLikes(365);
@@ -174,6 +175,15 @@ public partial class Browse : ComponentBase
     {
         NavigationManager.NavigateTo($"/i/{id}");
         return Task.CompletedTask;
+    }
+
+    private static string GetEnumName(Enum value)
+    {
+        return value.GetType()
+            .GetMember(value.ToString())
+            .First()
+            .GetCustomAttribute<DisplayAttribute>()
+            ?.GetName() ?? "[No Name]";
     }
 
     private enum SortMode
