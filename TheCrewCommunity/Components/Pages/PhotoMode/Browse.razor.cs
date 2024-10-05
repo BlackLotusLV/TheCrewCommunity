@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -174,6 +175,15 @@ public partial class Browse : ComponentBase
     {
         NavigationManager.NavigateTo($"/i/{id}");
         return Task.CompletedTask;
+    }
+
+    private static string GetEnumName(Enum value)
+    {
+        return value.GetType()
+            .GetMember(value.ToString())
+            .First()
+            .GetCustomAttribute<DisplayAttribute>()
+            ?.GetName() ?? "[No Name]";
     }
 
     private enum SortMode
