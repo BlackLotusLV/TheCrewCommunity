@@ -13,14 +13,14 @@
 <PageTitle>Browsing Images</PageTitle>
 <div class="filters">
     <h2>Filters:</h2>
-    <select class="filter-select" @onchange="OnGameSelected">
+    <select class="filter-select" value="@_selectedGameId" @onchange="OnGameSelected">
         <option value="@Guid.Empty">All Games</option>
         @foreach (Game game in _games!)
         {
             <option value="@game.Id">@game.Name</option>
         }
     </select>
-    <select class="filter-select" @onchange="OnSortModeSelectedAsync">
+    <select class="filter-select" value="@_selectedSortMode" @onchange="OnSortModeSelectedAsync">
         @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
         {
             <option value="@option">@(GetEnumName(option))</option>
