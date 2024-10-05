@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Specialized;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -26,6 +28,20 @@ public partial class Browse : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = new Uri(NavigationManager.Uri);
+        NameValueCollection queryParameters = HttpUtility.ParseQueryString(uri.Query);
+        string? selectedGameId = queryParameters.Get("gameId");
+        string? selectedSortMode = queryParameters.Get("sortMode");
+
+        if (selectedGameId != null)
+        {
+            _selectedGameId = Guid.Parse(selectedGameId);
+        }
+
+        if (selectedSortMode != null)
+        {
+            _selectedSortMode = Enum.Parse<SortMode>(selectedSortMode);
+        }
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         _unfilteredImages = dbContext.UserImages
             .Include(x=>x.Game)
@@ -47,12 +63,14 @@ public partial class Browse : ComponentBase
         }
         _selectedGameId = Guid.Parse(e.Value.ToString() ?? string.Empty);
         await ApplyFilterAsync();
+        NavigationManager.NavigateTo($"/PhotoMode/Browse?gameId={_selectedGameId}&sortMode={_selectedSortMode}", forceLoad: false);
     }
 
     private async Task OnSortModeSelectedAsync(ChangeEventArgs e)
     {
         _selectedSortMode = Enum.TryParse(typeof(SortMode), e.Value?.ToString() ?? "New", out object? mode) ? (SortMode)mode : SortMode.New;
         await ApplyFilterAsync();
+        NavigationManager.NavigateTo($"/PhotoMode/Browse?gameId={_selectedGameId}&sortMode={_selectedSortMode}", forceLoad: false);
     }
 
     private async Task ApplyFilterAsync()
@@ -168,7 +186,9 @@ public partial class Browse : ComponentBase
         if (firstRender)
         {
             await JsRuntime.InvokeVoidAsync("OnLoad", DotNetObjectReference.Create(this), _loadMoreButton);
+            await ApplyFilterAsync();
         }
+        StateHasChanged();
     }
 
     private Task OpenImage(Guid id)
@@ -192,7 +212,7 @@ public partial class Browse : ComponentBase
         New,
         [Display(Name = "Hot")]
         Hot,
-        [Display(Name = "New Today")]
+        [Display(Name = "Top today")]
         TopToday,
         [Display(Name = "Top this week")]
         TopWeek,
