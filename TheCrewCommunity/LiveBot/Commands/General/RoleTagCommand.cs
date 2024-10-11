@@ -67,15 +67,15 @@ public class RoleTagCommand(IDbContextFactory<LiveBotDbContext> dbContextFactory
 }
 public sealed class RoleTagAutoCompleteProvider(IDbContextFactory<LiveBotDbContext> dbContextFactory) : IAutoCompleteProvider
 {
-    public async ValueTask<IReadOnlyDictionary<string, object>> AutoCompleteAsync(AutoCompleteContext ctx)
+    public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)
     {
-        if (ctx.Guild is null) return ReadOnlyDictionary<string, object>.Empty;
+        var choices = new List<DiscordAutoCompleteChoice>();
+        if (ctx.Guild is null) return choices;
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-        Dictionary<string, object> result = [];
         foreach (RoleTagSettings item in dbContext.RoleTagSettings.Where(w => w.GuildId == ctx.Guild.Id && (w.ChannelId == ctx.Channel.Id || w.ChannelId == null)))
         {
-            result.Add($"{(item.LastTimeUsed > DateTime.UtcNow - TimeSpan.FromMinutes(item.Cooldown) ? "(On cooldown) " : "")}{item.Description}", item.Id);
+            choices.Add(new DiscordAutoCompleteChoice($"{(item.LastTimeUsed > DateTime.UtcNow - TimeSpan.FromMinutes(item.Cooldown) ? "(On cooldown) " : "")}{item.Description}", item.Id));
         }
-        return result;
+        return choices;
     }
 }
