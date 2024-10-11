@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Entities;
 using TheCrewCommunity.Services;
 

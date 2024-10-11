@@ -127,16 +127,16 @@ public static class ServiceConfiguration
         {
             DebugGuildId = guildId
         };
-        services.AddCommandsExtension(extension =>
+        services.AddCommandsExtension((_, commands) =>
             {
-                extension.CommandExecuted += SystemEvents.CommandExecuted;
-                extension.CommandErrored += SystemEvents.CommandErrored;
-                extension.AddProcessors(
+                commands.CommandExecuted += SystemEvents.CommandExecuted;
+                commands.CommandErrored += SystemEvents.CommandErrored;
+                commands.AddProcessors(
                     new SlashCommandProcessor(),
                     new UserCommandProcessor(),
                     new MessageCommandProcessor()
                 );
-                extension.AddCommands(typeof(LiveBotService).Assembly);
+                commands.AddCommands(typeof(LiveBotService).Assembly);
             },
             commandsConfiguration);
         services.AddInteractivityExtension();
