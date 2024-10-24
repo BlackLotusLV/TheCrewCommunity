@@ -27,7 +27,7 @@ public static class HandleEvent
             _ when customId.Contains(modMailService.CloseButtonPrefix) => modMailService.CloseButton(client, eventArgs),
             _ when customId.Contains(warningService.InfractionButtonPrefix) => GetInfractionOnButton.OnButtonClick(client, eventArgs),
             _ when customId.Contains(warningService.UserInfoButtonPrefix) => GetUserInfoOnButton.OnButtonClick(client, eventArgs),
-            _ when customId.Contains(ButtonRolePrefix) => ButtonRoles.OnButtonClick(client,eventArgs),
+            _ when customId.Contains(ButtonRolePrefix) => GetRole.OnButtonClickAsync(client,eventArgs),
             _ when customId.Contains(WhiteListPrefix) => WhiteListCheck.OnButtonClick(client,eventArgs),
             _ => Task.CompletedTask
         };
