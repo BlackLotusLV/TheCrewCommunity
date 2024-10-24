@@ -105,7 +105,9 @@ public class ModeratorLoggingService(IDbContextFactory<LiveBotDbContext> dbConte
             {ModLogType.TimedOut,"User Timed Out"},
             {ModLogType.TimeOutRemoved,"Timeout Removed"},
             {ModLogType.TimeOutExtended,"Timeout Extended"},
-            {ModLogType.TimeOutShortened,"Timeout Shortened"}
+            {ModLogType.TimeOutShortened,"Timeout Shortened"},
+            { ModLogType.Muted ,"User Muted"},
+            { ModLogType.UnMuted, "User Un-Muted"}
         };
         return footerText.TryGetValue(type, out string? value) ? value : string.Empty;
     }
@@ -121,7 +123,9 @@ public enum ModLogType
     TimedOut,
     TimeOutRemoved,
     TimeOutExtended,
-    TimeOutShortened
+    TimeOutShortened,
+    Muted,
+    UnMuted,
 }
 
 public class ModLogItem(DiscordChannel modLogChannel, DiscordUser targetUser, string description, ModLogType type, string? content = null, DiscordAttachment? attachment = null)

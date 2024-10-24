@@ -21,6 +21,7 @@ public static class AuditLogEvents
                 break;
             case DiscordAuditLogActionType.MemberUpdate:
                 await TimeOutLogger(client, eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogMemberUpdateEntry);
+                await MuteManager(client, eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogMemberUpdateEntry);
                 break;
             case DiscordAuditLogActionType.Kick:
                 await KickManager(client,eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogKickEntry);
@@ -114,7 +115,7 @@ public static class AuditLogEvents
     {
         if (logEntry is null)
         {
-            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Timeout event is null, skipping");
+            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Guild member updated event is null, skipping");
             return;
         }
         if (logEntry.TimeoutChange.Before == logEntry.TimeoutChange.After) return;
@@ -231,5 +232,40 @@ public static class AuditLogEvents
             new Infraction(responsibleUser.Id,targetUser.Id,guild.Id,logEntry.Reason??"Reason unspecified",false,InfractionType.Ban)
             );
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Ban logged for {User} in {Guild} by {ModUser}",targetUser.Username,guild.Name,responsibleUser.Username);
+    }
+
+    private static async Task MuteManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogMemberUpdateEntry? logEntry)
+    {
+        if (logEntry is null)
+        {
+            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Guild member updated event is null, skipping");
+            return;
+        }
+        if (logEntry.MuteChange.Before == logEntry.MuteChange.After || !logEntry.MuteChange.After.HasValue || !logEntry.MuteChange.Before.HasValue) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
+        Guild guildSettings = await liveBotDbContext.Guilds.FirstOrDefaultAsync(w => w.Id == guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
+        if (guildSettings.ModerationLogChannelId is null) return;
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
+        DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
+        DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
+        StringBuilder descriptionBuilder = new();
+        var type = ModLogType.Muted;
+        switch (logEntry.MuteChange.Before.Value)
+        {
+            case true when !logEntry.MuteChange.After.Value:
+                type = ModLogType.UnMuted;
+                descriptionBuilder.AppendLine("# :loud_sound: User Un-muted");
+                break;
+            case false when logEntry.MuteChange.After.Value:
+                descriptionBuilder.AppendLine("# :mute: User Muted");
+                break;
+        }
+        descriptionBuilder.AppendLine($"- **User:** {targetUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Moderator:** {responsibleUser.Mention}");
+        moderatorLoggingService.AddToQueue(new ModLogItem(modLogChannel, targetUser, descriptionBuilder.ToString(), type));
     }
 }
