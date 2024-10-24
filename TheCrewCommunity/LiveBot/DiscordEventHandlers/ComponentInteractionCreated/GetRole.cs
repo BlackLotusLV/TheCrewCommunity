@@ -6,9 +6,9 @@ using TheCrewCommunity.Data;
 
 namespace TheCrewCommunity.LiveBot.DiscordEventHandlers.ComponentInteractionCreated;
 
-public static class ButtonRoles
+public static class GetRole
 {
-    public static async Task OnButtonClick(DiscordClient client,ComponentInteractionCreatedEventArgs e)
+    public static async Task OnButtonClickAsync(DiscordClient client,ComponentInteractionCreatedEventArgs e)
     {
         if (e.Interaction.Guild is null) return;
         

@@ -21,6 +21,7 @@ public static class AuditLogEvents
                 break;
             case DiscordAuditLogActionType.MemberUpdate:
                 await TimeOutLogger(client, eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogMemberUpdateEntry);
+                await MuteManager(client, eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogMemberUpdateEntry);
                 break;
             case DiscordAuditLogActionType.Kick:
                 await KickManager(client,eventArgs.Guild, eventArgs.AuditLogEntry as DiscordAuditLogKickEntry);
@@ -58,15 +59,17 @@ public static class AuditLogEvents
         guildUser.KickCount++;
         liveBotDbContext.GuildUsers.Update(guildUser);
         await liveBotDbContext.SaveChangesAsync();
+        StringBuilder descriptionBuilder = new();
+        descriptionBuilder.AppendLine("# 👢 User Kicked");
+        descriptionBuilder.AppendLine($"- **User:** {targetUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Moderator:** {responsibleUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Reason:** {logEntry.Reason}");
+        descriptionBuilder.AppendLine($"- **Kick Count:** {guildUser.KickCount}");
         
         moderatorLoggingService.AddToQueue(new ModLogItem(
             modLogChannel,
             targetUser,
-            "# User Kicked\n" +
-            $"- **User:** {targetUser.Mention}\n" +
-            $"- **Moderator:** {responsibleUser.Mention}\n" +
-            $"- **Reason:** {logEntry.Reason}\n" +
-            $"- **Kick Count:** {guildUser.KickCount}",
+            descriptionBuilder.ToString(),
             ModLogType.Kick));
         await databaseMethodService.AddInfractionsAsync(
             new Infraction(
@@ -99,12 +102,14 @@ public static class AuditLogEvents
         DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
+        StringBuilder descriptionBuilder = new();
+        descriptionBuilder.AppendLine("# ✅ User Unbanned");
+        descriptionBuilder.AppendLine($"- **User:** {targetUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Moderator:** {responsibleUser.Mention}");
         moderatorLoggingService.AddToQueue(new ModLogItem(
             modLogChannel,
             targetUser,
-            "# User Unbanned\n" +
-            $"- **User:** {targetUser.Mention}\n" +
-            $"- **Moderator:** {responsibleUser.Mention}\n",
+            descriptionBuilder.ToString(),
             ModLogType.Unban
             ));
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Unban logged for {User} in {Guild} by {ModUser}",targetUser.Username,guild.Name,responsibleUser.Username);
@@ -114,7 +119,7 @@ public static class AuditLogEvents
     {
         if (logEntry is null)
         {
-            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Timeout event is null, skipping");
+            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Guild member updated event is null, skipping");
             return;
         }
         if (logEntry.TimeoutChange.Before == logEntry.TimeoutChange.After) return;
@@ -131,7 +136,7 @@ public static class AuditLogEvents
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
         ModLogType modLogType;
-        string description;
+        StringBuilder descriptionBuilder = new();
         StringBuilder reasonBuilder = new();
         reasonBuilder.AppendLine(logEntry.Reason ?? "-reason not specified-");
         var infractionType = InfractionType.TimeoutRemoved;
@@ -141,21 +146,21 @@ public static class AuditLogEvents
         if (newTime is null && oldTime is not null)
         {
             modLogType = ModLogType.TimeOutRemoved;
-            description ="# Timeout Removed\n" +
-                         $"- **User:**{targetUser.Mention}\n" +
-                         $"- **by:** {responsibleUser.Mention}\n" +
-                         $"- **old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)";
+            descriptionBuilder.AppendLine("# ⌛ Timeout Removed");
+            descriptionBuilder.AppendLine($"- **User:**{targetUser.Mention}");
+            descriptionBuilder.AppendLine($"- **by:** {responsibleUser.Mention}");
+            descriptionBuilder.AppendLine($"- **old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)");
             reasonBuilder.Append($"- **Old timeout:** <t:{oldTime.Value.ToUnixTimeSeconds()}:F>");
         }
         else if (oldTime < newTime && oldTime > DateTimeOffset.UtcNow)
         {
             modLogType = ModLogType.TimeOutExtended;
-            description = $"# User Timeout Extended\n" +
-                          $"- **User:**{targetUser.Mention}\n" +
-                          $"- **by:** {responsibleUser.Mention}\n" +
-                          $"- **reason:** {logEntry.Reason??"-reason not specified-"}\n" +
-                          $"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)\n" +
-                          $"- ***old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)*";
+            descriptionBuilder.AppendLine("# ⌛ User Timeout Extended");
+            descriptionBuilder.AppendLine($"- **User:**{targetUser.Mention}");
+            descriptionBuilder.AppendLine($"- **by:** {responsibleUser.Mention}");
+            descriptionBuilder.AppendLine($"- **reason:** {logEntry.Reason??"-reason not specified-"}");
+            descriptionBuilder.AppendLine($"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)");
+            descriptionBuilder.AppendLine($"- ***old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)*");
             infractionType = InfractionType.TimeoutExtended;
             reasonBuilder.AppendLine($"- **Until:** <t:{newTime.Value.ToUnixTimeSeconds()}:F>)")
                 .Append($"- **Old timeout:** <t:{oldTime.Value.ToUnixTimeSeconds()}:F>)");
@@ -163,30 +168,31 @@ public static class AuditLogEvents
         else if ((oldTime is null && newTime>DateTimeOffset.UtcNow) || (oldTime < newTime && oldTime<DateTimeOffset.UtcNow))
         {
             modLogType = ModLogType.TimedOut;
-            description ="# User Timed Out\n" +
-                         $"- **User:**{targetUser.Mention}\n" +
-                         $"- **by:** {responsibleUser.Mention}\n" +
-                         $"- **reason:** {logEntry.Reason??"-reason not specified-"}\n" +
-                         $"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)";
+            
+            descriptionBuilder.AppendLine("# ⌛ User Timed Out");
+            descriptionBuilder.AppendLine($"- **User:**{targetUser.Mention}");
+            descriptionBuilder.AppendLine($"- **by:** {responsibleUser.Mention}");
+            descriptionBuilder.AppendLine($"- **reason:** {logEntry.Reason??"-reason not specified-"}");
+            descriptionBuilder.AppendLine($"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)");
             infractionType =  InfractionType.TimeoutAdded;
             reasonBuilder.Append($"- **Until:** <t:{newTime.Value.ToUnixTimeSeconds()}:F>)");
         }
         else if (oldTime > newTime)
         {
             modLogType = ModLogType.TimeOutShortened;
-            description = $"# User Timeout Shortened\n" +
-                          $"- **User:**{targetUser.Mention}\n" +
-                          $"- **by** {responsibleUser.Mention}\n" +
-                          $"- **reason:** {logEntry.Reason??"-reason not specified-"}\n" +
-                          $"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)\n" +
-                          $"- ***old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)*";
+            descriptionBuilder.AppendLine("# ⌛ User Timeout Shortened");
+            descriptionBuilder.AppendLine($"- **User:**{targetUser.Mention}");
+            descriptionBuilder.AppendLine($"- **by** {responsibleUser.Mention}");
+            descriptionBuilder.AppendLine($"- **reason:** {logEntry.Reason??"-reason not specified-"}");
+            descriptionBuilder.AppendLine($"- **until:**<t:{newTime.Value.ToUnixTimeSeconds()}:F>(<t:{newTime.Value.ToUnixTimeSeconds()}:R>)");
+            descriptionBuilder.AppendLine($"- ***old timeout:**<t:{oldTime.Value.ToUnixTimeSeconds()}:F>(<t:{oldTime.Value.ToUnixTimeSeconds()}:R>)*");
             infractionType = InfractionType.TimeoutReduced;
             reasonBuilder.AppendLine($"- **Until:** <t:{newTime.Value.ToUnixTimeSeconds()}:F>)")
                 .Append($"- **Old timeout:** <t:{oldTime.Value.ToUnixTimeSeconds()}:F>)");
             
         }
         else return;
-        moderatorLoggingService.AddToQueue(new ModLogItem(modLogChannel,targetUser,description,modLogType));
+        moderatorLoggingService.AddToQueue(new ModLogItem(modLogChannel,targetUser,descriptionBuilder.ToString(),modLogType));
         await databaseMethodService.AddInfractionsAsync(
             new Infraction(responsibleUser.Id, targetUser.Id, guild.Id, reasonBuilder.ToString(),
                 false, infractionType));
@@ -217,19 +223,56 @@ public static class AuditLogEvents
         DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
         DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
         DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
+        StringBuilder descriptionBuilder = new();
+        descriptionBuilder.AppendLine("# 🚫 User Banned");
+        descriptionBuilder.AppendLine($"- **User:** {targetUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Moderator:** {responsibleUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Reason:** {logEntry.Reason}");
+        descriptionBuilder.AppendLine($"- **Ban Count:** {guildUser.BanCount}");
         moderatorLoggingService.AddToQueue(new ModLogItem(
             modLogChannel,
             targetUser,
-            "# User Banned\n" +
-            $"- **User:** {targetUser.Mention}\n" +
-            $"- **Moderator:** {responsibleUser.Mention}\n" +
-            $"- **Reason:** {logEntry.Reason}\n" +
-            $"- **Ban Count:** {guildUser.BanCount}",
+            descriptionBuilder.ToString(),
             ModLogType.Ban
             ));
         await databaseMethodService.AddInfractionsAsync(
             new Infraction(responsibleUser.Id,targetUser.Id,guild.Id,logEntry.Reason??"Reason unspecified",false,InfractionType.Ban)
             );
         client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Ban logged for {User} in {Guild} by {ModUser}",targetUser.Username,guild.Name,responsibleUser.Username);
+    }
+
+    private static async Task MuteManager(DiscordClient client, DiscordGuild guild, DiscordAuditLogMemberUpdateEntry? logEntry)
+    {
+        if (logEntry is null)
+        {
+            client.Logger.LogInformation(CustomLogEvents.AuditLogManager,"Audit log entry for Guild member updated event is null, skipping");
+            return;
+        }
+        if (logEntry.MuteChange.Before == logEntry.MuteChange.After || !logEntry.MuteChange.After.HasValue || !logEntry.MuteChange.Before.HasValue) return;
+        
+        var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+        var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
+        var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
+        await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
+        Guild guildSettings = await liveBotDbContext.Guilds.FirstOrDefaultAsync(w => w.Id == guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(guild.Id));
+        if (guildSettings.ModerationLogChannelId is null) return;
+        DiscordChannel modLogChannel = await guild.GetChannelAsync(guildSettings.ModerationLogChannelId.Value);
+        DiscordUser targetUser = await client.GetUserAsync(logEntry.Target.Id);
+        DiscordUser responsibleUser = logEntry.UserResponsible ?? client.CurrentUser;
+        StringBuilder descriptionBuilder = new();
+        var type = ModLogType.Muted;
+        switch (logEntry.MuteChange.Before.Value)
+        {
+            case true when !logEntry.MuteChange.After.Value:
+                type = ModLogType.UnMuted;
+                descriptionBuilder.AppendLine("# 🔊 User Un-muted");
+                break;
+            case false when logEntry.MuteChange.After.Value:
+                descriptionBuilder.AppendLine("# 🔇 User Muted");
+                break;
+        }
+        descriptionBuilder.AppendLine($"- **User:** {targetUser.Mention}");
+        descriptionBuilder.AppendLine($"- **Moderator:** {responsibleUser.Mention}");
+        moderatorLoggingService.AddToQueue(new ModLogItem(modLogChannel, targetUser, descriptionBuilder.ToString(), type));
     }
 }
