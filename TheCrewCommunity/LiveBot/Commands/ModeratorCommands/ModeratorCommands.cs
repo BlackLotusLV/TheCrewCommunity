@@ -92,9 +92,14 @@ public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFact
         [Description("Reason for the timeout")] string reason)
     => await TimeoutCommand.ExecuteAsync(interactivity, ctx, user, duration, reason);
 
-    [Command("mute"), Description("Voice mutes a users"), RequirePermissions(DiscordPermissions.MuteMembers)]
+    [Command("voice-mute"), Description("Voice mutes a users"), RequirePermissions(DiscordPermissions.MuteMembers)]
     public async Task MuteAsync(SlashCommandContext ctx,
         [Description("User to mute")] DiscordMember member,
         [Description("Reason for muting the user")] string reason = "No reason provided")
         => await MuteUserCommand.ExecuteAsync(ctx, member, reason);
+    [Command("voice-unmute"), Description("Voice unmute a user"), RequirePermissions(DiscordPermissions.MuteMembers)]
+    public async Task UnMuteAsync(SlashCommandContext ctx,
+        [Description("User to unmute")] DiscordMember member,
+        [Description("Reason for unmuting the user")] string reason = "No reason provided")
+    => await UnMuteUserCommand.ExecuteAsync(ctx, member, reason);
 }
