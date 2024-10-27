@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.MessageCommands;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
 using DSharpPlus.Interactivity.Extensions;
@@ -47,9 +48,10 @@ public static class ServiceConfiguration
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
                 
+        string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Default connection string not provided!");
                 
-        services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
-        services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
+        services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
         
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddRoles<IdentityRole<Guid>>()
