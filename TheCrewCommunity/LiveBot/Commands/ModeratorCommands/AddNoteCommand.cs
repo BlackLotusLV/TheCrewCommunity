@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Commands.Processors.SlashCommands;
+﻿using System.Text;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -26,13 +27,15 @@ public static class AddNoteCommand
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(ctx.Guild.Id));
         DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
+        StringBuilder descriptionBuilder = new();
+        descriptionBuilder.AppendLine("# 📝 Note Added")
+            .AppendLine($"- **User:** {user.Mention}")
+            .AppendLine($"- **Moderator:** {ctx.Member.Mention}")
+            .Append($"- **Note:** {note}");
         moderatorLoggingService.AddToQueue(new ModLogItem(
             channel,
             user,
-            "# Note Added\n" +
-            $"- **User:** {user.Mention}\n" +
-            $"- **Moderator:** {ctx.Member.Mention}\n" +
-            $"- **Note:** {note}",
+            descriptionBuilder.ToString(),
             ModLogType.Info,
             attachment: image));
     }

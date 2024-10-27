@@ -84,13 +84,14 @@ public class ModeratorWarningService(
         embedToUser.AddField("Warning by", $"{item.Admin.Mention}", true);
         embedToUser.AddField("Server", item.Guild.Name, true);
 
-        string warningDescription = "# User Warned\n" +
-                                    $"- **User:** {item.User.Mention}\n" +
-                                    $"- **Infraction level:** {infractionLevel}\n" +
-                                    $"- **Infractions:** {warningCount}\n" +
-                                    $"- **Moderator:** {item.Admin.Mention}\n" +
-                                    $"- **Reason:** {item.Reason}\n" +
-                                    $"*Infraction ID: {newInfraction.Id}*";
+        StringBuilder warningBuilder = new();
+        warningBuilder.AppendLine("# ⚠️ User Warned")
+            .AppendLine($"- **User:** {item.User.Mention}")
+            .AppendLine($"- **Infraction level:** {infractionLevel}")
+            .AppendLine($"- **Infractions:** {warningCount}")
+            .AppendLine($"- **Moderator:** {item.Admin.Mention}")
+            .AppendLine($"- **Reason:** {item.Reason}")
+            .Append($"*Infraction ID: {newInfraction.Id}*");
 
         switch (infractionLevel)
         {
@@ -123,7 +124,7 @@ public class ModeratorWarningService(
             }
         }
 
-        moderatorLoggingService.AddToQueue(new ModLogItem(modLog, item.User, warningDescription, ModLogType.Warning, content, item.Attachment));
+        moderatorLoggingService.AddToQueue(new ModLogItem(modLog, item.User, warningBuilder.ToString(), ModLogType.Warning, content, item.Attachment));
 
         if (item.InteractionContext == null)
         {
@@ -184,11 +185,12 @@ public class ModeratorWarningService(
             await liveBotDbContext.SaveChangesAsync();
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Infraction #{entry.Id} deactivated for {user.Username}({user.Id})"));
             
-            string description = $"# User Warning Removed\n" +
-                                 $"- **User:** {user.Mention}\n" +
-                                 $"- **Infraction ID:** {entry.Id}\n" +
-                                 $"- **Infraction level:** {infractionLevel - 1}\n" +
-                                 $"- **Moderator:** {ctx.User.Mention}\n";
+            StringBuilder descriptionBuilder = new();
+            descriptionBuilder.AppendLine("# ➖ User Warning Removed")
+                .AppendLine($"- **User:** {user.Mention}")
+                .AppendLine($"- **Infraction ID:** {entry.Id}")
+                .AppendLine($"- **Infraction level:** {infractionLevel - 1}")
+                .AppendLine($"- **Moderator:** {ctx.User.Mention}");
             try
             {
                 if (member is not null) await member.SendMessageAsync($"Your infraction level in **{ctx.Guild.Name}** has been lowered to {infractionLevel - 1} by {ctx.User.Mention}");
@@ -198,7 +200,7 @@ public class ModeratorWarningService(
                 modMessageBuilder.AppendLine($"{user.Mention} could not be contacted via DM.");
             }
 
-            moderatorLoggingService.AddToQueue(new ModLogItem(modLog, user, description, ModLogType.UnWarn, modMessageBuilder.ToString()));
+            moderatorLoggingService.AddToQueue(new ModLogItem(modLog, user, descriptionBuilder.ToString(), ModLogType.UnWarn, modMessageBuilder.ToString()));
         }
 
         public async Task<DiscordEmbed> GetUserInfoAsync(DiscordGuild guild, DiscordUser user)
@@ -247,6 +249,14 @@ public class ModeratorWarningService(
             {
                 userInfractions.RemoveAll(w => w.InfractionType == InfractionType.Note);
             }
+            StringBuilder descriptionBuilder = new();
+            descriptionBuilder.AppendLine($"- **Times warned:** {userInfractions.Count(w => w.InfractionType == InfractionType.Warning)}")
+                .AppendLine($"- **Times kicked:** {kickCount}")
+                .AppendLine($"- **Times banned:** {banCount}")
+                .AppendLine($"- **Infraction level:** {userInfractions.Count(w => w.IsActive)}")
+                .AppendLine($"- **Infraction count:** {userInfractions.Count(w => w.IsActive)}")
+                .Append($"- **Mod Mail blocked:** {(userStats.IsModMailBlocked ? "Yes" : "No")}");
+            
             DiscordEmbedBuilder statsEmbed = new()
             {
                 Color = new DiscordColor(0xFF6600),
@@ -255,12 +265,7 @@ public class ModeratorWarningService(
                     Name = $"{user.Username}({user.Id})",
                     IconUrl = user.AvatarUrl
                 },
-                Description = $"- **Times warned:** {userInfractions.Count(w => w.InfractionType == InfractionType.Warning)}\n" +
-                              $"- **Times kicked:** {kickCount}\n" +
-                              $"- **Times banned:** {banCount}\n" +
-                              $"- **Infraction level:** {userInfractions.Count(w => w.IsActive)}\n" +
-                              $"- **Infraction count:** {userInfractions.Count(w => w.IsActive)}\n" +
-                              $"- **Mod Mail blocked:** {(userStats.IsModMailBlocked?"Yes":"No")}",
+                Description = descriptionBuilder.ToString(),
                 Title = "Infraction History",
                 Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                 {
@@ -281,10 +286,10 @@ public class ModeratorWarningService(
                 for (int j = i; j < i + pageCap && j < userInfractions.Count; j++)
                 {
                     Infraction infraction = userInfractions[j];
-                    reason.AppendLine($"### {GetReasonTypeEmote(infraction.InfractionType)}Infraction #{infraction.Id} *({infraction.InfractionType.ToString()})*\n" +
-                                      $"- **By:** <@{infraction.AdminDiscordId}>\n" +
-                                      $"- **Date:** <t:{infraction.TimeCreated.ToUnixTimeSeconds()}>\n" +
-                                      $"- **Reason:** {infraction.Reason}");
+                    reason.AppendLine($"### {GetReasonTypeEmote(infraction.InfractionType)} Infraction #{infraction.Id} *({infraction.InfractionType.ToString()})*")
+                        .AppendLine($"- **By:** <@{infraction.AdminDiscordId}>")
+                        .AppendLine($"- **Date:** <t:{infraction.TimeCreated.ToUnixTimeSeconds()}>")
+                        .Append($"- **Reason:** {infraction.Reason}");
                     if (infraction.InfractionType == InfractionType.Warning)
                     {
                         reason.AppendLine($"- **Is active:** {(infraction.IsActive ? "✅" : "❌")}");

@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Commands.Processors.SlashCommands;
+﻿using System.Text;
+using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
@@ -41,14 +42,16 @@ public static class EditNoteCommand
         Guild? guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id);
         if (guild is null) return;
         DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
+        StringBuilder descriptionBuilder = new();
+        descriptionBuilder.AppendLine("# ✏️ Note Edited")
+            .AppendLine($"- **User:** {user.Mention}")
+            .AppendLine($"- **Moderator:** {ctx.Member.Mention}")
+            .AppendLine($"- **Old Note:** {oldNote}")
+            .Append($"- **New Note:** {infraction.Reason}");
         moderatorLoggingService.AddToQueue(new ModLogItem(
             channel,
             user,
-            "# Note Edited\n" +
-            $"- **User:** {user.Mention}\n" +
-            $"- **Moderator:** {ctx.Member.Mention}\n" +
-            $"- **Old Note:** {oldNote}\n" +
-            $"- **New Note:** {infraction.Reason}",
+            descriptionBuilder.ToString(),
             ModLogType.Info));
     }
 }
