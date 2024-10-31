@@ -289,7 +289,7 @@ public class ModeratorWarningService(
                     reason.AppendLine($"### {GetReasonTypeEmote(infraction.InfractionType)} Infraction #{infraction.Id} *({infraction.InfractionType.ToString()})*")
                         .AppendLine($"- **By:** <@{infraction.AdminDiscordId}>")
                         .AppendLine($"- **Date:** <t:{infraction.TimeCreated.ToUnixTimeSeconds()}>")
-                        .Append($"- **Reason:** {infraction.Reason}");
+                        .AppendLine($"- **Reason:** {infraction.Reason}");
                     if (infraction.InfractionType == InfractionType.Warning)
                     {
                         reason.AppendLine($"- **Is active:** {(infraction.IsActive ? "✅" : "❌")}");
