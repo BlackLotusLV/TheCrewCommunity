@@ -104,7 +104,7 @@ public static class DeleteLog
             if (!ImageExtensions.Contains(Path.GetExtension(messageAttachment.FileName??""))) continue;
             HttpResponseMessage response = await httpClient.GetAsync(messageAttachment.Url);
             if (!response.IsSuccessStatusCode) continue;
-            var uniqueFileName = $"{Guid.NewGuid()}-{messageAttachment.FileName}";
+            var uniqueFileName = $"{Guid.CreateVersion7()}-{messageAttachment.FileName}";
             MemoryStream ms = new();
             await response.Content.CopyToAsync(ms);
             ms.Position = 0;

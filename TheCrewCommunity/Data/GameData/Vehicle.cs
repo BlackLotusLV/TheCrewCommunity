@@ -5,7 +5,7 @@ namespace TheCrewCommunity.Data.GameData;
 
 public class Vehicle
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid BrandId { get; set; }
     public Guid GameId { get; set; }
     public Guid VCatId { get; set; }

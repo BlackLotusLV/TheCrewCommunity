@@ -5,7 +5,7 @@ namespace TheCrewCommunity.Data;
 public class VanityWhitelist
 {
     private readonly ulong _guildId;
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     public required ulong GuildId
     {
         get => _guildId;

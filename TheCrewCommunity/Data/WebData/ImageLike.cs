@@ -2,7 +2,7 @@
 
 public class ImageLike
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     public ulong DiscordId
     {
         get => _discordId;
