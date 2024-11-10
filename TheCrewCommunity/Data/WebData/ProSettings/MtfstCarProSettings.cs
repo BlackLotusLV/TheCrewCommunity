@@ -5,7 +5,7 @@ namespace TheCrewCommunity.Data.WebData.ProSettings;
 
 public class MtfstCarProSettings
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     public ulong DiscordId
     {
         get => _discordId;

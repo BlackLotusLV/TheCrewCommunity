@@ -4,7 +4,7 @@ namespace TheCrewCommunity.Data.GameData;
 
 public class Brand
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     [MaxLength(30)]
     public required string Name { get; set; }
     [MaxLength(2)]

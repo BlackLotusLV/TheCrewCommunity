@@ -4,7 +4,7 @@ namespace TheCrewCommunity.Data.GameData;
 
 public class VehicleCategory
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     
     [MaxLength(30)]
     public required string Name { get; set; }

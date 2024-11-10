@@ -2,7 +2,7 @@
 
 public class MtfstCarProSettingsLikes
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public ulong DiscordId
     {
         get => _discordId;

@@ -5,7 +5,7 @@ namespace TheCrewCommunity.Data.GameData;
 
 public class Game
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     [MaxLength(30)]
     public required string Name { get; init; }
     public DateOnly ReleaseDate { get; init; }

@@ -7,7 +7,7 @@ public class Tag
     private readonly ulong _ownerId;
     private readonly ulong _guildId;
     
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     
     [MaxLength(30)]
     public required string Name { get; set; }
