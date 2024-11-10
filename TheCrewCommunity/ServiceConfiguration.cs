@@ -51,7 +51,12 @@ public static class ServiceConfiguration
         string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Default connection string not provided!");
                 
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
-        services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
+        //services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddTransient(sp =>
+        {
+            var factory = sp.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
+            return factory.CreateDbContext();
+        });
         
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddRoles<IdentityRole<Guid>>()
