@@ -9,7 +9,7 @@ using TheCrewCommunity.Data;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModMailCommands;
-[Command("Modmail"), Description("Moderator Mail commands"), RequireGuild, RequirePermissions(DiscordPermissions.ManageMessages)]
+[Command("Modmail"), Description("Moderator Mail commands"), RequireGuild, RequirePermissions(DiscordPermission.ManageMessages)]
 public class ModMailCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModMailService modMailService)
 {
     [Command("reply"), Description("Replies to a specific mod mail")]

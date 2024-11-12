@@ -8,7 +8,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class AddButtonCommand(InteractivityExtension interactivity)
 {
-    [Command("AddButton"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(DiscordPermissions.ManageMessages)]
+    [Command("AddButton"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(DiscordPermission.ManageMessages)]
     public async Task AddButton(SlashCommandContext ctx, DiscordMessage targetMessage)
     {
         if (targetMessage.Author is null || targetMessage.Author != ctx.Client.CurrentUser)

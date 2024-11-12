@@ -6,10 +6,10 @@ public class GeneralUtils
 {
     public bool CheckIfMemberAdmin(DiscordMember member)
     {
-        return member.Permissions.HasPermission(DiscordPermissions.ManageMessages) ||
-               member.Permissions.HasPermission(DiscordPermissions.KickMembers) ||
-               member.Permissions.HasPermission(DiscordPermissions.BanMembers) ||
-               member.Permissions.HasPermission(DiscordPermissions.Administrator);
+        return member.Permissions.HasPermission(DiscordPermission.ManageMessages) ||
+               member.Permissions.HasPermission(DiscordPermission.KickMembers) ||
+               member.Permissions.HasPermission(DiscordPermission.BanMembers) ||
+               member.Permissions.HasPermission(DiscordPermission.Administrator);
     }
     
     public int CalculateLevenshteinDistance(string a, string b)
