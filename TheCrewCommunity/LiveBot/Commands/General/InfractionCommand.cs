@@ -9,7 +9,7 @@ namespace TheCrewCommunity.LiveBot.Commands.General;
 
 public class InfractionCommand(IModeratorWarningService warningService)
 {
-    [Command("Infractions"), Description("Get the infractions of a user"), RequirePermissions(DiscordPermissions.ModerateMembers),
+    [Command("Infractions"), Description("Get the infractions of a user"), RequirePermissions(DiscordPermission.ModerateMembers),
      SlashCommandTypes(DiscordApplicationCommandType.SlashCommand, DiscordApplicationCommandType.UserContextMenu), RequireGuild]
     public async Task ExecuteAsync(SlashCommandContext ctx, [Description("User to get the infractions for")] DiscordUser user)
     {
@@ -25,7 +25,7 @@ public class InfractionCommand(IModeratorWarningService warningService)
             throw new NullReferenceException("Guild is null. This should not happen.");
         }
 
-        bool isModerator = ctx.Member.Permissions.HasPermission(DiscordPermissions.ModerateMembers);
+        bool isModerator = ctx.Member.Permissions.HasPermission(DiscordPermission.ModerateMembers);
         var embeds = await warningService.BuildInfractionsEmbedsAsync(ctx.Guild, user, isModerator);
         webhookBuilder.AddEmbed(embeds[0]);
         if (embeds.Count > 1)

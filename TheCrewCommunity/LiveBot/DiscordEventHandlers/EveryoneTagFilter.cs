@@ -23,7 +23,7 @@ public static partial class EveryoneTagFilter
         DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
         if (
             guild is { ModerationLogChannelId: not null, HasEveryoneProtection: true } &&
-            !member.Permissions.HasPermission(DiscordPermissions.MentionEveryone) &&
+            !member.Permissions.HasPermission(DiscordPermission.MentionEveryone) &&
             e.Message.Content.Contains("@everyone") &&
             !EveryoneTagRegex().IsMatch(e.Message.Content)
         )

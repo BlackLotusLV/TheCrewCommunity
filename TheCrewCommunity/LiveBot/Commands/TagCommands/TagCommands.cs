@@ -15,17 +15,17 @@ namespace TheCrewCommunity.LiveBot.Commands.TagCommands;
 [Command("Tag"), Description("Custom response commands"), RequireGuild]
 public class TagCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, InteractivityExtension interactivity)
 {
-    [Command("Create"), Description("Creates a new tag"), RequirePermissions(DiscordPermissions.ManageMessages)]
+    [Command("Create"), Description("Creates a new tag"), RequirePermissions(DiscordPermission.ManageMessages)]
     public async Task CreateTag(SlashCommandContext ctx,
         [Description("Name of the tag that will be used to select it"), MaxLength(30)] string name)
     => await CreateTagCommand.ExecuteAsync(dbContextFactory,interactivity, ctx, name);
     
-    [Command("Delete"), Description("Deletes a tag"), RequirePermissions(DiscordPermissions.ManageMessages)]
+    [Command("Delete"), Description("Deletes a tag"), RequirePermissions(DiscordPermission.ManageMessages)]
     public async Task DeleteTag(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(TagAutoCompleteProvider)), Description("Tag to delete.")] string tagId)
     => await DeleteTagCommand.ExecuteAsync(dbContextFactory, ctx, tagId);
     
-    [Command("Edit"), Description("Edit a tag."), RequirePermissions(DiscordPermissions.ManageMessages)]
+    [Command("Edit"), Description("Edit a tag."), RequirePermissions(DiscordPermission.ManageMessages)]
     public async Task EditTag(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(TagAutoCompleteProvider)), Description("Tag to edit.")] string tagId)
     => await EditTagCommand.ExecuteAsync(dbContextFactory, databaseMethodService, interactivity, ctx, tagId);
