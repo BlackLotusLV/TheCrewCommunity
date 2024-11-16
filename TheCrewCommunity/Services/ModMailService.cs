@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using System.Text;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Exceptions;
@@ -30,7 +31,10 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
     public async Task ProcessModMailDm(DiscordClient client, MessageCreatedEventArgs e, ModMail mmEntry)
     {
         DiscordGuild guild = client.Guilds.First(w => w.Value.Id == mmEntry.GuildId).Value;
-        DiscordEmbedBuilder embed = new()
+        DiscordMessageBuilder messageBuilder = new();
+        List<DiscordEmbed> attachmentEmbeds = [];
+        StringBuilder descriptionBuilder = new(e.Message.Content + "\n\n");
+        DiscordEmbedBuilder embedBuilder = new()
         {
             Author = new DiscordEmbedBuilder.EmbedAuthor
             {
@@ -38,8 +42,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
                 Name = $"{e.Author.Username} ({e.Author.Id})"
             },
             Color = new DiscordColor(mmEntry.ColorHex),
-            Title = $"[INBOX] #{mmEntry.Id} Mod Mail user message.",
-            Description = e.Message.Content
+            Title = $"[INBOX] #{mmEntry.Id} Mod Mail user message."
         };
 
         if (e.Message.Attachments != null)
@@ -51,9 +54,43 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
                     client.Logger.LogDebug(CustomLogEvents.ModMail, "Attachment URL was null in Mod Mail message from {Username}({UserId})", e.Author.Username, e.Author.Id);
                     continue;
                 }
-                embed.AddField("Attachment", attachment.Url);
+
+                switch (attachment.MediaType)
+                {
+                    case null:
+                        client.Logger.LogDebug(CustomLogEvents.ModMail, "Attachment type was null in Mod Mail message from {Username}({UserId})", e.Author.Username, e.Author.Id);
+                        descriptionBuilder.AppendLine($"**Unknown Attachment:** {attachment.Url}");
+                        break;
+                    case var temp when temp.Contains("image"):
+                        if (embedBuilder.ImageUrl is null)
+                        {
+                            embedBuilder.ImageUrl = attachment.Url;
+                        }
+                        else
+                        {
+                            attachmentEmbeds.Add(new DiscordEmbedBuilder()
+                            {
+                                Color = new DiscordColor(mmEntry.ColorHex),
+                                ImageUrl = attachment.Url
+                            }.Build());
+                        }
+                        break;
+                    case var temp when temp.Contains("text"):
+                        descriptionBuilder.AppendLine($"**Text Attachment:** [Link to file]({attachment.Url})");
+                        break;
+                    default:
+                        client.Logger.LogDebug(CustomLogEvents.ModMail, "Attachment type was not image or file in Mod Mail message from {Username}({UserId})", e.Author.Username, e.Author.Id);
+                        descriptionBuilder.AppendLine($"**Other type Attachment:** {attachment.Url}");
+                        break;
+                }
             }
         }
+        
+        embedBuilder.WithDescription(descriptionBuilder.ToString());
+
+        attachmentEmbeds.Insert(0, embedBuilder.Build());
+        
+        messageBuilder.AddEmbeds(attachmentEmbeds);
 
         mmEntry.HasChatted = true;
         mmEntry.LastMessageTime = DateTime.UtcNow;
@@ -67,7 +104,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
         if (modMailChannelId is not null)
         {
             DiscordChannel modMailChannel = await guild.GetChannelAsync(modMailChannelId.Value);
-            await modMailChannel.SendMessageAsync(embed: embed);
+            await messageBuilder.SendAsync(modMailChannel);
 
             client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", modMailChannel.Name,
                 modMailChannel.Id, modMailChannel.Guild.Name, e.Author.Username, e.Author.Id);
