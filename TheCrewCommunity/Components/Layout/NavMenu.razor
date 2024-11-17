@@ -68,7 +68,5 @@
     {
         AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _user = authState.User;
-        var roles = _user?.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
-        Console.WriteLine("Roles: " + string.Join(", ", roles));
     }
 }

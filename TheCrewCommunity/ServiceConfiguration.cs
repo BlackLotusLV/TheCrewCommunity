@@ -80,6 +80,24 @@ public static class ServiceConfiguration
                 options.SaveTokens = true;
                 options.Events = new OAuthEvents
                 {
+                    OnCreatingTicket = async context =>
+                    {
+                        var identity = (ClaimsIdentity)context.Principal.Identity;
+                        var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+               
+                        ulong discordId = ulong.Parse(identity.FindFirst(ClaimTypes.NameIdentifier).Value);
+                        ApplicationUser? user = await userManager.Users.SingleOrDefaultAsync(u => u.DiscordId == discordId);
+
+                        if (user != null)
+                        {
+                            // Add role claims to the identity
+                            var roles = await userManager.GetRolesAsync(user);
+                            foreach (string role in roles)
+                            {
+                                identity.AddClaim(new Claim(ClaimTypes.Role, role));
+                            }
+                        }
+                    },
                     OnTicketReceived = context =>
                     {
                         context.ReturnUri = "/Account/Registering";
