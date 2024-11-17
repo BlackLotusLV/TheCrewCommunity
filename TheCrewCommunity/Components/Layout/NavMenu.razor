@@ -26,6 +26,11 @@
             <div class="dropdown-content">
                 <a href="/ThisOrThat/Vote">Vote</a>
                 <a href="/ThisOrThat/Leaderboard">Leaderboard</a>
+                <AuthorizeView Roles="Administrator">
+                    <Authorized>
+                        <a href="/ThisOrThat/New">New</a>
+                    </Authorized>
+                </AuthorizeView>
             </div>
         </div>
         <a href="https://discord.gg/thecrew" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a>
@@ -63,5 +68,7 @@
     {
         AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _user = authState.User;
+        var roles = _user?.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+        Console.WriteLine("Roles: " + string.Join(", ", roles));
     }
 }
