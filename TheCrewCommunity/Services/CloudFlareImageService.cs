@@ -6,7 +6,7 @@ namespace TheCrewCommunity.Services;
 
 public interface ICloudFlareImageService
 {
-    Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false);
+    Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, CloudFlareImageService.ContentType contentType = CloudFlareImageService.ContentType.PhotoMode);
     Task<DeleteImageResponse> DeleteImageAsync(Guid imageId);
 }
 
@@ -15,19 +15,40 @@ public class CloudFlareImageService : ICloudFlareImageService
     private readonly HttpClient _httpClient;
     private readonly Uri _cfBaseUrl;
     private readonly ILogger<CloudFlareImageService> _logger;
-    public CloudFlareImageService(HttpClient httpClient, IConfiguration configuration, ILoggerFactory loggerFactory)
+    private readonly IWebHostEnvironment _env;
+    private const string ContentTypeId = "contentType";
+    public CloudFlareImageService(HttpClient httpClient, IConfiguration configuration, ILoggerFactory loggerFactory, IWebHostEnvironment env)
     {
         _httpClient = httpClient;
+        _env = env;
         _logger = loggerFactory.CreateLogger<CloudFlareImageService>();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", configuration["CloudFlare:Token"] ?? "");
         _cfBaseUrl = new Uri($"https://api.cloudflare.com/client/v4/accounts/{configuration["CloudFlare:AccountId"]}/images/v1");
     }
 
-    public async Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false)
+    public async Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, ContentType contentType = ContentType.PhotoMode)
     {
+        var metaDictionary = new Dictionary<string, string>();
+
+        switch (contentType)
+        {
+            case ContentType.ThisOrThat:
+                metaDictionary.Add(ContentTypeId, "thisOrThat");
+                break;
+            case ContentType.PhotoMode:
+                metaDictionary.Add(ContentTypeId, "photoMode");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null);
+        }
+        metaDictionary.Add("uploadEnvironment", _env.EnvironmentName);
+        
+        string jsonMetadata = JsonSerializer.Serialize(metaDictionary);
+        
         using MultipartFormDataContent content = new();
         content.Add(new ByteArrayContent(image),"file");
         content.Add(new StringContent(requireSignedUrls.ToString()),"requireSignedURLs");
+        content.Add(new StringContent(jsonMetadata), "metadata");
         HttpResponseMessage responseMessage = await _httpClient.PostAsync(_cfBaseUrl, content);
 
         if (!responseMessage.IsSuccessStatusCode)
@@ -66,6 +87,11 @@ public class CloudFlareImageService : ICloudFlareImageService
         }
 
         return result;
+    }
+    public enum ContentType
+    {
+        ThisOrThat,
+        PhotoMode
     }
 }
 
