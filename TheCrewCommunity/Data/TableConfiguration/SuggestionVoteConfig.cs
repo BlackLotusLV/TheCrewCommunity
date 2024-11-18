@@ -14,10 +14,10 @@ public class SuggestionVoteConfig : IEntityTypeConfiguration<SuggestionVote>
             .HasForeignKey(sv=>sv.VotedForVehicleId);
         builder.HasOne(sv=>sv.VehicleSuggestion1)
             .WithMany()
-            .HasForeignKey(sv=>sv.VehicleSuggestion1);
+            .HasForeignKey(sv=>sv.VehicleSuggestion1Id);
         builder.HasOne(sv=>sv.VehicleSuggestion2)
             .WithMany()
-            .HasForeignKey(sv=>sv.VehicleSuggestion2);
+            .HasForeignKey(sv=>sv.VehicleSuggestion2Id);
         builder.HasOne(sv => sv.User)
             .WithMany(au => au.SuggestionVotes)
             .HasForeignKey(sv => sv.UserId);
