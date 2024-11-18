@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data.GameData;
 using TheCrewCommunity.Data.TableConfiguration;
-using TheCrewCommunity.Data.ThisOrThat;
+using TheCrewCommunity.Data.WebData.ThisOrThat;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.Data.WebData.ProSettings;
 

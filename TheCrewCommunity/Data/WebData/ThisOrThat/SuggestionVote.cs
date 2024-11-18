@@ -1,6 +1,4 @@
-﻿using TheCrewCommunity.Data.WebData;
-
-namespace TheCrewCommunity.Data.ThisOrThat;
+﻿namespace TheCrewCommunity.Data.WebData.ThisOrThat;
 
 public class SuggestionVote
 {

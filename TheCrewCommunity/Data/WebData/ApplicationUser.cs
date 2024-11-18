@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
-using TheCrewCommunity.Data.ThisOrThat;
+using TheCrewCommunity.Data.WebData.ThisOrThat;
 using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Data.WebData;
