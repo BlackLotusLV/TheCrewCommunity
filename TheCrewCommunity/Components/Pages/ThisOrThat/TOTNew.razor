@@ -1,0 +1,126 @@
+﻿@page "/ThisOrThat/New"
+@attribute [Authorize(Roles = "Administrator")]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using TheCrewCommunity.Services
+@using TheCrewCommunity.ValidationAttributes
+@inject ICloudFlareImageService CfImageService
+@inject IDatabaseMethodService DatabaseMethodService
+@inject NavigationManager NavigationManager
+@inject ILogger<TOTNew> Logger
+@rendermode InteractiveServer
+@if (_isUploading)
+{
+    <div class="loading">
+        <i class="fa fa-spinner fa-spin"></i>
+    </div>
+}
+else
+{
+    <div>
+        <h1>Add new This or That entry</h1>
+    </div>
+    <EditForm model="_uploadModel" OnValidSubmit="HandleValidSubmit" class="form-container">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <div class="form-group">
+            <label for="Image">Image</label>
+            <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
+            @if (_isLoading)
+            {
+                <span><i class="fa fa-spinner fa-spin-pulse"></i></span>
+            }
+            @if (_isLoaded)
+            {
+                <span><i class="fa fa-check" style="color: green"></i></span>
+            }
+            @if (_isTooBig)
+            {
+                <span><i class="fa fa-x" style="color: red"></i> File too large</span>
+            }
+            <ValidationMessage For="@(() => _uploadModel.Image)"/>
+        </div>
+        <div class="form-group">
+            <label for="BrandName">Brand Name</label>
+            <InputText type="text" class="form-control" id="BrandName" placeholder="Brand Name" @bind-value="@_uploadModel.Brand"/>
+            <ValidationMessage For="@(() => _uploadModel.Brand)"/>
+        </div>
+        <div class="form-group">
+            <label for="Model">Model</label>
+            <InputText type="text" class="form-control" id="Model" placeholder="Model" @bind-value="@_uploadModel.Model"/>
+            <ValidationMessage For="@(() => _uploadModel.Model)"/>
+        </div>
+        <div class="form-group">
+            <label for="Year">Year</label>
+            <InputText type="text" class="form-control" id="Year" placeholder="Year" @bind-value="@_uploadModel.Year" pattern="\d*"/>
+            <ValidationMessage For="@(() => _uploadModel.Year)"/>
+        </div>
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <InputText type="text" class="form-control" id="Description" placeholder="Description" @bind-Value="@_uploadModel.Description"/>
+            <ValidationMessage For="@(() => _uploadModel.Description)"/>
+        </div>
+        <div>
+            <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
+        </div>
+    </EditForm>
+}
+
+
+@code {
+    bool _isUploading = false;
+    bool _isLoading = false;
+    bool _isLoaded = false;
+    bool _isTooBig = false;
+    readonly UploadModel _uploadModel = new();
+
+    class UploadModel
+    {
+        [Required(ErrorMessage = "Select a file")]
+        [FileSizeLimit(10485760)]
+        public byte[] Image { get; set; }
+        [Required(ErrorMessage = "Write brand name")]
+        [StringLength(30, ErrorMessage = "Brand  name can't exceed 30 characters.")]
+        public string Brand { get; set; }
+        [Required(ErrorMessage = "Write Model name")]
+        [StringLength(50, ErrorMessage = "Model name can't exceed 50 characters.")]
+        public string Model { get; set; }
+        [Required(ErrorMessage = "Write Year")]
+        [StringLength(4, ErrorMessage = "Year should be 4 characters long.")]
+        [RegularExpression("^[0-9]{4}$", ErrorMessage = "Year must be a 4 digit number")]
+        public string Year { get; set; }
+        [StringLength(200, ErrorMessage = "Description can't exceed 200 characters.")]
+        public string? Description { get; set; }
+    }
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _isLoading = true;
+        _isLoaded = false;
+        _isTooBig = false;
+        using MemoryStream ms = new();
+        try
+        {
+            await e.File.OpenReadStream(10485760).CopyToAsync(ms);
+        }
+        catch (IOException exception)
+        {
+            Logger.LogError(exception,"Failed to read file to memory stream");
+            _isTooBig = true;
+            _isLoading = false;
+            return;
+        }
+        _uploadModel.Image = ms.ToArray();
+        _isLoading = false;
+        _isLoaded = true;
+    }
+    private async Task HandleValidSubmit()
+    {
+        _isUploading = true;
+        PostImageResponse response = await CfImageService.PostImageAsync(_uploadModel.Image, false, CloudFlareImageService.ContentType.ThisOrThat);
+        if (response is {Success:true, Result:not null})
+        {
+            await DatabaseMethodService.AddVehicleSuggestionAsync(Guid.Parse(response.Result.Id), _uploadModel.Brand, _uploadModel.Model, _uploadModel.Year, _uploadModel.Description);
+            NavigationManager.NavigateTo("/ThisOrThat/Leaderboard");
+        }
+    }
+}
