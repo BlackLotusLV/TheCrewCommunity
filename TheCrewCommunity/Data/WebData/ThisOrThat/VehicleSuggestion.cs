@@ -4,7 +4,7 @@ namespace TheCrewCommunity.Data.WebData.ThisOrThat;
 
 public class VehicleSuggestion
 {
-    public required Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     public required Guid ImageId { get; set; }
     [MaxLength(30)]
     public required string Brand { get; set; }
