@@ -1,6 +1,147 @@
 ﻿@page "/ThisOrThat/Vote"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore.Internal
+@using Microsoft.Extensions.Caching.Memory
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData
+@using TheCrewCommunity.Data.WebData.ThisOrThat
+@attribute [Authorize]
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject IMemoryCache MemoryCache
+@inject ILogger<TOTVote> Logger
+@rendermode InteractiveServer
+<PageTitle>This or That?</PageTitle>
 <h3>This or That?</h3>
+@if (_addingVote)
+{
+    <div class="overlay-container">
+        <p>Submitting your vote... <span><i class="fa fa-spinner fa-spin-pulse"></i></span></p>
+    </div>
+}
+@if (CurrentChoice is null)
+{
+    <p>Nothing to vote on, come back when more items have been added. ;)</p>
+}
+else
+{
+    <div class="container">
+        <div class="image-container">
+            <div class="info">
+                <h4>@CurrentChoice?.Item1.Brand - @CurrentChoice?.Item1.Model (@CurrentChoice?.Item1.Year)</h4>
+                <p>@CurrentChoice?.Item1.Description</p>
+            </div>
+            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item1.ImageId/public" alt="@CurrentChoice?.Item1.Model"/>
+            <div class="overlay" @onclick="@(_=>@VoteAsync(CurrentChoice?.Item1!))">This</div>
+        </div>
+        <div class="image-container">
+            <div class="info">
+                <h4>@CurrentChoice?.Item2.Brand - @CurrentChoice?.Item2.Model (@CurrentChoice?.Item2.Year)</h4>
+                <p>@CurrentChoice?.Item2.Description</p>
+            </div>
+            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item2.ImageId/public" alt="@CurrentChoice?.Item2.Model"/>
+            <div class="overlay" @onclick="@(_=>@VoteAsync(CurrentChoice?.Item2!))">That</div>
+        </div>
+    </div>
+}
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    List<VehicleSuggestion> _vehicleSuggestions;
+    List<(VehicleSuggestion, VehicleSuggestion)>? _uniquePairs;
+    private ApplicationUser? CurrentUser { get; set; }
+    (VehicleSuggestion, VehicleSuggestion)? CurrentChoice { get; set; }
+    private bool _addingVote = false;
     
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is null)
+        {
+            throw new Exception("Authentication state was null, stopping");
+        }
+        AuthenticationState authState = await AuthenticationState;
+        ClaimsPrincipal user = authState.User;
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            CurrentUser = await dbContext.ApplicationUsers
+                .Include(x=>x.SuggestionVotes)
+                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+        }
+        _vehicleSuggestions = await dbContext.VehicleSuggestions.ToListAsync();
+        try
+        {
+            _uniquePairs = await MemoryCache.GetOrCreateAsync("uniquePairsList", entry => Task.FromResult(GenerateUniquePairList()));
+        }
+        catch (Exception e)
+        {
+            _uniquePairs = null;
+            Logger.LogInformation("Failed to load unique pairs for TOT vote. Add items to the database to generate unique pairs");
+        }
+        CurrentChoice = GenerateRandomSuggestionVote();
+    }
+
+    private List<(VehicleSuggestion, VehicleSuggestion)> GenerateUniquePairList()
+    {
+        if (_vehicleSuggestions.Count < 2)
+        {
+            return [];
+        }
+        var uniquePairs = new List<(VehicleSuggestion, VehicleSuggestion)>();
+        for (var i = 0; i < _vehicleSuggestions.Count; i++)
+        {
+            for (int j = i + 1; j < _vehicleSuggestions.Count; j++)
+            {
+                uniquePairs.Add((_vehicleSuggestions[i], _vehicleSuggestions[j]));
+            }
+        }
+        return uniquePairs;
+    }
+
+    private (VehicleSuggestion, VehicleSuggestion)? GenerateRandomSuggestionVote()
+    {
+        if (_vehicleSuggestions.Count < 2 || CurrentUser is null || _uniquePairs is null)
+        {
+            return null;
+        }
+        // generate suggestion vote that does not exist.
+        var existingPairs = CurrentUser.SuggestionVotes
+            .Select(vote=> new HashSet<Guid>{vote.VehicleSuggestion1Id, vote.VehicleSuggestion2Id})
+            .ToHashSet(HashSet<Guid>.CreateSetComparer());
+        var availablePairs = _uniquePairs
+            .Where(pair => !existingPairs.Contains([pair.Item1.Id, pair.Item2.Id]))
+            .ToList();
+        if (availablePairs.Count is 0)
+        {
+            return null;
+        }
+
+        var random = new Random();
+        return availablePairs[random.Next(availablePairs.Count)];
+    }
+
+    private async Task VoteAsync(VehicleSuggestion selected)
+    {
+        _addingVote = true;
+        var vote = new SuggestionVote
+        {
+            UserId = CurrentUser.Id,
+            Id = Guid.CreateVersion7(),
+            VehicleSuggestion1Id = CurrentChoice.Value.Item1.Id,
+            VehicleSuggestion2Id = CurrentChoice.Value.Item2.Id,
+            VotedForVehicleId = selected.Id,
+        };
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        dbContext.SuggestionVotes.Add(vote);
+        await dbContext.SaveChangesAsync();
+        _uniquePairs.Remove(CurrentChoice.Value);
+        CurrentChoice = GenerateRandomSuggestionVote();
+        StateHasChanged();
+        _addingVote = false;
+    }
+
 }

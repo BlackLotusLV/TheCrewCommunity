@@ -1,1 +1,78 @@
-﻿
+﻿.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.image-container {
+    position: relative;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-container .info {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: white;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay for readability */
+}
+
+.image-container h4 {
+    margin: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* The overlay for hover */
+.image-container .overlay {
+    position: absolute;
+    top: 100%; /* Start hidden below the image */
+    left: 0;
+    width: 100%;
+    height: 100%; /* Cover the entire image */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: top 0.2s ease; /* Smooth sliding animation */
+    z-index: 1; /* Ensure it's above other content but below .info */
+    opacity: 0; /* Keep invisible when not active */
+}
+
+/* Slide in the overlay when hovering */
+.image-container:hover .overlay {
+    top: 0; /* Slide into view and cover the image */
+    opacity: 1; /* Make it fully visible */
+    transition: top 0.2s ease, opacity 0.2s ease; /* Smooth transition for both properties */
+}
+
+.overlay-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it is above all other elements */
+    color: white;
+    font-size: 1.5rem;
+}
