@@ -15,5 +15,5 @@ public class VehicleSuggestion
     [MaxLength(200)]
     public string? Description { get; set; }
     
-    public ICollection<SuggestionVote>? SuggestionVotes { get; set; }
+    public ICollection<SuggestionVote>? VotesFor { get; set; }
 }
