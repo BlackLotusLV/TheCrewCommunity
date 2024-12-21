@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.WebData.ThisOrThat;
 
 namespace TheCrewCommunity.Services;
 
@@ -24,6 +25,7 @@ public interface IDatabaseMethodService
     Task ToggleImageLikeAsync(ApplicationUser user, UserImage image);
     Task<int> GetImageLikesCountAsync(Guid imageId);
     Task DeleteImageAsync(Guid imageId);
+    Task AddVehicleSuggestionAsync(Guid imageId, string brand, string model, string year, string? description = null);
 }
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
@@ -271,6 +273,21 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
             throw new Exception($"Image not found with Id: {imageId}");
         }
         context.UserImages.Remove(image);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task AddVehicleSuggestionAsync(Guid imageId, string brand, string model, string year, string? description = null)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        VehicleSuggestion suggestion = new()
+        {
+            ImageId = imageId,
+            Brand = brand,
+            Model = model,
+            Year = year,
+            Description = description
+        };
+        await context.VehicleSuggestions.AddAsync(suggestion);
         await context.SaveChangesAsync();
     }
 }

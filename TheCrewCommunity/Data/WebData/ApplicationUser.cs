@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using TheCrewCommunity.Data.WebData.ThisOrThat;
 using TheCrewCommunity.Data.WebData.ProSettings;
 
 namespace TheCrewCommunity.Data.WebData;
@@ -25,4 +26,5 @@ public class ApplicationUser : IdentityUser<Guid>
     
     public ICollection<UserImage>? Images { get; init; }
     public ICollection<ImageLike>? ImageLikes { get; init; }
+    public ICollection<SuggestionVote> SuggestionVotes { get; init; }
 }

@@ -6,6 +6,7 @@
 @using TheCrewCommunity.Data.GameData
 @using TheCrewCommunity.Data.WebData
 @using TheCrewCommunity.Services
+@using TheCrewCommunity.ValidationAttributes
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject ILogger<UploadImageDialog> Logger
@@ -43,6 +44,10 @@
                         {
                             <span><i class="fa fa-check" style="color: green"></i></span>
                         }
+                        @if (_isTooBig)
+                        {
+                            <span><i class="fa fa-x" style="color: red"></i> File too large</span>
+                        }
                         <ValidationMessage For="@(() => _uploadModel.Image)"/>
                     </div>
 
@@ -77,10 +82,12 @@
     bool _isLoaded = false;
     bool _isLoggedIn = false;
     bool _isUploading = false;
+    bool _isTooBig = false;
 
     class UploadModel
     {
         [Required(ErrorMessage = "Select a file")]
+        [FileSizeLimit(10485760)]
         public byte[] Image { get; set; }
 
         [Required(ErrorMessage = "You must select a game")]
@@ -106,8 +113,21 @@
     {
         Logger.LogDebug(CustomLogEvents.PhotoUpload, "Image added to the form");
         _isLoading = true;
+        _isLoaded = false;
+        _isTooBig = false;
         string ext = Path.GetExtension(e.File.Name);
-        _title = FormatTitle(Path.GetFileNameWithoutExtension(e.File.Name));
+        try
+        {
+
+            _title = FormatTitle(Path.GetFileNameWithoutExtension(e.File.Name));
+        }
+        catch (IOException exception)
+        {
+            Logger.LogError(exception,"Failed to read file to memory stream");
+            _isTooBig = true;
+            _isLoading = false;
+            return;
+        }
         using MemoryStream ms = new();
         await e.File.OpenReadStream(10485760).CopyToAsync(ms);
         _uploadModel.Image = ms.ToArray();

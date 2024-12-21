@@ -1,0 +1,77 @@
+﻿@page "/ThisOrThat/Leaderboard"
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData.ThisOrThat
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+<h3>Leaderboard</h3>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Vehicle</th>
+        <th>Total Wins</th>
+        <th>Total Matches</th>
+        <th>Win Ratio</th>
+        <th>Image</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (_leaderboardEntries == null)
+    {
+        <tr>
+            <td colspan="5">Loading...</td>
+        </tr>
+    }
+    else
+    {
+        @foreach (var (entry, index) in _leaderboardEntries.Select((e, i) => (e, i)))
+        {
+            <tr>
+                <td>@(index + 1)</td>
+                <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
+                <td>@entry.TotalWins</td>
+                <td>@entry.TotalMatches</td>
+                <td>@entry.WinRatio.ToString("P2")</td>
+                <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/public" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year" width="89" height="50" /></td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+@code {
+    List<LeaderboardEntry>? _leaderboardEntries;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        _leaderboardEntries = dbContext.VehicleSuggestions
+            .Include(x => x.VotesFor)
+            .AsEnumerable()
+            .Select(suggestion =>
+            {
+                using LiveBotDbContext internalDbContext = DbContextFactory.CreateDbContext();
+                var entry = new LeaderboardEntry
+                {
+                    VehicleSuggestion = suggestion,
+                    TotalWins = suggestion.VotesFor!.Count(vote => vote.VotedForVehicleId == suggestion.Id),
+                    TotalMatches = internalDbContext.SuggestionVotes.Count(vote => vote.VehicleSuggestion1Id == suggestion.Id || vote.VehicleSuggestion2Id == suggestion.Id)
+                };
+                entry.WinRatio = entry.TotalMatches > 0 ? (double)entry.TotalWins / entry.TotalMatches : 0;
+                return entry;
+            })
+            .OrderByDescending(entry => entry.WinRatio)
+            .ThenByDescending(entry => entry.TotalWins)
+            .ToList();
+    }
+    
+    private class LeaderboardEntry
+    {
+        public required VehicleSuggestion VehicleSuggestion { get; init; }
+        public int TotalMatches { get; set; }
+        public int TotalWins { get; init; }
+        public double WinRatio { get; set; }
+    }
+}
