@@ -165,6 +165,7 @@ public static class ServiceConfiguration
             },
             commandsConfiguration);
         services.AddInteractivityExtension();
+        services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
         return services;
     }
 }
