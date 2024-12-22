@@ -46,4 +46,13 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapRazorPages();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions()
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All
+});
+
+app.UseHttpsRedirection();
+
+app.MapReverseProxy();
+
 app.Run();
