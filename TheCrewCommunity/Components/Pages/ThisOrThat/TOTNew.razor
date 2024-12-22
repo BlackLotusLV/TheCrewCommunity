@@ -2,12 +2,14 @@
 @attribute [Authorize(Roles = "Administrator")]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Services
 @using TheCrewCommunity.ValidationAttributes
 @inject ICloudFlareImageService CfImageService
 @inject IDatabaseMethodService DatabaseMethodService
 @inject NavigationManager NavigationManager
 @inject ILogger<TOTNew> Logger
+@inject IMemoryCache MemoryCache
 @rendermode InteractiveServer
 @if (_isUploading)
 {
@@ -122,5 +124,7 @@ else
             await DatabaseMethodService.AddVehicleSuggestionAsync(Guid.Parse(response.Result.Id), _uploadModel.Brand, _uploadModel.Model, _uploadModel.Year, _uploadModel.Description);
             NavigationManager.NavigateTo("/ThisOrThat/Leaderboard");
         }
+        MemoryCache.Remove("uniquePairsList");
+        _isUploading = false;
     }
 }
