@@ -82,7 +82,7 @@ else
             _uniquePairs = null;
             Logger.LogInformation("Failed to load unique pairs for TOT vote. Add items to the database to generate unique pairs");
         }
-        CurrentChoice = GenerateRandomSuggestionVote();
+        CurrentChoice = await GenerateRandomSuggestionVoteAsync();
     }
 
     private List<(VehicleSuggestion, VehicleSuggestion)> GenerateUniquePairList()
@@ -102,15 +102,17 @@ else
         return uniquePairs;
     }
 
-    private (VehicleSuggestion, VehicleSuggestion)? GenerateRandomSuggestionVote()
+    private async Task<(VehicleSuggestion, VehicleSuggestion)?> GenerateRandomSuggestionVoteAsync()
     {
         if (_vehicleSuggestions.Count < 2 || CurrentUser is null || _uniquePairs is null)
         {
             return null;
         }
-        // generate suggestion vote that does not exist.
-        var existingPairs = CurrentUser.SuggestionVotes
-            .Select(vote=> new HashSet<Guid>{vote.VehicleSuggestion1Id, vote.VehicleSuggestion2Id})
+
+        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        var existingPairs = dbContext.SuggestionVotes
+            .Where(vote => vote.UserId == CurrentUser.Id)
+            .Select(vote => new HashSet<Guid> { vote.VehicleSuggestion1Id, vote.VehicleSuggestion2Id })
             .ToHashSet(HashSet<Guid>.CreateSetComparer());
         var availablePairs = _uniquePairs
             .Where(pair => !existingPairs.Contains([pair.Item1.Id, pair.Item2.Id]))
@@ -138,8 +140,7 @@ else
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         dbContext.SuggestionVotes.Add(vote);
         await dbContext.SaveChangesAsync();
-        _uniquePairs.Remove(CurrentChoice.Value);
-        CurrentChoice = GenerateRandomSuggestionVote();
+        CurrentChoice = await GenerateRandomSuggestionVoteAsync();
         StateHasChanged();
         _addingVote = false;
     }
