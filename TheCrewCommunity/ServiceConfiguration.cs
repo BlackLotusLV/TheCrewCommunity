@@ -165,11 +165,7 @@ public static class ServiceConfiguration
             },
             commandsConfiguration);
         services.AddInteractivityExtension();
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-        {
-            services.AddReverseProxy()
-                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-        }
+        services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
         return services;
     }
 }
