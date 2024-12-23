@@ -53,6 +53,9 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions()
 
 app.UseHttpsRedirection();
 
-app.MapReverseProxy();
+if (!app.Environment.IsDevelopment())
+{
+    app.MapReverseProxy();
+}
 
 app.Run();
