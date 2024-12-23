@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 
 namespace TheCrewCommunity.Pages.Account;
 
-public class Registering(UserManager<ApplicationUser> userManager, DiscordClient discordClient, ILogger<Login> logger) : PageModel
+public class Registering(UserManager<ApplicationUser> userManager, DiscordClient discordClient, ILogger<Login> logger, IDbContextFactory<LiveBotDbContext> dbContextFactory) : PageModel
 {
     public async Task<IActionResult> OnGet()
     {
@@ -62,6 +63,7 @@ public class Registering(UserManager<ApplicationUser> userManager, DiscordClient
         {
             applicationUser = new ApplicationUser();
             create = true;
+            await CreateDiscordUserAsync(discordId);
         }
         applicationUser.DiscordId = discordId;
         applicationUser.UserName = userName;
@@ -82,5 +84,15 @@ public class Registering(UserManager<ApplicationUser> userManager, DiscordClient
         IdentityResult saveResult = await userManager.UpdateAsync(applicationUser);
         logger.LogDebug(CustomLogEvents.WebAccount,"Web user updated");
         return saveResult.Succeeded;
+    }
+
+    private async Task CreateDiscordUserAsync(ulong discordId)
+    {
+        await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+        User? user = await dbContext.Users.FindAsync(discordId);
+        if (user is not null) return;
+        User newUser = new(discordId);
+        dbContext.Users.Add(newUser);
+        await dbContext.SaveChangesAsync();
     }
 }
