@@ -7,8 +7,10 @@ using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
@@ -166,6 +168,10 @@ public static class ServiceConfiguration
             commandsConfiguration);
         services.AddInteractivityExtension();
         services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+        
+        services.AddConfiguredDataProtection(builder);
+
+        
         return services;
     }
 }
