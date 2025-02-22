@@ -81,6 +81,36 @@ tr{
     border-bottom: 1px solid rgba(255, 255, 0, 0.3)
 ;
 }
+.search-container {
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    background-color: #2a2a2a;
+    z-index: 1;
+    border-bottom: 1px solid yellow;
+}
+.search-box {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid yellow;
+    border-radius: 4px;
+    background-color: #333;
+    color: lightgrey;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: rgba(255, 255, 0, 0.8);
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+}
+
+.search-box::placeholder {
+    color: #888;
+}
+
+
 
 @media screen and (max-width: 768px) {
     .content-layout{
