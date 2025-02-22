@@ -1,1 +1,125 @@
-﻿
+﻿.table-container{
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 0, 0.8) transparent;
+}
+.table-container::-webkit-scrollbar {
+     width: 8px;
+ }
+.table-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 0, 0.8);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 0, 0.5);
+}
+.content-layout{
+    display: flex;
+    gap: 5px;
+    border-top: 1px solid yellow;
+    flex:1;
+    height: calc(100vh - 91px);
+}
+.preview-container{
+    border-left: 1px solid yellow;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    flex: 1;
+    overflow: hidden;
+}
+
+.preview-image {
+    max-width: 100%;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+}
+
+.table-row:hover {
+    background-color: yellow;
+    cursor: pointer;
+    color: black;
+}
+h3{
+    height: 40px;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 7px;
+    font-size: 25px;
+    margin: 0;
+}
+table{
+    border-collapse: collapse;
+}
+th{
+    height: 40px;
+    border-bottom: 1px solid yellow;
+}
+td, th{
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 0, 0.75);
+    padding: 7px;
+    box-sizing: border-box;
+;
+}
+td:last-child, th:last-child {
+    border-right: none;
+    padding:0;
+}
+
+tr{
+    border-bottom: 1px solid rgba(255, 255, 0, 0.3)
+;
+}
+.search-container {
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    background-color: #2a2a2a;
+    z-index: 1;
+    border-bottom: 1px solid yellow;
+}
+.search-box {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid yellow;
+    border-radius: 4px;
+    background-color: #333;
+    color: lightgrey;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: rgba(255, 255, 0, 0.8);
+    box-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+}
+
+.search-box::placeholder {
+    color: #888;
+}
+
+
+
+@media screen and (max-width: 768px) {
+    .content-layout{
+        flex-direction: column;
+    }
+    .preview-container{
+        display: none;
+    }
+    .table-container{
+        width: 100%;
+    }
+}

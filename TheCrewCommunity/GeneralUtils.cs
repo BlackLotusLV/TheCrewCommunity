@@ -12,32 +12,129 @@ public class GeneralUtils
                member.Permissions.HasPermission(DiscordPermission.Administrator);
     }
 
-    public int CalculateLevenshteinDistance(ReadOnlySpan<char> str1, ReadOnlySpan<char> str2)
+    public int CalculateLevenshteinDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
     {
-        if (str1 == null) throw new ArgumentNullException(nameof(str1));
-        if (str2 == null) throw new ArgumentNullException(nameof(str2));
-        if (str1.Length == 0) return str2.Length;
-        if (str2.Length == 0) return str1.Length;
-        
-        Span<int> prevRow = stackalloc int[str2.Length + 1];
-        Span<int> currRow = stackalloc int[str2.Length + 1];
-        
-        for (var j = 0; j <= str2.Length; j++)
-            prevRow[j] = j;
-        for (var i = 1; i <= str1.Length; i++)
+        if (source.IsEmpty) return target.Length;
+        if (target.IsEmpty) return source.Length;
+
+        Span<int> costs = stackalloc int[target.Length + 1];
+
+        for (var i = 0; i <= target.Length; i++)
+            costs[i] = i;
+
+        var previousRowMinCost = 0;
+
+        for (var i = 0; i < source.Length; i++)
         {
-            currRow[0] = i;
+            costs[0] = i + 1;
+            int previousRowCost = i;
 
-            for (var j = 1; j <= str2.Length; j++)
+            for (var j = 0; j < target.Length; j++)
             {
-                int cost = (str1[i - 1] == str2[j - 1]) ? 0 : 1;
-                currRow[j] = Math.Min(Math.Min(prevRow[j] + 1, currRow[j - 1] + 1), prevRow[j - 1] + cost);
-            }
+                int currentRowCost = previousRowMinCost;
 
-            var temp = prevRow;
-            prevRow = currRow;
-            currRow = temp;
+                previousRowMinCost = costs[j + 1];
+
+                costs[j + 1] = source[i] == target[j]
+                    ? previousRowCost
+                    : 1 + Math.Min(Math.Min(currentRowCost, previousRowMinCost), previousRowCost);
+            }
         }
-        return prevRow[str2.Length];
+
+        return costs[target.Length];
     }
+
+
+    public double CalculateStringSimilarity(ReadOnlySpan<char> searchTerm, ReadOnlySpan<char> target)
+    {
+        if (searchTerm.IsEmpty || target.IsEmpty)
+            return 0;
+        Span<char> searchLower = stackalloc char[searchTerm.Length];
+        Span<char> targetLower = stackalloc char[target.Length];
+
+        for (var i = 0; i < searchTerm.Length; i++)
+        {
+            searchLower[i] = char.ToLowerInvariant(searchTerm[i]);
+        }
+        for (var i = 0; i < target.Length; i++)
+        {
+            targetLower[i] = char.ToLowerInvariant(target[i]);
+        }
+        
+        searchLower = TrimSpan(searchLower);
+        targetLower = TrimSpan(targetLower);
+        
+        if (searchLower.IsEmpty || targetLower.IsEmpty)
+        {
+            return 0;
+        }
+        
+        double levenshteinSimilarity = 1.0 - (double) CalculateLevenshteinDistance(searchLower, targetLower) / Math.Max(searchLower.Length, targetLower.Length);
+        double consecutiveBonus = CalculateConsecutiveMatchBonus(searchLower, targetLower);
+        double exactMatchBonus = Contains(targetLower, searchLower) ? 0.5 : 0;
+        double finalScore = (levenshteinSimilarity * 0.3) + (consecutiveBonus * 0.5) + exactMatchBonus;
+        
+        return Math.Min(1.0, Math.Max(0.0, finalScore));
+    }
+    private static Span<char> TrimSpan(Span<char> span)
+    {
+        var start = 0;
+        while (start < span.Length && char.IsWhiteSpace(span[start]))
+            start++;
+
+        int end = span.Length - 1;
+        while (end >= start && char.IsWhiteSpace(span[end]))
+            end--;
+
+        return span.Slice(start, end - start + 1);
+    }
+    private static double CalculateConsecutiveMatchBonus(ReadOnlySpan<char> searchTerm, ReadOnlySpan<char> target)
+    {
+        if (searchTerm.IsEmpty) return 0;
+
+        var maxConsecutive = 0;
+        var currentConsecutive = 0;
+        var searchIndex = 0;
+
+        for (var i = 0; i < target.Length && searchIndex < searchTerm.Length; i++)
+        {
+            if (target[i] == searchTerm[searchIndex])
+            {
+                currentConsecutive++;
+                searchIndex++;
+
+                maxConsecutive = Math.Max(maxConsecutive, currentConsecutive);
+            }
+            else
+            {
+                currentConsecutive = 0;
+
+                if (searchIndex <= 0) continue;
+                i--;
+                searchIndex = 0;
+            }
+        }
+
+        return (double)maxConsecutive / searchTerm.Length;
+    }
+    private static bool Contains(ReadOnlySpan<char> source, ReadOnlySpan<char> value)
+    {
+        if (value.Length > source.Length)
+            return false;
+
+        for (var i = 0; i <= source.Length - value.Length; i++)
+        {
+            var found = true;
+            for (var j = 0; j < value.Length; j++)
+            {
+                if (source[i + j] == value[j]) continue;
+                found = false;
+                break;
+            }
+            if (found)
+                return true;
+        }
+        return false;
+    }
+
 }

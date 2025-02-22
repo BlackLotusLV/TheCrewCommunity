@@ -3,46 +3,95 @@
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.WebData.ThisOrThat
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
-<h3>Leaderboard</h3>
+@inject GeneralUtils GeneralUtils
+@rendermode InteractiveServer
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Rank</th>
-        <th>Vehicle</th>
-        <th>Total Wins</th>
-        <th>Total Matches</th>
-        <th>Win Ratio</th>
-        <th>Image</th>
-    </tr>
-    </thead>
-    <tbody>
-    @if (_leaderboardEntries == null)
-    {
-        <tr>
-            <td colspan="5">Loading...</td>
-        </tr>
-    }
-    else
-    {
-        @foreach (var (entry, index) in _leaderboardEntries.Select((e, i) => (e, i)))
-        {
+<h3>Leaderboard</h3>
+<div class="content-layout">
+    <div class="table-container">
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search..." @bind-value="_searchText" @bind-value:event="oninput"/>
+        </div>
+        <table class="table table-striped">
+            <thead>
             <tr>
-                <td>@(index + 1)</td>
-                <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
-                <td>@entry.TotalWins</td>
-                <td>@entry.TotalMatches</td>
-                <td>@entry.WinRatio.ToString("P2")</td>
-                <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/public" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year" width="89" height="50" /></td>
+                <th>Rank</th>
+                <th>Vehicle</th>
+                <th>Total Wins</th>
+                <th>Total Matches</th>
+                <th>Win Ratio</th>
+                <th>Image</th>
             </tr>
+            </thead>
+            <tbody>
+            @if (FilteredEntries == null)
+            {
+                <tr>
+                    <td colspan="5">Loading...</td>
+                </tr>
+            }
+            else
+            {
+                @foreach ((LeaderboardEntry entry, int index) in FilteredEntries.Select((e, i) => (e, i)))
+                {
+                    <tr class="table-row" @onmouseover="() => ShowPreview(entry)">
+                        <td>@(index + 1)</td>
+                        <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
+                        <td>@entry.TotalWins</td>
+                        <td>@entry.TotalMatches</td>
+                        <td>@entry.WinRatio.ToString("P2")</td>
+                        <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="preview-container">
+        @if (_selectedEntry != null)
+        {
+            <img class="preview-image" src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_selectedEntry.VehicleSuggestion.ImageId/public" alt="@_selectedEntry.VehicleSuggestion.Brand - @_selectedEntry.VehicleSuggestion.Model - @_selectedEntry.VehicleSuggestion.Year"/>
         }
-    }
-    </tbody>
-</table>
+        else
+        {
+            <p>Select a vehicle from the table above</p>
+        }
+    </div>
+</div>
 
 @code {
     List<LeaderboardEntry>? _leaderboardEntries;
+    LeaderboardEntry? _selectedEntry;
+    string _searchText = "";
+    List<LeaderboardEntry>? FilteredEntries => string.IsNullOrWhiteSpace(_searchText) 
+        ? _leaderboardEntries?
+            .OrderByDescending(entry => entry.WinRatio)
+            .ThenByDescending(entry => entry.TotalWins)
+            .ToList()
+        : _leaderboardEntries?
+            .Select(entry => new
+            {
+                Entry = entry,
+                FullName = $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}",
+                Similarity = GeneralUtils.CalculateStringSimilarity(
+                    _searchText.AsSpan(),
+                    $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}".AsSpan()
+                )
+            })
+            .OrderByDescending(x => x.Similarity)
+            .ThenByDescending(x => x.Entry.WinRatio)
+            .ThenByDescending(x => x.Entry.TotalWins)
+            .Select(x => x.Entry)
+            .ToList();
+
+
+
     
+    private void ShowPreview(LeaderboardEntry entry)
+    {
+        _selectedEntry = entry;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
@@ -65,12 +114,16 @@
             .OrderByDescending(entry => entry.WinRatio)
             .ThenByDescending(entry => entry.TotalWins)
             .ToList();
+        _leaderboardEntries.AddRange(_leaderboardEntries);
+        _leaderboardEntries.AddRange(_leaderboardEntries);
+        _leaderboardEntries.AddRange(_leaderboardEntries);
+        _leaderboardEntries.AddRange(_leaderboardEntries);
     }
     
     private class LeaderboardEntry
     {
         public required VehicleSuggestion VehicleSuggestion { get; init; }
-        public int TotalMatches { get; set; }
+        public int TotalMatches { get; init; }
         public int TotalWins { get; init; }
         public double WinRatio { get; set; }
     }
