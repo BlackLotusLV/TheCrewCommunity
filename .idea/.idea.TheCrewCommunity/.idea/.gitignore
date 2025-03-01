@@ -15,3 +15,4 @@
 /copilot/chatSessions
 /secrets/
 dataSources.xml
+*.DotSettings

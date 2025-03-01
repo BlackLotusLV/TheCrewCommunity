@@ -35,7 +35,7 @@
                 @foreach ((LeaderboardEntry entry, int index) in FilteredEntries.Select((e, i) => (e, i)))
                 {
                     <tr class="table-row" @onmouseover="() => ShowPreview(entry)">
-                        <td>@(index + 1)</td>
+                        <td>@_rankMap[entry.VehicleSuggestion.Id]</td>
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
                         <td>@entry.TotalWins</td>
                         <td>@entry.TotalMatches</td>
@@ -54,39 +54,53 @@
         }
         else
         {
-            <p>Select a vehicle from the table above</p>
+            <p>Select a vehicle from the table</p>
         }
     </div>
 </div>
 
 @code {
     List<LeaderboardEntry>? _leaderboardEntries;
+    Dictionary<Guid, int> _rankMap = new();
     LeaderboardEntry? _selectedEntry;
     string _searchText = "";
-    List<LeaderboardEntry>? FilteredEntries => string.IsNullOrWhiteSpace(_searchText) 
-        ? _leaderboardEntries?
-            .OrderByDescending(entry => entry.WinRatio)
-            .ThenByDescending(entry => entry.TotalWins)
-            .ToList()
-        : _leaderboardEntries?
-            .Select(entry => new
+    List<LeaderboardEntry>? FilteredEntries
+    {
+        get
+        {
+            if (_leaderboardEntries is null) return null;
+            if (string.IsNullOrWhiteSpace(_searchText))
             {
-                Entry = entry,
-                FullName = $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}",
-                Similarity = GeneralUtils.CalculateStringSimilarity(
-                    _searchText.AsSpan(),
-                    $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}".AsSpan()
-                )
-            })
-            .OrderByDescending(x => x.Similarity)
-            .ThenByDescending(x => x.Entry.WinRatio)
-            .ThenByDescending(x => x.Entry.TotalWins)
-            .Select(x => x.Entry)
-            .ToList();
+                var sorted = _leaderboardEntries
+                    .OrderByDescending(entry => entry.WinRatio)
+                    .ThenByDescending(entry => entry.TotalWins)
+                    .ToList();
+                for (var i = 0; i < sorted.Count; i++)
+                {
+                    _rankMap[sorted[i].VehicleSuggestion.Id] = i + 1;
+                }
+
+                return sorted;
+            }
+            return _leaderboardEntries
+                .Select(entry => new
+                {
+                    Entry = entry,
+                    FullName = $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}",
+                    Similarity = GeneralUtils.CalculateStringSimilarity(
+                        _searchText.AsSpan(),
+                        $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}".AsSpan()
+                    )
+                })
+                .OrderByDescending(x => x.Similarity)
+                .ThenByDescending(x => x.Entry.WinRatio)
+                .ThenByDescending(x => x.Entry.TotalWins)
+                .Select(x => x.Entry)
+                .ToList();
+        }
+    }
 
 
-
-    
     private void ShowPreview(LeaderboardEntry entry)
     {
         _selectedEntry = entry;
