@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.MessageCommands;
 using DSharpPlus.Commands.Processors.SlashCommands;
+using DSharpPlus.Commands.Processors.SlashCommands.InteractionNamingPolicies;
 using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
 using DSharpPlus.Interactivity.Extensions;
@@ -151,7 +152,12 @@ public static class ServiceConfiguration
         }
         CommandsConfiguration commandsConfiguration = new()
         {
-            DebugGuildId = guildId
+            DebugGuildId = guildId,
+            RegisterDefaultCommandProcessors = false,
+        };
+        SlashCommandConfiguration slashCommandConfiguration = new()
+        {
+            NamingPolicy = new KebabCaseNamingPolicy()
         };
         
         services.AddCommandsExtension((_, commands) =>
@@ -159,7 +165,7 @@ public static class ServiceConfiguration
                 commands.CommandExecuted += SystemEvents.CommandExecuted;
                 commands.CommandErrored += SystemEvents.CommandErrored;
                 commands.AddProcessors(
-                    new SlashCommandProcessor(),
+                    new SlashCommandProcessor(slashCommandConfiguration),
                     new UserCommandProcessor(),
                     new MessageCommandProcessor()
                 );
