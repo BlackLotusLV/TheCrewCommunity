@@ -27,6 +27,9 @@
 }
 else
 {
+    <div class="progress-container">
+        <div class="progress-bar" style="width: @($"{_progress}%")"></div>
+    </div>
     <div class="container">
         <div class="image-container">
             <div class="info">
@@ -55,6 +58,7 @@ else
     private ApplicationUser? CurrentUser { get; set; }
     (VehicleSuggestion, VehicleSuggestion)? CurrentChoice { get; set; }
     private bool _addingVote = false;
+    double _progress;
     
     protected override async Task OnInitializedAsync()
     {
@@ -122,6 +126,9 @@ else
             return null;
         }
 
+        Console.WriteLine(existingPairs.Count());
+        Console.WriteLine(availablePairs.Count());
+        _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
         var random = new Random();
         return availablePairs[random.Next(availablePairs.Count)];
     }
@@ -129,6 +136,7 @@ else
     private async Task VoteAsync(VehicleSuggestion selected)
     {
         _addingVote = true;
+        StateHasChanged();
         var vote = new SuggestionVote
         {
             UserId = CurrentUser.Id,
@@ -141,8 +149,8 @@ else
         dbContext.SuggestionVotes.Add(vote);
         await dbContext.SaveChangesAsync();
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
-        StateHasChanged();
         _addingVote = false;
+        StateHasChanged();
     }
 
 }
