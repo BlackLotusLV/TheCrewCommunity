@@ -136,9 +136,6 @@ else
         {
             return null;
         }
-
-        Console.WriteLine(existingPairs.Count());
-        Console.WriteLine(availablePairs.Count());
         _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
         var random = new Random();
         return availablePairs[random.Next(availablePairs.Count)];
