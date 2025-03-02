@@ -36,6 +36,7 @@ public static class WarnCommand
         [Description("5 min")] FiveMin = 300,
         [Description("10 min")] TenMin = 600,
         [Description("1 hour")] OneHour = 3600,
+        [Description("12 hour")] TwelveHour = 43200,
         [Description("1 day")] OneDay = 86400,
         [Description("1 week")] OneWeek = 604800
     }
