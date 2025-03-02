@@ -6,6 +6,15 @@
     justify-content: space-between;
 }
 
+h3{
+    height: 40px;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 7px;
+    font-size: 25px;
+    margin: 0;
+}
+
 .image-container {
     position: relative;
     width: 50%;
@@ -55,13 +64,6 @@
     opacity: 0; /* Keep invisible when not active */
 }
 
-/* Slide in the overlay when hovering */
-.image-container:hover .overlay {
-    top: 0; /* Slide into view and cover the image */
-    opacity: 1; /* Make it fully visible */
-    transition: top 0.2s ease, opacity 0.2s ease; /* Smooth transition for both properties */
-}
-
 .overlay-container {
     position: fixed;
     top: 0;
@@ -75,6 +77,64 @@
     z-index: 9999; /* Ensure it is above all other elements */
     color: white;
     font-size: 1.5rem;
+}
+.progress-container {
+    width: 100%;
+    border-radius: 4px;
+    height: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: yellow;
+    transition: width 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-text {
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+
+.swipe-hint {
+    color: #777;
+    font-size: 0.9rem;
+    margin: 4px 0;
+    font-style: italic;
+}
+
+.swipe-hint i {
+    margin: 0 4px;
+}
+@media (pointer: fine) {
+    .swipe-hint {
+        display: none;
+    }
+    .image-container:hover .overlay {
+        top: 0;
+        opacity: 1;
+        transition: top 0.2s ease, opacity 0.2s ease;
+    }
+
+}
+@media (pointer: coarse) {
+    .image-container .overlay {
+        display: none !important; /* Use !important to override any other styles */
+    }
+
+    /* Ensure the overlay doesn't appear on hover for touch devices */
+    .image-container:hover .overlay {
+        display: none !important;
+        top: 100%;
+        opacity: 0;
+    }
+    .container{
+        overflow-x: scroll;
+    }
 }
 
 @media screen and (max-width: 768px){

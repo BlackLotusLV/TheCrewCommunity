@@ -27,22 +27,30 @@
 }
 else
 {
-    <div class="container">
-        <div class="image-container">
+    <div class="progress-container">
+        <div class="progress-bar" style="width: @($"{_progress}%")"></div>
+    </div>
+    <div class="container"
+         @ontouchstart="HandleTouchStart"
+         @ontouchmove="HandleTouchMove"
+         @ontouchend="HandleTouchEnd">
+        <div class="image-container" style="transform: translateX(@(_leftImageTransform)px)">
             <div class="info">
                 <h4>@CurrentChoice?.Item1.Brand - @CurrentChoice?.Item1.Model (@CurrentChoice?.Item1.Year)</h4>
+                <p class="swipe-hint">Swipe right <i class="fas fa-arrow-right"></i></p>
                 <p>@CurrentChoice?.Item1.Description</p>
             </div>
             <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item1.ImageId/public" alt="@CurrentChoice?.Item1.Model"/>
-            <div class="overlay" @onclick="@(_=>@VoteAsync(CurrentChoice?.Item1!))">This</div>
+            <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item1!))">This</div>
         </div>
-        <div class="image-container">
+        <div class="image-container" style="transform: translateX(@(_rightImageTransform)px)">
             <div class="info">
                 <h4>@CurrentChoice?.Item2.Brand - @CurrentChoice?.Item2.Model (@CurrentChoice?.Item2.Year)</h4>
+                <p class="swipe-hint"><i class="fas fa-arrow-left"></i> Swipe left</p>
                 <p>@CurrentChoice?.Item2.Description</p>
             </div>
             <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item2.ImageId/public" alt="@CurrentChoice?.Item2.Model"/>
-            <div class="overlay" @onclick="@(_=>@VoteAsync(CurrentChoice?.Item2!))">That</div>
+            <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item2!))">That</div>
         </div>
     </div>
 }
@@ -55,6 +63,13 @@ else
     private ApplicationUser? CurrentUser { get; set; }
     (VehicleSuggestion, VehicleSuggestion)? CurrentChoice { get; set; }
     private bool _addingVote = false;
+    double _progress;
+    bool _isSwiping = false;
+    double _touchStartX;
+    const int SwipeThreshold = 50; 
+    private double _leftImageTransform = 0;
+    private double _rightImageTransform = 0;
+
     
     protected override async Task OnInitializedAsync()
     {
@@ -122,6 +137,9 @@ else
             return null;
         }
 
+        Console.WriteLine(existingPairs.Count());
+        Console.WriteLine(availablePairs.Count());
+        _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
         var random = new Random();
         return availablePairs[random.Next(availablePairs.Count)];
     }
@@ -129,6 +147,7 @@ else
     private async Task VoteAsync(VehicleSuggestion selected)
     {
         _addingVote = true;
+        StateHasChanged();
         var vote = new SuggestionVote
         {
             UserId = CurrentUser.Id,
@@ -141,8 +160,66 @@ else
         dbContext.SuggestionVotes.Add(vote);
         await dbContext.SaveChangesAsync();
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
-        StateHasChanged();
         _addingVote = false;
+        StateHasChanged();
+    }
+    private void HandleTouchStart(TouchEventArgs e)
+    {
+        _isSwiping = true;
+        _touchStartX = e.Touches[0].ClientX;
+    }
+    private void HandleTouchMove(TouchEventArgs e)
+    {
+        if (!_isSwiping) return;
+
+        double diffX = _touchStartX - e.Touches.Last().ClientX;
+
+        if (e.Touches.Last().ClientX > _touchStartX)
+        {
+            _leftImageTransform = -diffX;
+            _rightImageTransform = 0;
+        }
+        if (e.Touches.Last().ClientX < _touchStartX)
+        {
+            _leftImageTransform = 0;
+            _rightImageTransform = -diffX;
+        }
+        StateHasChanged();
+
+    }
+    private async Task HandleTouchEnd(TouchEventArgs e)
+    {
+        if (!_isSwiping) return;
+
+        double touchEndX = e.ChangedTouches[0].ClientX;
+        double diffX = touchEndX - _touchStartX;
+
+        if (Math.Abs(diffX) >= SwipeThreshold)
+        {
+            if (diffX > 0)
+            {
+                // Swiped right - vote for "This"
+                if (CurrentChoice?.Item1 != null)
+                {
+                    await VoteAsync(CurrentChoice.Value.Item1);
+                }
+            }
+            else
+            {
+                // Swiped left - vote for "That"
+                if (CurrentChoice?.Item2 != null)
+                {
+                    await VoteAsync(CurrentChoice.Value.Item2);
+                }
+            }
+        }
+
+        _leftImageTransform = 0;
+        _rightImageTransform = 0;
+        _isSwiping = false;
+    
+        StateHasChanged();
+
     }
 
 }
