@@ -34,6 +34,12 @@ public static class ServiceConfiguration
         services.AddSingleton<StreamNotificationService>();
         services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
         services.AddHostedService<WebRoleManagerService>();
+        services.AddHostedService<ThisOrThatLeaderboardService>();
+        builder.Services.AddSingleton<IThisOrThatLeaderboardService>(provider => 
+        {
+            return (ThisOrThatLeaderboardService)provider.GetServices<IHostedService>()
+                .First(service => service is ThisOrThatLeaderboardService);
+        });
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
