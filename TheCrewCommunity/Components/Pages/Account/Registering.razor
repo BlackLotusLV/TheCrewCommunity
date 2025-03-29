@@ -8,7 +8,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Primitives
 @using TheCrewCommunity.Data.WebData
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -67,10 +66,6 @@ else
                 return;
             }
 
-            ulong discordId = ulong.Parse(discordIdString);
-            string userName = user.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
-            string email = user.FindFirst(ClaimTypes.Email)?.Value ?? "";
-
             HttpContext? httpContext = new HttpContextAccessor().HttpContext;
 
             if (httpContext is null)
@@ -87,8 +82,8 @@ else
                 return;
             }
             
-            AuthDiscordUser discordUser = await FetchDiscordUserDetails(discordId, accessToken);
-            var userGuilds = await FetchUserGuilds(discordId, accessToken);
+            AuthDiscordUser discordUser = await FetchDiscordUserDetails(accessToken);
+            var userGuilds = await FetchUserGuilds(accessToken);
 
             if (!await CreateAndUpdateUser(discordUser, userGuilds))
             {
@@ -106,7 +101,7 @@ else
         }
     }
 
-    private async Task<AuthDiscordUser> FetchDiscordUserDetails(ulong discordId, string accessToken)
+    private async Task<AuthDiscordUser> FetchDiscordUserDetails(string accessToken)
     {
         HttpClient client = HttpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -127,7 +122,7 @@ else
         return user;
     }
 
-    private async Task<AuthDiscordGuild[]> FetchUserGuilds(ulong discordId, string accessToken)
+    private async Task<AuthDiscordGuild[]> FetchUserGuilds(string accessToken)
     {
         HttpClient client = HttpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -179,7 +174,7 @@ else
         return saveResult.Succeeded;
     }
 
-    private string AvatarUrlCreator(AuthDiscordUser user)
+    private static string AvatarUrlCreator(AuthDiscordUser user)
     {
         StringBuilder sb = new();
         sb.Append("https://cdn.discordapp.com/avatars/");
@@ -205,23 +200,23 @@ else
     public class AuthDiscordUser
     {
         [JsonPropertyName("id"),JsonConverter(typeof(SnowflakeConverter))] public ulong Id { get; init; }
-        [JsonPropertyName("username")] public string UserName { get; init; }
+        [JsonPropertyName("username")] public required string UserName { get; init; }
         [JsonPropertyName("email")] public string? Email { get; init; }
         [JsonPropertyName("global_name")] public string? GlobalName { get; init; }
-        [JsonPropertyName("avatar")] public string AvatarHash { get; init; } = string.Empty;
+        [JsonPropertyName("avatar")] public required string AvatarHash { get; init; }
     }
 
     public class AuthDiscordGuild
     {
-        public ulong Id { get; set; }
-        public string GuildName { get; set; } = "";
+        [JsonPropertyName("id"), JsonConverter(typeof(SnowflakeConverter))] public ulong Id { get; set; }
+        [JsonPropertyName("name")] public required string GuildName { get; set; }
     }
 
     private class SnowflakeConverter : JsonConverter<ulong>
     {
         public override ulong Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return ulong.Parse(reader.GetString()); // Parse the string as a ulong
+            return ulong.Parse(reader.GetString()); // Parse the string as an ulong
         }
 
         public override void Write(Utf8JsonWriter writer, ulong value, JsonSerializerOptions options)
