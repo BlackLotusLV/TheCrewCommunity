@@ -1,12 +1,13 @@
 ﻿@page "/ThisOrThat/Leaderboard"
-@using Microsoft.EntityFrameworkCore
-@using TheCrewCommunity.Data
-@using TheCrewCommunity.Data.WebData.ThisOrThat
-@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@using TheCrewCommunity.Services
 @inject GeneralUtils GeneralUtils
+@inject IThisOrThatLeaderboardService LeaderboardService
 @rendermode InteractiveServer
 
-<h3>Leaderboard</h3>
+<div class="header-container">
+    <h3>This or That Leaderboard</h3>
+    <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
+</div>
 <div class="content-layout">
     <div class="table-container">
         <div class="search-container">
@@ -27,22 +28,21 @@
             @if (FilteredEntries == null)
             {
                 <tr>
-                    <td colspan="5">Loading...</td>
+                    <td colspan="6">Loading...</td>
                 </tr>
             }
             else
             {
-                @foreach ((LeaderboardEntry entry, int index) in FilteredEntries.Select((e, i) => (e, i)))
-                {
+                <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="10">
                     <tr class="table-row" @onmouseover="() => ShowPreview(entry)">
-                        <td>@_rankMap[entry.VehicleSuggestion.Id]</td>
+                        <td>@entry.Rank</td>
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
                         <td>@entry.TotalWins</td>
                         <td>@entry.TotalMatches</td>
                         <td>@entry.WinRatio.ToString("P2")</td>
                         <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
                     </tr>
-                }
+                </Virtualize>
             }
             </tbody>
         </table>
@@ -60,11 +60,11 @@
 </div>
 
 @code {
-    List<LeaderboardEntry>? _leaderboardEntries;
-    Dictionary<Guid, int> _rankMap = new();
-    LeaderboardEntry? _selectedEntry;
+    TimeSpan UntilRefresh { get; set; }
+    List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
+    ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
     string _searchText = "";
-    List<LeaderboardEntry>? FilteredEntries
+    List<ThisOrThatLeaderboardService.LeaderboardEntry>? FilteredEntries
     {
         get
         {
@@ -75,11 +75,6 @@
                     .OrderByDescending(entry => entry.WinRatio)
                     .ThenByDescending(entry => entry.TotalWins)
                     .ToList();
-                for (var i = 0; i < sorted.Count; i++)
-                {
-                    _rankMap[sorted[i].VehicleSuggestion.Id] = i + 1;
-                }
-
                 return sorted;
             }
             return _leaderboardEntries
@@ -101,40 +96,14 @@
     }
 
 
-    private void ShowPreview(LeaderboardEntry entry)
+    private void ShowPreview(ThisOrThatLeaderboardService.LeaderboardEntry entry)
     {
         _selectedEntry = entry;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-
-        _leaderboardEntries = dbContext.VehicleSuggestions
-            .Include(x => x.VotesFor)
-            .AsEnumerable()
-            .Select(suggestion =>
-            {
-                using LiveBotDbContext internalDbContext = DbContextFactory.CreateDbContext();
-                var entry = new LeaderboardEntry
-                {
-                    VehicleSuggestion = suggestion,
-                    TotalWins = suggestion.VotesFor!.Count(vote => vote.VotedForVehicleId == suggestion.Id),
-                    TotalMatches = internalDbContext.SuggestionVotes.Count(vote => vote.VehicleSuggestion1Id == suggestion.Id || vote.VehicleSuggestion2Id == suggestion.Id)
-                };
-                entry.WinRatio = entry.TotalMatches > 0 ? (double)entry.TotalWins / entry.TotalMatches : 0;
-                return entry;
-            })
-            .OrderByDescending(entry => entry.WinRatio)
-            .ThenByDescending(entry => entry.TotalWins)
-            .ToList();
-    }
-    
-    private class LeaderboardEntry
-    {
-        public required VehicleSuggestion VehicleSuggestion { get; init; }
-        public int TotalMatches { get; init; }
-        public int TotalWins { get; init; }
-        public double WinRatio { get; set; }
+        _leaderboardEntries = LeaderboardService.GetLeaderboard();
+        UntilRefresh = LeaderboardService.GetNextRefreshTime() - DateTime.Now;
     }
 }
