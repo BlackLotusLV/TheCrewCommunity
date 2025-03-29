@@ -4,6 +4,12 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 0, 0.8) transparent;
 }
+table{
+    width: 100%;
+}
+.table-image-column{
+    width: 89px;
+}
 .table-container::-webkit-scrollbar {
      width: 8px;
  }
@@ -131,5 +137,9 @@ tr{
     }
     .table-container{
         width: 100%;
+    }
+    td{
+        font-size: 11px;
+        padding: 2px;
     }
 }
