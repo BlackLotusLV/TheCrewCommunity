@@ -16,6 +16,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync();
-        return Redirect("/");
+        return Content("<script>window.location.href = '/';</script>", "text/html");
+
     }
 }
