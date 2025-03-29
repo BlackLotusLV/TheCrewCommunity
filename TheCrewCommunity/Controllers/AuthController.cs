@@ -7,9 +7,15 @@ namespace TheCrewCommunity.Controllers;
 public class AuthController : ControllerBase
 {
     [HttpGet("login")]
-    public IActionResult Login()
+    public IActionResult Login([FromQuery] string? returnUrl = null)
     {
-        return Challenge(new AuthenticationProperties(), "Discord");
+        var properties = new AuthenticationProperties
+        {
+            RedirectUri = $"/Account/Registering/{Uri.EscapeDataString(returnUrl ?? "/")}",
+        };
+    
+        return Challenge(properties, "Discord");
+
     }
 
     [HttpGet("logout")]

@@ -1,4 +1,5 @@
 ﻿@page "/Account/Registering"
+@page "/Account/Registering/{returnUrl?}"
 @using System.Net.Http.Headers
 @using System.Security.Claims
 @using System.Text
@@ -14,6 +15,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IHttpClientFactory HttpClientFactory
 @inject ILogger<Registering> Logger
+@rendermode InteractiveServer
 
 
 <h3>Logging you in...</h3>
@@ -42,11 +44,21 @@ else
 
 @code {
     bool _loading = true;
+    bool _shouldRedirect;
     string _errorMessage = string.Empty;
+    [Parameter] public string ReturnUrl { get; set; } = "/";
+
 
     protected override async Task OnInitializedAsync()
     {
         await ProcessRegistration();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!_shouldRedirect) return;
+        _shouldRedirect = false;
+        RedirectToHome();
     }
 
     private async Task ProcessRegistration()
@@ -89,7 +101,6 @@ else
             {
                 throw new Exception("Failed to create/Update user data");
             }
-
         }
         catch (Exception e)
         {
@@ -98,6 +109,8 @@ else
         finally
         {
             _loading = false;
+            _shouldRedirect = true;
+            StateHasChanged();
         }
     }
 
@@ -193,7 +206,8 @@ else
 
     private void RedirectToHome()
     {
-        NavigationManager.NavigateTo("/");
+        string targetUrl = !string.IsNullOrEmpty(ReturnUrl) ? Uri.UnescapeDataString(ReturnUrl) : "/";
+        NavigationManager.NavigateTo(targetUrl);
     }
 
     

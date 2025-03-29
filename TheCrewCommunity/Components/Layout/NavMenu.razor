@@ -48,7 +48,7 @@
                     </div>
                 </Authorized>
                 <NotAuthorized>
-                    <a href="/api/auth/login">Login with Discord</a>
+                    <a href="@GetLoginUrl()">Login with Discord</a>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
@@ -69,6 +69,11 @@
     {
         AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _user = authState.User;
+    }
+    private string GetLoginUrl()
+    {
+        string currentUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        return $"/api/Auth/login?returnUrl={currentUrl}";
     }
 
 }
