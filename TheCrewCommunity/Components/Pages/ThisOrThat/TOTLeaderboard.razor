@@ -4,8 +4,10 @@
 @inject IThisOrThatLeaderboardService LeaderboardService
 @rendermode InteractiveServer
 
-<h3>This or That Leaderboard</h3>
-<p></p>
+<div class="header-container">
+    <h3>This or That Leaderboard</h3>
+    <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
+</div>
 <div class="content-layout">
     <div class="table-container">
         <div class="search-container">
@@ -58,6 +60,7 @@
 </div>
 
 @code {
+    TimeSpan UntilRefresh { get; set; }
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
     ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
     string _searchText = "";
@@ -101,5 +104,6 @@
     protected override void OnInitialized()
     {
         _leaderboardEntries = LeaderboardService.GetLeaderboard();
+        UntilRefresh = LeaderboardService.GetNextRefreshTime() - DateTime.Now;
     }
 }

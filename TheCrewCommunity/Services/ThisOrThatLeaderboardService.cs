@@ -50,7 +50,6 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         {
             logger.LogInformation("Refreshing leaderboard");
             await UpdateLeaderboardAsync();
-            _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
         }
         catch (Exception ex)
         {
@@ -109,6 +108,8 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         {
             _leaderboard[i].Rank = i + 1;
         }
+        
+        _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
     }
 
     public class LeaderboardEntry
