@@ -43,12 +43,12 @@
                         <button class="dropdown-button" type="button">@_user!.Identity!.Name</button>
                         <div class="dropdown-content">
                             <a>place holder</a>
-                            <a href="/Account/Logout">Logout</a>
+                            <a href="/api/auth/logout">Logout</a>
                         </div>
                     </div>
                 </Authorized>
                 <NotAuthorized>
-                    <a href="/Account/Login">Login with Discord</a>
+                    <a href="@GetLoginUrl()">Login with Discord</a>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
@@ -70,4 +70,10 @@
         AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _user = authState.User;
     }
+    private string GetLoginUrl()
+    {
+        string currentUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        return $"/api/Auth/login?returnUrl={currentUrl}";
+    }
+
 }

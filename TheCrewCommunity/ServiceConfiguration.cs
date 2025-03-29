@@ -69,7 +69,7 @@ public static class ServiceConfiguration
             {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultAuthenticateScheme = IdentityConstants.ExternalScheme;
-                options.DefaultChallengeScheme = IdentityConstants.ExternalScheme;
+                options.DefaultChallengeScheme = "Discord";
             })
             .AddCookie()
             .AddDiscord(options =>
@@ -176,6 +176,8 @@ public static class ServiceConfiguration
         services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
         
         services.AddConfiguredDataProtection(builder);
+
+        services.AddControllers();
 
         
         return services;

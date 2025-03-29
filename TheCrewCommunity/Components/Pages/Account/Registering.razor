@@ -1,0 +1,241 @@
+﻿@page "/Account/Registering"
+@page "/Account/Registering/{returnUrl?}"
+@using System.Net.Http.Headers
+@using System.Security.Claims
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data.WebData
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpClientFactory HttpClientFactory
+@inject ILogger<Registering> Logger
+@rendermode InteractiveServer
+
+
+<h3>Logging you in...</h3>
+@if (_loading)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Please wait while we set up your account...</p>
+}
+else if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @_errorMessage
+    </div>
+    <button class="btn btn-primary" @onclick="RetryRegistration">Try Again</button>
+}
+else
+{
+    <div class="alert alert-success" role="alert">
+        Registration successful!
+    </div>
+    <button class="btn btn-primary" @onclick="RedirectToHome">Continue to Home</button>
+}
+
+
+@code {
+    bool _loading = true;
+    bool _shouldRedirect;
+    string _errorMessage = string.Empty;
+    [Parameter] public string ReturnUrl { get; set; } = "/";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ProcessRegistration();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!_shouldRedirect) return;
+        _shouldRedirect = false;
+        RedirectToHome();
+    }
+
+    private async Task ProcessRegistration()
+    {
+        try
+        {
+            _loading = true;
+            _errorMessage = string.Empty;
+
+            AuthenticationState authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            ClaimsPrincipal user = authState.User;
+
+            string? discordIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(discordIdString))
+            {
+                _errorMessage = "Discord ID claim is missing.";
+                return;
+            }
+
+            HttpContext? httpContext = new HttpContextAccessor().HttpContext;
+
+            if (httpContext is null)
+            {
+                _errorMessage = "Http error, could not create httpContext";
+                return;
+            }
+            
+            string? accessToken = await httpContext.GetTokenAsync("Discord", "access_token");
+
+            if (accessToken is null)
+            {
+                _errorMessage = "Failed to get access token";
+                return;
+            }
+            
+            AuthDiscordUser discordUser = await FetchDiscordUserDetails(accessToken);
+            var userGuilds = await FetchUserGuilds(accessToken);
+
+            if (!await CreateAndUpdateUser(discordUser, userGuilds))
+            {
+                throw new Exception("Failed to create/Update user data");
+            }
+        }
+        catch (Exception e)
+        {
+            _errorMessage = $"An error occurred: {e.Message}";
+        }
+        finally
+        {
+            _loading = false;
+            _shouldRedirect = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<AuthDiscordUser> FetchDiscordUserDetails(string accessToken)
+    {
+        HttpClient client = HttpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        
+        Logger.LogDebug("Fetching user data from discord");
+        
+        HttpResponseMessage response = await client.GetAsync($"https://discord.com/api/users/@me");
+        response.EnsureSuccessStatusCode();
+
+        string content = await response.Content.ReadAsStringAsync();
+        Logger.LogDebug("Deserializing data from discord to AuthDiscordUser");
+        Logger.LogDebug("Json content:\n{JsonContent}", content);
+        var user = JsonSerializer.Deserialize<AuthDiscordUser>(content);
+        if (user is null)
+        {
+            throw new Exception("Failed to deserialize Discord user details from the response.");
+        }
+        return user;
+    }
+
+    private async Task<AuthDiscordGuild[]> FetchUserGuilds(string accessToken)
+    {
+        HttpClient client = HttpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        Logger.LogDebug("Fetching user guild data from discord");
+        HttpResponseMessage response = await client.GetAsync($"https://discord.com/api/users/@me/guilds");
+        response.EnsureSuccessStatusCode();
+        
+        string content = await response.Content.ReadAsStringAsync();
+        Logger.LogDebug("Deserializing data from discord to AuthDiscordGuild");
+        var guilds =JsonSerializer.Deserialize<AuthDiscordGuild[]>(content);
+        if (guilds is null)
+        {
+            throw new Exception("Failed to serialize Discord users guilds from response");
+        }
+
+        return guilds;
+    }
+
+    private async Task<bool> CreateAndUpdateUser(AuthDiscordUser discordUser, AuthDiscordGuild[] userGuilds)
+    {
+        Logger.LogDebug("Looking up User of ID:{UserId}", discordUser.Id);
+        ApplicationUser? appUser = await UserManager.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUser.Id);
+
+        string avatarUrl = AvatarUrlCreator(discordUser);
+        
+        if (appUser is null)
+        {
+            Logger.LogDebug("User was not found of ID:{UserId}, creating new one",discordUser.Id);
+            appUser = new ApplicationUser
+            {
+                DiscordId = discordUser.Id,
+                UserName = discordUser.UserName,
+                Email = discordUser.Email,
+                GlobalUsername = discordUser.GlobalName,
+                AvatarUrl = avatarUrl
+            };
+            IdentityResult result = await UserManager.CreateAsync(appUser);
+            if (result.Succeeded) return true;
+            _errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+            return false;
+        }
+        Logger.LogDebug("User of ID:{UserId} found, updating information", discordUser.Id);
+        appUser.UserName = discordUser.UserName;
+        appUser.Email = discordUser.Email;
+        appUser.AvatarUrl = avatarUrl;
+        appUser.GlobalUsername = discordUser.GlobalName;
+        Logger.LogDebug("Saving user data to database via user manager");
+        IdentityResult saveResult = await UserManager.UpdateAsync(appUser);
+        return saveResult.Succeeded;
+    }
+
+    private static string AvatarUrlCreator(AuthDiscordUser user)
+    {
+        StringBuilder sb = new();
+        sb.Append("https://cdn.discordapp.com/avatars/");
+        sb.Append(user.Id);
+        sb.Append("/");
+        sb.Append(user.AvatarHash);
+        sb.Append(user.AvatarHash.StartsWith("a_") ? ".gif" : ".png");
+        return sb.ToString();
+    }
+    
+    private void RetryRegistration()
+    {
+        _errorMessage = string.Empty;
+        ProcessRegistration().ConfigureAwait(false);
+    }
+
+    private void RedirectToHome()
+    {
+        string targetUrl = !string.IsNullOrEmpty(ReturnUrl) ? Uri.UnescapeDataString(ReturnUrl) : "/";
+        NavigationManager.NavigateTo(targetUrl);
+    }
+
+    
+    public class AuthDiscordUser
+    {
+        [JsonPropertyName("id"),JsonConverter(typeof(SnowflakeConverter))] public ulong Id { get; init; }
+        [JsonPropertyName("username")] public required string UserName { get; init; }
+        [JsonPropertyName("email")] public string? Email { get; init; }
+        [JsonPropertyName("global_name")] public string? GlobalName { get; init; }
+        [JsonPropertyName("avatar")] public required string AvatarHash { get; init; }
+    }
+
+    public class AuthDiscordGuild
+    {
+        [JsonPropertyName("id"), JsonConverter(typeof(SnowflakeConverter))] public ulong Id { get; set; }
+        [JsonPropertyName("name")] public required string GuildName { get; set; }
+    }
+
+    private class SnowflakeConverter : JsonConverter<ulong>
+    {
+        public override ulong Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return ulong.Parse(reader.GetString()); // Parse the string as an ulong
+        }
+
+        public override void Write(Utf8JsonWriter writer, ulong value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString()); // Write ulong as a string
+        }
+    }
+}
