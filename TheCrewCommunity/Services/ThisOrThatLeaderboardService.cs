@@ -8,6 +8,7 @@ public interface IThisOrThatLeaderboardService
 {
     List<ThisOrThatLeaderboardService.LeaderboardEntry> GetLeaderboard();
     DateTime GetNextRefreshTime();
+    Task UpdateLeaderboardAsync();
 }
 
 public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<ThisOrThatLeaderboardService> logger) : IHostedService, IThisOrThatLeaderboardService, IDisposable
