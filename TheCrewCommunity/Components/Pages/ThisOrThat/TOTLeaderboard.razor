@@ -2,8 +2,15 @@
 @using TheCrewCommunity.Services
 @inject GeneralUtils GeneralUtils
 @inject IThisOrThatLeaderboardService LeaderboardService
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-
+<HeadContent>
+    <meta property="og:title" content="This or That Leaderboard" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="@NavigationManager.Uri" />
+    <mera property="og:image" content="" />
+    <meta property="og:description" content="@GetTop5VehiclesDescription()" />
+</HeadContent>
 <div class="header-container">
     <h3>This or That Leaderboard</h3>
     <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
@@ -105,5 +112,10 @@
     {
         _leaderboardEntries = LeaderboardService.GetLeaderboard();
         UntilRefresh = LeaderboardService.GetNextRefreshTime() - DateTime.Now;
+    }
+    
+    private string GetTop5VehiclesDescription()
+    {
+        return $"Top 5 vehicles: {string.Join(", ", FilteredEntries?.Take(5).Select(x => $"{x.VehicleSuggestion.Brand} {x.VehicleSuggestion.Model} {x.VehicleSuggestion.Year}"))}";
     }
 }
