@@ -1,0 +1,44 @@
+﻿@inject IJSRuntime JSRuntime
+@inject IWebHostEnvironment Environment
+
+<div class="ad-container" @key="@Guid.CreateVersion7()">
+    @if (Ads is not null)
+    {
+        @Ads
+    }
+</div>
+
+@code {
+    [Parameter] public required string Slot { get; set; }
+    [Parameter] public string Style { get; set; } = "display:block;";
+    [Parameter] public string AdsFormat { get; set; } = "auto";
+    
+    private RenderFragment? Ads { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var test = "off";
+        if (Environment.IsDevelopment())
+        {
+            test = "on";
+        }
+        Ads = builder =>
+        {
+            builder.OpenElement(0, "ins");
+            builder.AddMultipleAttributes(1, new List<KeyValuePair<string, object>>
+            {
+                new("class", "adsbygoogle"),
+                new("style", $"{Style}"),
+                new("data-ad-client", "ca-pub-8510286736297873"),
+                new("data-ad-slot", Slot),
+                new("data-ad-format", AdsFormat),
+                new("data-full-width-responsive", true),
+                new("data-ad-test", test)
+            });
+            builder.CloseElement();
+            builder.OpenElement(0,"script");
+            builder.AddContent(3, "(adsbygoogle = window.adsbygoogle || []).push({});");
+            builder.CloseElement();
+        };
+    }
+}
