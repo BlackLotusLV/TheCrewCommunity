@@ -3,12 +3,13 @@
 @inject GeneralUtils GeneralUtils
 @inject IThisOrThatLeaderboardService LeaderboardService
 @inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
 @rendermode InteractiveServer
 <HeadContent>
     <meta property="og:title" content="This or That Leaderboard" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="@NavigationManager.Uri" />
-    <mera property="og:image" content="" />
+    <meta property="og:image" content="" />
     <meta property="og:description" content="@GetTop5VehiclesDescription()" />
 </HeadContent>
 <div class="header-container">
@@ -65,12 +66,17 @@
         }
     </div>
 </div>
+@if (!_isMobile)
+{
+    <GoogleAdSense AdsFormat="Horizontal" Slot="4288077832" Style="height: 100px !important; width: 100% !important; display: block !important;"/>
+}
 
 @code {
     TimeSpan UntilRefresh { get; set; }
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
     ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
     string _searchText = "";
+    bool _isMobile = false;
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? FilteredEntries
     {
         get
@@ -108,12 +114,18 @@
         _selectedEntry = entry;
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _leaderboardEntries = LeaderboardService.GetLeaderboard();
         UntilRefresh = LeaderboardService.GetNextRefreshTime() - DateTime.Now;
+        
+        var userAgent = HttpContextAccessor?.HttpContext?.Request.Headers["User-Agent"].ToString();
+        if (userAgent != null && (userAgent.Contains("Android") || userAgent.Contains("iPhone")))
+        {
+            _isMobile = true;
+        }
     }
-    
+
     private string GetTop5VehiclesDescription()
     {
         return $"Top 5 vehicles: {string.Join(", ", FilteredEntries?.Take(5).Select(x => $"{x.VehicleSuggestion.Brand} {x.VehicleSuggestion.Model} {x.VehicleSuggestion.Year}"))}";
