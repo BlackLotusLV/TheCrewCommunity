@@ -12,6 +12,8 @@ public class AuthController : ControllerBase
         var properties = new AuthenticationProperties
         {
             RedirectUri = $"/Account/Registering/{Uri.EscapeDataString(returnUrl ?? "/")}",
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
         };
     
         return Challenge(properties, "Discord");

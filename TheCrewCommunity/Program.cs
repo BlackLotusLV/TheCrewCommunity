@@ -44,7 +44,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-app.MapRazorPages();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
 {
