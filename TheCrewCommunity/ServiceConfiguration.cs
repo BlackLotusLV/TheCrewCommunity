@@ -7,11 +7,11 @@ using DSharpPlus.Commands.Processors.SlashCommands.InteractionNamingPolicies;
 using DSharpPlus.Commands.Processors.UserCommands;
 using DSharpPlus.Extensions;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.LiveBot;
@@ -52,14 +52,12 @@ public static class ServiceConfiguration
 
         services.AddHttpClient();
         services.AddLogging();
-        services.AddRazorPages();
-        services.AddRazorComponents()
-            .AddInteractiveServerComponents();
+        services.AddRazorComponents().AddInteractiveServerComponents();
+        services.AddAntiforgery();
                 
         string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Default connection string not provided!");
                 
         services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
-        //services.AddDbContext<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
         services.AddTransient(sp =>
         {
             var factory = sp.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
@@ -73,11 +71,19 @@ public static class ServiceConfiguration
         
         services.AddAuthentication(options =>
             {
-                options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultAuthenticateScheme = IdentityConstants.ExternalScheme;
                 options.DefaultChallengeScheme = "Discord";
             })
-            .AddCookie()
+            .AddCookie(options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.SlidingExpiration = true;
+                options.Cookie.Name = "TCC";
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            })
             .AddDiscord(options =>
             {
                 options.ClientId = builder.Configuration["Discord:ClientId"]??throw new Exception("Discord Client ID not found");
@@ -109,6 +115,10 @@ public static class ServiceConfiguration
                     OnTicketReceived = context =>
                     {
                         context.ReturnUri = "/Account/Registering";
+                        if (context.Properties is null) return Task.CompletedTask;
+                        
+                        context.Properties.IsPersistent = true;
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
                         return Task.CompletedTask;
                     }
                 };
@@ -120,9 +130,16 @@ public static class ServiceConfiguration
         
         services.AddSession(options =>
         {
-            options.IdleTimeout = TimeSpan.FromDays(1);
+            options.IdleTimeout = TimeSpan.FromDays(30);
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
+
+        services.AddServerSideBlazor().AddCircuitOptions(o =>
+        {
+            o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromDays(1);
+            o.DetailedErrors = builder.Environment.IsDevelopment();
         });
 
         services.Configure<DiscordConfiguration>(config =>
@@ -180,8 +197,9 @@ public static class ServiceConfiguration
             commandsConfiguration);
         services.AddInteractivityExtension();
         services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-        
+
         services.AddConfiguredDataProtection(builder);
+        services.AddDataProtection().SetDefaultKeyLifetime(TimeSpan.FromDays(15));
 
         services.AddControllers();
 
