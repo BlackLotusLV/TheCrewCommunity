@@ -12,6 +12,7 @@
     [Parameter] public required string Slot { get; set; }
     [Parameter] public string Style { get; set; } = "display:block;";
     [Parameter] public string AdsFormat { get; set; } = "auto";
+    [Parameter] public bool FullWidthResponsive { get; set; } = true;
     
     private RenderFragment? Ads { get; set; }
 
@@ -32,7 +33,7 @@
                 new("data-ad-client", "ca-pub-8510286736297873"),
                 new("data-ad-slot", Slot),
                 new("data-ad-format", AdsFormat),
-                new("data-full-width-responsive", true),
+                new("data-full-width-responsive", FullWidthResponsive),
                 new("data-ad-test", test)
             });
             builder.CloseElement();

@@ -1,6 +1,10 @@
 ﻿.adsbygoogle{
     display:block;
-    width: 100%;
+    width: 100% !important;
+}
+.ad-container{
+    display: flex !important;
+    justify-content: center !important;
 }
 .table-container{
     overflow-y: auto;

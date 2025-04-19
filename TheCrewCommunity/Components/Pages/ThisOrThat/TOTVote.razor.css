@@ -5,6 +5,7 @@
     flex-direction: row;
     justify-content: space-between;
     max-height: calc(100vh - 205px);
+    min-height: calc(100vh - 205px);
 }
 
 h3{
