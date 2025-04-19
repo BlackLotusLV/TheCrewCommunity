@@ -40,6 +40,7 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
     public DbSet<ImageLike> ImageLikes { get; init; }
     public DbSet<VehicleSuggestion> VehicleSuggestions { get; init; }
     public DbSet<SuggestionVote> SuggestionVotes { get; init; }
+    public DbSet<DailyVote> DailyVotes { get; init; }
 
     public LiveBotDbContext()
     {
@@ -56,6 +57,7 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
         modelBuilder.ApplyConfiguration(new UserImageConfig());
         modelBuilder.ApplyConfiguration(new VehicleSuggestionConfig());
         modelBuilder.ApplyConfiguration(new SuggestionVoteConfig());
+        modelBuilder.ApplyConfiguration(new DailyVoteConfig());
         modelBuilder.Entity<ButtonRoles>().HasKey(x => x.Id);
         modelBuilder.Entity<Guild>().HasKey(x => x.Id);
         modelBuilder.Entity<GuildUser>().HasKey(x => new { x.UserDiscordId, x.GuildId });
