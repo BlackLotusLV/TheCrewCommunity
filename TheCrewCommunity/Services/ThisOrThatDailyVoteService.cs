@@ -98,6 +98,8 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
 
         // Get todays daily vote from DB, if it exists, return
         DailyVote? dailyVote = await dbContext.DailyVotes
+            .Include(x=>x.VehicleSuggestion1)
+            .Include(x=>x.VehicleSuggestion2)
             .FirstOrDefaultAsync(x => x.Date == today);
         if (dailyVote is not null) return dailyVote;
         // Generate a list of unique pairs from the DB. If there are less than 2, return
@@ -143,12 +145,16 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
             })
             .First();
         // create database entry for this nonsense :)
+        dbContext.Attach(selectedPair.Item1);
+        dbContext.Attach(selectedPair.Item2);
         dailyVote = new DailyVote
         {
             Date = today,
             VehicleSuggestion1Id = selectedPair.Item1.Id,
             VehicleSuggestion2Id = selectedPair.Item2.Id,
-            Id = Guid.CreateVersion7()
+            Id = Guid.CreateVersion7(),
+            VehicleSuggestion1 = selectedPair.Item1,
+            VehicleSuggestion2 = selectedPair.Item2,
         };
         dbContext.DailyVotes.Add(dailyVote);
         await dbContext.SaveChangesAsync();
