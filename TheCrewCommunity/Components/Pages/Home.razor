@@ -1,8 +1,171 @@
-﻿@page "/"
+﻿@inject NavigationManager NavigationManager
+@inject IThisOrThatDailyVoteService DailyVoteService
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@page "/"
+@using System.Security.Claims
+@using TheCrewCommunity.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData
+@using TheCrewCommunity.Data.WebData.ThisOrThat
+@rendermode InteractiveServer
+
+<HeadContent>
+    <meta property="og:title" content="The Crew Community" />
+    <meta property="og:url" content="@NavigationManager.Uri" />
+    <meta property="og:description" content="Place for all things The Crew" />
+    <meta property="og:type" content="website" />
+    
+</HeadContent>
 
 <PageTitle>The Crew Community</PageTitle>
 
+
 <h1>The Crew Community Hub</h1>
 
-Welcome, this is the community hub for all things The Crew. Share pro settings, Photomode pictures and read up on community guides.
+Welcome, this is the community hub for all things The Crew. Share pro settings, PhotoMode pictures and read up on community guides.
 Almost every part  of this website is work in progress, so expect bugs and pages that lead to nowhere. It is being developed in free time. Thanks everyone for the feedback and understanding. ;)
+@if (_dailyVote is { VehicleSuggestion1: not null, VehicleSuggestion2: not null })
+{
+    <div class="daily-vote-wrapper">
+        <div class="daily-vote-container">
+            <h2>This or That Daily vote</h2>
+            <div class="image-options">
+                <div class="option-card">
+                    <div class="image-container">
+                        <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion1.ImageId/w=500" 
+                             alt="@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)"/>
+                    </div>
+                    <p class="vehicle-name">@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)</p>
+                </div>
+                
+                <div class="versus">VS</div>
+                
+                <div class="option-card">
+                    <div class="image-container">
+                        <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion2.ImageId/w=500" 
+                             alt="@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)"/>
+                    </div>
+                    <p class="vehicle-name">@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)</p>
+                </div>
+            </div>
+            <div class="vote-progress-container">
+                <div class="vote-label left-vote">
+                    @Option1Percentage%
+                </div>
+                <div class="vote-progress">
+                    <div class="vote-progress-bar" style="width: @Option1Percentage%"></div>
+                </div>
+                <div class="vote-label right-vote">
+                    @Option2Percentage%
+                </div>
+            </div>
+            <div class="vote-count">Total votes: @TotalVotes</div>
+
+            <AuthorizeView>
+                <Authorized>
+                    @if (UserVote is null)
+                    {
+                        <div class="vote-buttons">
+                            <button class="vote-button" disabled="@_isVoting" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion1Id)">
+                                Vote for @_dailyVote.VehicleSuggestion1.Brand @_dailyVote.VehicleSuggestion1.Model
+                            </button>
+                            <button class="vote-button" disabled="@_isVoting" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion2Id)">
+                                Vote for @_dailyVote.VehicleSuggestion2.Brand @_dailyVote.VehicleSuggestion2.Model
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="vote-result">
+                            <p>You voted for @UserVote.VotedForVehicle!.Brand - @UserVote.VotedForVehicle.Model (@UserVote.VotedForVehicle.Year)</p>
+                            <p>If you want to vote on more options, <a href="/ThisOrThat/Vote">head over to the This or That voting page</a>.</p>
+
+                        </div>
+                    }
+                </Authorized>
+                <NotAuthorized>
+                    <div class="login-message">
+                        <p>Please <a href="/api/Auth/login">log in</a> to vote on today's matchup!</p>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+}
+
+@code{
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+    DailyVote? _dailyVote;
+    List<SuggestionVote> DailyVotes { get; set; } = [];
+    SuggestionVote? UserVote { get; set; }
+    private ApplicationUser? CurrentUser { get; set; }
+    bool _isVoting;
+
+    private int TotalVotes => DailyVotes.Count;
+    private int Option1Votes => DailyVotes.Count(v => v.VotedForVehicleId == _dailyVote?.VehicleSuggestion1Id);
+    private int Option2Votes => DailyVotes.Count(v => v.VotedForVehicleId == _dailyVote?.VehicleSuggestion2Id);
+    private int Option1Percentage => TotalVotes > 0 ? (int)Math.Round((double)Option1Votes / TotalVotes * 100) : 50;
+    private int Option2Percentage => TotalVotes > 0 ? (int)Math.Round((double)Option2Votes / TotalVotes * 100) : 50;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dailyVote = DailyVoteService.GetDailyVote();
+        AuthenticationState authState = await AuthenticationState!;
+        ClaimsPrincipal user = authState.User;
+        LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            CurrentUser = await dbContext.ApplicationUsers
+                .Include(x => x.SuggestionVotes)
+                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+        }
+
+        if (_dailyVote is not null)
+        {
+            DailyVotes = dbContext.SuggestionVotes
+                .Include(x => x.VotedForVehicle)
+                .Include(x => x.VehicleSuggestion1)
+                .Include(x => x.VehicleSuggestion2)
+                .Where(vote =>
+                    (vote.VehicleSuggestion1Id == _dailyVote.VehicleSuggestion1Id && vote.VehicleSuggestion2Id == _dailyVote.VehicleSuggestion2Id) ||
+                    (vote.VehicleSuggestion1Id == _dailyVote.VehicleSuggestion2Id && vote.VehicleSuggestion2Id == _dailyVote.VehicleSuggestion1Id)
+                ).ToList();
+            if (CurrentUser is not null)
+            {
+                UserVote = DailyVotes.FirstOrDefault(x => x.UserId == CurrentUser.Id);
+            }
+        }
+    }
+
+    private async Task VoteAsync(Guid vehicleId)
+    {
+        if (_isVoting || _dailyVote is null) return;
+        _isVoting = true;
+        try
+        {
+            var vote = new SuggestionVote
+            {
+                UserId = CurrentUser!.Id,
+                Id = Guid.CreateVersion7(),
+                VehicleSuggestion1Id = _dailyVote.VehicleSuggestion1Id,
+                VehicleSuggestion2Id = _dailyVote.VehicleSuggestion2Id,
+                VotedForVehicleId = vehicleId
+            };
+            await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+            dbContext.SuggestionVotes.Add(vote);
+            await dbContext.SaveChangesAsync();
+            UserVote = await dbContext.SuggestionVotes
+                .Include(x => x.VotedForVehicle)
+                .FirstOrDefaultAsync(x => x.Id == vote.Id);
+            DailyVotes.Add(vote);
+        }
+        finally
+        {
+            _isVoting = false;
+            StateHasChanged();
+        }
+    }
+}
