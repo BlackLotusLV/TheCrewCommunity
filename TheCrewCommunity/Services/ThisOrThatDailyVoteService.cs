@@ -124,19 +124,25 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
         }
         // get all pair group votes and count of them
         var pairVotes = await dbContext.SuggestionVotes
-            .GroupBy(x => new { x.VehicleSuggestion1Id, x.VehicleSuggestion2Id })
+            .Select(x => new
+            {
+                Id1 = x.VehicleSuggestion1Id.CompareTo(x.VehicleSuggestion2Id) < 0
+                    ? x.VehicleSuggestion1Id
+                    : x.VehicleSuggestion2Id,
+                id2 = x.VehicleSuggestion1Id.CompareTo(x.VehicleSuggestion2Id) < 0
+                    ? x.VehicleSuggestion2Id
+                    : x.VehicleSuggestion1Id,
+            })
+            .GroupBy(x => new { x.Id1, x.id2 })
             .Select(g => new
             {
                 Pair = g.Key,
                 Count = g.Count()
-            })
-            .ToListAsync();
-        // Some AI magic that will probably be broken but was too lazy to figure it out myself. Get the vote with least votes
-        var voteCounts = pairVotes.ToDictionary(
-            pv=> [pv.Pair.VehicleSuggestion1Id, pv.Pair.VehicleSuggestion2Id],
-            pv => pv.Count,
-            HashSet<Guid>.CreateSetComparer());
+            }).ToListAsync();
 
+        var voteCounts = pairVotes.ToDictionary(
+                pv=> [pv.Pair.Id1, pv.Pair.id2], pv=>pv.Count, HashSet<Guid>.CreateSetComparer());
+        
         (VehicleSuggestion, VehicleSuggestion) selectedPair = freePairs
             .OrderBy(pair =>
             {
