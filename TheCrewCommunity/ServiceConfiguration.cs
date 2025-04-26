@@ -35,10 +35,16 @@ public static class ServiceConfiguration
         services.AddHostedService(provider => provider.GetRequiredService<StreamNotificationService>());
         services.AddHostedService<WebRoleManagerService>();
         services.AddHostedService<ThisOrThatLeaderboardService>();
-        builder.Services.AddSingleton<IThisOrThatLeaderboardService>(provider => 
+        services.AddSingleton<IThisOrThatLeaderboardService>(provider => 
         {
             return (ThisOrThatLeaderboardService)provider.GetServices<IHostedService>()
                 .First(service => service is ThisOrThatLeaderboardService);
+        });
+        services.AddHostedService<ThisOrThatDailyVoteService>();
+        services.AddSingleton<IThisOrThatDailyVoteService>(provider =>
+        {
+            return (ThisOrThatDailyVoteService)provider.GetServices<IHostedService>()
+                .First(service => service is ThisOrThatDailyVoteService);
         });
         
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
