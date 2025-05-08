@@ -55,6 +55,7 @@ public static class ServiceConfiguration
         services.AddSingleton<IUserActivityService, UserActivityService>();
 
         services.AddSingleton<GeneralUtils>();
+        services.AddScoped<BrowserService>();
 
         services.AddHttpClient();
         services.AddLogging();
