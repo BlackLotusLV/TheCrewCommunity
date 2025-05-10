@@ -249,6 +249,16 @@ h3{
     overflow: hidden;
     margin: 8px 0;
 }
+.user-vote-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: #FFC107;
+    border-radius: 4px 0 0 4px;
+    opacity: 0.8;
+    z-index: 1;
+}
 
 .vote-bar {
     background-color: #4CAF50;
@@ -260,12 +270,15 @@ h3{
     padding-right: 8px;
     transition: width 0.5s ease-in-out;
     min-width: 30px;
+    position: relative;
 }
 
 .vote-percent {
     color: white;
     font-weight: bold;
     font-size: 14px;
+    position: relative;
+    z-index: 2;
 }
 
 .vote-details {
@@ -278,6 +291,45 @@ h6 {
     margin: 6px 0;
     font-size: 16px;
 }
+.leaderboard-info {
+    margin: 12px 0;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 0, 0.3);
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-rank {
+    font-size: 15px;
+    margin: 8px 0;
+}
+
+.rank-value {
+    font-weight: bold;
+    font-size: 18px;
+    color: #FFC107;
+}
+
+.leaderboard-update-info {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+    display: block;
+    margin-top: 4px;
+}
+
+.view-leaderboard-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #FFC107;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.view-leaderboard-link:hover {
+    text-decoration: underline;
+}
+
 
 @media (pointer: fine) {
     .swipe-hint {

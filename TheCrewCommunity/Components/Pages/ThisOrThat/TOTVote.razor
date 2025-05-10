@@ -13,6 +13,7 @@
 @inject IMemoryCache MemoryCache
 @inject ILogger<TOTVote> Logger
 @inject BrowserService BrowserService
+@inject IThisOrThatLeaderboardService LeaderboardService
 @rendermode InteractiveServer
 <PageTitle>This or That?</PageTitle>
 <h3>This or That?</h3>
@@ -64,11 +65,37 @@ else
                                 <h6>All Time</h6>
                                 <div class="vote-bar-container">
                                     <div class="vote-bar" style="width: @((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%">
+                                        @if (_userTotalVotes > 0)
+                                        {
+                                            <div class="user-vote-marker" style="width: @((_userTotalVotes * 100.0 / _lastTotalFor).ToString("0.0"))%" 
+                                                 title="@((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))% of votes by you"></div>
+                                        }
                                         <span class="vote-percent">@((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%</span>
                                     </div>
                                 </div>
                                 <p class="vote-details">@_lastTotalFor for vs @_lastTotalAgainst against (@(_lastTotalFor + _lastTotalAgainst) total)</p>
                             </div>
+                            <div class="leaderboard-info">
+                                <h6>Leaderboard Stats</h6>
+                                @if (_leaderboardRank.HasValue)
+                                {
+                                    <p class="leaderboard-rank">
+                                        Rank: <span class="rank-value">@_leaderboardRank</span> of @_totalVehicles vehicles
+                                        <span class="leaderboard-update-info">
+                                            (Last updated: @_leaderboardUpdateTime.ToString("HH:mm") UTC, refreshes every 5 minutes)
+                                        </span>
+                                    </p>
+                                    <a href="/ThisOrThat/Leaderboard" class="view-leaderboard-link">View Full Leaderboard</a>
+                                }
+                                else
+                                {
+                                    <p>Vehicle not yet ranked on the leaderboard.</p>
+                                    <p class="leaderboard-update-info">
+                                        The leaderboard updates every 5 minutes.
+                                    </p>
+                                }
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -130,7 +157,9 @@ else
     private int _timerSeconds = 10;
     private double _timerProgress = 100;
     private Timer? _statsTimer;
-    private int _lastMatchupFor, _lastMatchupAgainst, _lastTotalFor, _lastTotalAgainst;
+    private int _lastMatchupFor, _lastMatchupAgainst, _lastTotalFor, _lastTotalAgainst, _userTotalVotes, _totalVehicles;
+    private int? _leaderboardRank;
+    private DateTime _leaderboardUpdateTime;
 
     
     protected override async Task OnInitializedAsync()
@@ -227,17 +256,22 @@ else
         }
         _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
         var voteCounts = await dbContext.SuggestionVotes
-            .GroupBy(v => v.VotedForVehicleId)
-            .Select(g => new { VehicleId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.VehicleId, x => x.Count);
+            .GroupBy(v => new { v.VehicleSuggestion1Id, v.VehicleSuggestion2Id })
+            .Select(g => new { 
+                Vehicle1Id = g.Key.VehicleSuggestion1Id, 
+                Vehicle2Id = g.Key.VehicleSuggestion2Id, 
+                Count = g.Count() 
+            })
+            .ToDictionaryAsync(x => (x.Vehicle1Id, x.Vehicle2Id), x => x.Count);
         var pairsWithVoteCounts = availablePairs
             .Select(pair => new 
             {
                 Pair = pair,
-                TotalVotes = (voteCounts.TryGetValue(pair.Item1.Id, out var count1) ? count1 : 0) + 
-                             (voteCounts.TryGetValue(pair.Item2.Id, out var count2) ? count2 : 0)
+                TotalVotes = (voteCounts.TryGetValue((pair.Item1.Id, pair.Item2.Id), out var count1) ? count1 : 0) + 
+                             (voteCounts.TryGetValue((pair.Item2.Id, pair.Item1.Id), out var count2) ? count2 : 0)
             })
             .ToList();
+
         int minVotes = pairsWithVoteCounts.Min(p => p.TotalVotes);
         var pairsWithMinVotes = pairsWithVoteCounts
             .Where(p => p.TotalVotes == minVotes)
@@ -269,9 +303,16 @@ else
         _lastMatchupAgainst = matchupVotes.Count - _lastMatchupFor;
         _lastTotalFor = allVotes.Count(x => x.VotedForVehicleId == selected.Id);
         _lastTotalAgainst = allVotes.Count - _lastTotalFor;
+        _userTotalVotes = allVotes.Count(x => x.UserId == CurrentUser.Id);
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
         lastSelection = await dbContext.VehicleSuggestions.Include(x => x.VotesFor).FirstAsync(x => x.Id == selected.Id);
-        
+        var leaderboard = LeaderboardService.GetLeaderboard();
+        _leaderboardUpdateTime = LeaderboardService.GetNextRefreshTime().AddMinutes(-5); // 5 minutes before next refresh is when it was last updated
+        _totalVehicles = leaderboard?.Count ?? 0;
+    
+        var entry = leaderboard?.FirstOrDefault(x => x.VehicleSuggestion.Id == selected.Id);
+        _leaderboardRank = entry?.Rank;
+
         _addingVote = false;
         _showingStats = true;
         StateHasChanged();
