@@ -226,8 +226,26 @@ else
             return null;
         }
         _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
+        var voteCounts = await dbContext.SuggestionVotes
+            .GroupBy(v => v.VotedForVehicleId)
+            .Select(g => new { VehicleId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.VehicleId, x => x.Count);
+        var pairsWithVoteCounts = availablePairs
+            .Select(pair => new 
+            {
+                Pair = pair,
+                TotalVotes = (voteCounts.TryGetValue(pair.Item1.Id, out var count1) ? count1 : 0) + 
+                             (voteCounts.TryGetValue(pair.Item2.Id, out var count2) ? count2 : 0)
+            })
+            .ToList();
+        int minVotes = pairsWithVoteCounts.Min(p => p.TotalVotes);
+        var pairsWithMinVotes = pairsWithVoteCounts
+            .Where(p => p.TotalVotes == minVotes)
+            .Select(p => p.Pair)
+            .ToList();
         var random = new Random();
-        return availablePairs[random.Next(availablePairs.Count)];
+        return pairsWithMinVotes[random.Next(pairsWithMinVotes.Count)];
+
     }
 
     private async Task VoteAsync(VehicleSuggestion selected)
