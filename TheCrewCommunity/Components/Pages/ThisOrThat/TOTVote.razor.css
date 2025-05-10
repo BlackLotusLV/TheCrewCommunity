@@ -112,6 +112,173 @@ h3{
 .swipe-hint i {
     margin: 0 4px;
 }
+
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0 auto;
+    background-color: #2a2a2a;
+    overflow: hidden;
+}
+
+.stats-header {
+    padding: 15px;
+    background-color: #2a2a2a;
+    border-bottom: 1px solid yellow;
+}
+
+.stats-header h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.timer-container {
+    position: relative;
+    height: 20px;
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.timer-bar {
+    height: 100%;
+    background-color: yellow;
+    border-radius: 10px;
+    transition: width 1s linear;
+}
+
+.timer-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #212529;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.stats-content {
+    padding: 20px;
+}
+
+.selected-vehicle {
+    text-align: center;
+}
+
+.selected-vehicle h5 {
+    margin-bottom: 15px;
+    color: #6c757d;
+}
+
+.vehicle-display {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.vehicle-image {
+    flex: 0 0 auto;
+}
+
+.vehicle-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    max-height: 350px;
+}
+
+.vehicle-info {
+    flex: 1 1 auto;
+}
+
+.vehicle-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.vote-count {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.vote-count i {
+    margin-right: 5px;
+}
+
+.stats-footer {
+    padding: 15px;
+    text-align: center;
+    border-top: 1px solid yellow;
+}
+
+.next-vote-btn {
+    background-color: #2a2a2a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid yellow;
+}
+
+.next-vote-btn:hover {
+    background-color: yellow;
+    color:black;
+    border: 1px solid #2a2a2a;
+}
+.vote-stats {
+    margin: 12px 0;
+}
+
+.vote-bar-container {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    height: 20px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.vote-bar {
+    background-color: #4CAF50;
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    transition: width 0.5s ease-in-out;
+    min-width: 30px;
+}
+
+.vote-percent {
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.vote-details {
+    font-size: 14px;
+    color: #666;
+    margin: 4px 0;
+}
+
+h6 {
+    margin: 6px 0;
+    font-size: 16px;
+}
+
 @media (pointer: fine) {
     .swipe-hint {
         display: none;
@@ -147,4 +314,28 @@ h3{
         width: 100%;
         margin-bottom: 5px;
     }
+    .stats-container {
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .vehicle-image img {
+        max-height: 250px;
+    }
+    .vehicle-display {
+        display: flex;
+        flex-direction: column; 
+        align-items: center;
+        gap: 15px;
+    }
+    .vehicle-image {
+        width: 100%;
+        max-width: 350px;
+    }
+
+    .vehicle-info {
+        width: 100%;
+    }
+
+
 }

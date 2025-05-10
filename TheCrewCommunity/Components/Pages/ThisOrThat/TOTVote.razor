@@ -3,15 +3,16 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.EntityFrameworkCore.Internal
 @using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.WebData
 @using TheCrewCommunity.Data.WebData.ThisOrThat
+@using TheCrewCommunity.Services
 @attribute [Authorize]
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject IMemoryCache MemoryCache
 @inject ILogger<TOTVote> Logger
+@inject BrowserService BrowserService
 @rendermode InteractiveServer
 <PageTitle>This or That?</PageTitle>
 <h3>This or That?</h3>
@@ -30,29 +31,81 @@ else
     <div class="progress-container">
         <div class="progress-bar" style="width: @($"{_progress}%")"></div>
     </div>
-    <div class="container"
-         @ontouchstart="HandleTouchStart"
-         @ontouchmove="HandleTouchMove"
-         @ontouchend="HandleTouchEnd">
-        <div class="image-container" style="transform: translateX(@(_leftImageTransform)px)">
-            <div class="info">
-                <h4>@CurrentChoice?.Item1.Brand - @CurrentChoice?.Item1.Model (@CurrentChoice?.Item1.Year)</h4>
-                <p class="swipe-hint">Swipe right <i class="fas fa-arrow-right"></i></p>
-                <p>@CurrentChoice?.Item1.Description</p>
+    @if (_showingStats)
+    {
+        <div class="stats-container">
+            <div class="stats-header">
+                <h4>Vote Results</h4>
+                <div class="timer-container">
+                    <div class="timer-bar" style="width: @(_timerProgress)%"></div>
+                    <span class="timer-text">Next vote in @_timerSeconds seconds</span>
+                </div>
             </div>
-            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item1.ImageId/public" alt="@CurrentChoice?.Item1.Model"/>
-            <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item1!))">This</div>
-        </div>
-        <div class="image-container" style="transform: translateX(@(_rightImageTransform)px)">
-            <div class="info">
-                <h4>@CurrentChoice?.Item2.Brand - @CurrentChoice?.Item2.Model (@CurrentChoice?.Item2.Year)</h4>
-                <p class="swipe-hint"><i class="fas fa-arrow-left"></i> Swipe left</p>
-                <p>@CurrentChoice?.Item2.Description</p>
+            <div class="stats-content">
+                <div class="selected-vehicle">
+                    <h5>Your Selection</h5>
+                    <div class="vehicle-display">
+                        <div class="vehicle-image">
+                            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@lastSelection.ImageId/w=@_imageWidth"
+                                alt="selected vehicle"/>
+                        </div>
+                        <div class="vehicle-info">
+                            <p class="vehicle-name">@lastSelection.Brand - @lastSelection.Model (@lastSelection.Year)</p>
+                            <div class="vote-stats">
+                                <h6>In This Matchup</h6>
+                                <div class="vote-bar-container">
+                                    <div class="vote-bar" style="width: @((_lastMatchupFor * 100.0 / Math.Max(1, _lastMatchupFor + _lastMatchupAgainst)).ToString("0.0"))%">
+                                        <span class="vote-percent">@((_lastMatchupFor * 100.0 / Math.Max(1, _lastMatchupFor + _lastMatchupAgainst)).ToString("0.0"))%</span>
+                                    </div>
+                                </div>
+                                <p class="vote-details">@_lastMatchupFor for vs @_lastMatchupAgainst against (@(_lastMatchupFor + _lastMatchupAgainst) total)</p>
+                            </div>
+                            <div class="vote-stats">
+                                <h6>All Time</h6>
+                                <div class="vote-bar-container">
+                                    <div class="vote-bar" style="width: @((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%">
+                                        <span class="vote-percent">@((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%</span>
+                                    </div>
+                                </div>
+                                <p class="vote-details">@_lastTotalFor for vs @_lastTotalAgainst against (@(_lastTotalFor + _lastTotalAgainst) total)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item2.ImageId/public" alt="@CurrentChoice?.Item2.Model"/>
-            <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item2!))">That</div>
+            <div class="stats-footer">
+                <button @onclick="@(e => _showingStats = false)" class="next-vote-btn">Skip to Next Vote</button>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="container"
+             @ontouchstart="HandleTouchStart"
+             @ontouchmove="HandleTouchMove"
+             @ontouchend="HandleTouchEnd">
+            <div class="image-container" style="transform: translateX(@(_leftImageTransform)px)">
+                <div class="info">
+                    <h4>@CurrentChoice?.Item1.Brand - @CurrentChoice?.Item1.Model (@CurrentChoice?.Item1.Year)</h4>
+                    <p class="swipe-hint">Swipe right <i class="fas fa-arrow-right"></i></p>
+                    <p>@CurrentChoice?.Item1.Description</p>
+                </div>
+                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item1.ImageId/w=@_imageWidth"
+                     alt="@CurrentChoice?.Item1.Model"/>
+                <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item1!))">This</div>
+            </div>
+            <div class="image-container" style="transform: translateX(@(_rightImageTransform)px)">
+                <div class="info">
+                    <h4>@CurrentChoice?.Item2.Brand - @CurrentChoice?.Item2.Model (@CurrentChoice?.Item2.Year)</h4>
+                    <p class="swipe-hint"><i class="fas fa-arrow-left"></i> Swipe left</p>
+                    <p>@CurrentChoice?.Item2.Description</p>
+                </div>
+                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@CurrentChoice?.Item2.ImageId/w=@_imageWidth"
+                     alt="@CurrentChoice?.Item2.Model"/>
+                <div class="overlay" @onclick="@(_ => @VoteAsync(CurrentChoice?.Item2!))">That</div>
+            </div>
+        </div>
+    }
     <GoogleAdSense Slot="4288077832" AdsFormat="Horizontal" Style="display:inline-block;width:700px;height:100px" FullWidthResponsive="false"/>
     
 }
@@ -65,12 +118,19 @@ else
     private ApplicationUser? CurrentUser { get; set; }
     (VehicleSuggestion, VehicleSuggestion)? CurrentChoice { get; set; }
     private bool _addingVote = false;
+    private bool _showingStats = false;
     double _progress;
     bool _isSwiping = false;
     double _touchStartX;
     const int SwipeThreshold = 50; 
     private double _leftImageTransform = 0;
     private double _rightImageTransform = 0;
+    private int _imageWidth;
+    private VehicleSuggestion lastSelection = null!;
+    private int _timerSeconds = 10;
+    private double _timerProgress = 100;
+    private Timer? _statsTimer;
+    private int _lastMatchupFor, _lastMatchupAgainst, _lastTotalFor, _lastTotalAgainst;
 
     
     protected override async Task OnInitializedAsync()
@@ -101,6 +161,33 @@ else
         }
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _imageWidth = await BrowserService.GetWindowWidth();
+            _imageWidth = _imageWidth / 2;
+            if (_imageWidth < 500)
+            {
+                _imageWidth = 500;
+            }
+            
+            BrowserService.OnResize += HandleResize;
+            await BrowserService.InitializeResizeListener();
+            StateHasChanged();
+        }
+    }
+    private void HandleResize(int width, int height)
+    {
+        _imageWidth = width / 2;
+        if (_imageWidth < 500)
+        {
+            _imageWidth = 500;
+        }
+        StateHasChanged();
+    }
+
 
     private List<(VehicleSuggestion, VehicleSuggestion)> GenerateUniquePairList()
     {
@@ -139,8 +226,26 @@ else
             return null;
         }
         _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
+        var voteCounts = await dbContext.SuggestionVotes
+            .GroupBy(v => v.VotedForVehicleId)
+            .Select(g => new { VehicleId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.VehicleId, x => x.Count);
+        var pairsWithVoteCounts = availablePairs
+            .Select(pair => new 
+            {
+                Pair = pair,
+                TotalVotes = (voteCounts.TryGetValue(pair.Item1.Id, out var count1) ? count1 : 0) + 
+                             (voteCounts.TryGetValue(pair.Item2.Id, out var count2) ? count2 : 0)
+            })
+            .ToList();
+        int minVotes = pairsWithVoteCounts.Min(p => p.TotalVotes);
+        var pairsWithMinVotes = pairsWithVoteCounts
+            .Where(p => p.TotalVotes == minVotes)
+            .Select(p => p.Pair)
+            .ToList();
         var random = new Random();
-        return availablePairs[random.Next(availablePairs.Count)];
+        return pairsWithMinVotes[random.Next(pairsWithMinVotes.Count)];
+
     }
 
     private async Task VoteAsync(VehicleSuggestion selected)
@@ -158,9 +263,19 @@ else
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         dbContext.SuggestionVotes.Add(vote);
         await dbContext.SaveChangesAsync();
+        var matchupVotes = await dbContext.SuggestionVotes.Where(x => x.VehicleSuggestion1Id == CurrentChoice.Value.Item1.Id && x.VehicleSuggestion2Id == CurrentChoice.Value.Item2.Id || x.VehicleSuggestion1Id == CurrentChoice.Value.Item2.Id && x.VehicleSuggestion2Id == CurrentChoice.Value.Item1.Id).ToListAsync();
+        var allVotes = await dbContext.SuggestionVotes.Where(x => x.VehicleSuggestion1Id == selected.Id || x.VehicleSuggestion2Id == selected.Id).ToListAsync();
+        _lastMatchupFor = matchupVotes.Count(x => x.VotedForVehicleId == selected.Id);
+        _lastMatchupAgainst = matchupVotes.Count - _lastMatchupFor;
+        _lastTotalFor = allVotes.Count(x => x.VotedForVehicleId == selected.Id);
+        _lastTotalAgainst = allVotes.Count - _lastTotalFor;
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
+        lastSelection = await dbContext.VehicleSuggestions.Include(x => x.VotesFor).FirstAsync(x => x.Id == selected.Id);
+        
         _addingVote = false;
+        _showingStats = true;
         StateHasChanged();
+        StartStatsTimer();
     }
     private void HandleTouchStart(TouchEventArgs e)
     {
@@ -216,9 +331,36 @@ else
         _leftImageTransform = 0;
         _rightImageTransform = 0;
         _isSwiping = false;
-    
         StateHasChanged();
 
     }
-
+    
+    private void StartStatsTimer()
+    {
+        _timerSeconds = 10;
+        _timerProgress = 100;
+    
+        _statsTimer?.Dispose();
+        _statsTimer = new Timer(TimerCallback, null, 0, 1000);
+    }
+    private void TimerCallback(object? state)
+    {
+        _timerSeconds--;
+        _timerProgress = _timerSeconds * 10;
+    
+        if (_timerSeconds <= 0)
+        {
+            _statsTimer?.Dispose();
+            _statsTimer = null;
+        
+            InvokeAsync(() => {
+                _showingStats = false;
+                StateHasChanged();
+            });
+        }
+        else
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
 }
