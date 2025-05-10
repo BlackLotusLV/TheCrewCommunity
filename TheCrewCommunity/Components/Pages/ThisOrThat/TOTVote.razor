@@ -67,7 +67,7 @@ else
                                     <div class="vote-bar" style="width: @((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%">
                                         @if (_userTotalVotes > 0)
                                         {
-                                            <div class="user-vote-marker" style="width: @((_userTotalVotes * 100.0 / _lastTotalFor).ToString("0.0"))%" 
+                                            <div class="user-vote-marker" style="width: @((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor)).ToString("0.0"))%" 
                                                  title="@((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))% of votes by you"></div>
                                         }
                                         <span class="vote-percent">@((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%</span>
