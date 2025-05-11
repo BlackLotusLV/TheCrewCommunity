@@ -150,6 +150,12 @@
 .login-message p {
     margin: 0;
 }
+.login-link{
+    color: darkorange;
+}
+.login-link:visited{
+    color: orangered;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
