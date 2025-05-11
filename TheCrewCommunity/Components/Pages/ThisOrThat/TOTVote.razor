@@ -38,7 +38,7 @@ else
             <div class="stats-header">
                 <h4>Vote Results</h4>
                 <div class="timer-container">
-                    <div class="timer-bar" style="width: @(_timerProgress)%"></div>
+                    <div class="timer-bar" style="width: @(_timerProgress-10)%"></div>
                     <span class="timer-text">Next vote in @_timerSeconds seconds</span>
                 </div>
             </div>
@@ -47,11 +47,11 @@ else
                     <h5>Your Selection</h5>
                     <div class="vehicle-display">
                         <div class="vehicle-image">
-                            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@lastSelection.ImageId/w=@_imageWidth"
+                            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_lastSelection.ImageId/w=@_imageWidth"
                                 alt="selected vehicle"/>
                         </div>
                         <div class="vehicle-info">
-                            <p class="vehicle-name">@lastSelection.Brand - @lastSelection.Model (@lastSelection.Year)</p>
+                            <p class="vehicle-name">@_lastSelection.Brand - @_lastSelection.Model (@_lastSelection.Year)</p>
                             <div class="vote-stats">
                                 <h6>In This Matchup</h6>
                                 <div class="vote-bar-container">
@@ -67,7 +67,7 @@ else
                                     <div class="vote-bar" style="width: @((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%">
                                         @if (_userTotalVotes > 0)
                                         {
-                                            <div class="user-vote-marker" style="width: @((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor)).ToString("0.0"))%" 
+                                            <div class="user-vote-marker" style="width: @((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%" 
                                                  title="@((_userTotalVotes * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))% of votes by you"></div>
                                         }
                                         <span class="vote-percent">@((_lastTotalFor * 100.0 / Math.Max(1, _lastTotalFor + _lastTotalAgainst)).ToString("0.0"))%</span>
@@ -85,7 +85,7 @@ else
                                             (Last updated: @_leaderboardUpdateTime.ToString("HH:mm") UTC, refreshes every 5 minutes)
                                         </span>
                                     </p>
-                                    <a href="/ThisOrThat/Leaderboard" class="view-leaderboard-link">View Full Leaderboard</a>
+                                    <NavLink href="/ThisOrThat/Leaderboard" class="view-leaderboard-link">View Full Leaderboard</NavLink>
                                 }
                                 else
                                 {
@@ -101,7 +101,7 @@ else
                 </div>
             </div>
             <div class="stats-footer">
-                <button @onclick="@(e => _showingStats = false)" class="next-vote-btn">Skip to Next Vote</button>
+                <button @onclick="@(_ => _showingStats = false)" class="next-vote-btn">Skip to Next Vote</button>
             </div>
         </div>
     }
@@ -138,22 +138,21 @@ else
 }
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationState { get; set; }
-    List<VehicleSuggestion> _vehicleSuggestions;
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+    List<VehicleSuggestion> _vehicleSuggestions = null!;
     List<(VehicleSuggestion, VehicleSuggestion)>? _uniquePairs;
-    private ApplicationUser? CurrentUser { get; set; }
+    private ApplicationUser CurrentUser { get; set; } = null!;
     (VehicleSuggestion, VehicleSuggestion)? CurrentChoice { get; set; }
-    private bool _addingVote = false;
-    private bool _showingStats = false;
+    private bool _addingVote;
+    private bool _showingStats;
     double _progress;
-    bool _isSwiping = false;
+    bool _isSwiping;
     double _touchStartX;
-    const int SwipeThreshold = 50; 
-    private double _leftImageTransform = 0;
-    private double _rightImageTransform = 0;
+    const int SwipeThreshold = 50;
+    private double _leftImageTransform;
+    private double _rightImageTransform;
     private int _imageWidth;
-    private VehicleSuggestion lastSelection = null!;
+    private VehicleSuggestion _lastSelection = null!;
     private int _timerSeconds = 10;
     private double _timerProgress = 100;
     private Timer? _statsTimer;
@@ -161,13 +160,14 @@ else
     private int? _leaderboardRank;
     private DateTime _leaderboardUpdateTime;
 
-    
+
     protected override async Task OnInitializedAsync()
     {
         if (AuthenticationState is null)
         {
             throw new Exception("Authentication state was null, stopping");
         }
+
         AuthenticationState authState = await AuthenticationState;
         ClaimsPrincipal user = authState.User;
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
@@ -175,19 +175,26 @@ else
         {
             string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             CurrentUser = await dbContext.ApplicationUsers
-                .Include(x=>x.SuggestionVotes)
-                .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+                .Include(x => x.SuggestionVotes)
+                .FirstAsync(x => x.DiscordId == ulong.Parse(userId!));
         }
+
         _vehicleSuggestions = await dbContext.VehicleSuggestions.ToListAsync();
         try
         {
-            _uniquePairs = await MemoryCache.GetOrCreateAsync("uniquePairsList", entry => Task.FromResult(GenerateUniquePairList()));
+            _uniquePairs = MemoryCache.GetOrCreate("uniquePairsList", entry =>
+            {
+                entry.SetSlidingExpiration(TimeSpan.FromDays(1));
+                entry.SetAbsoluteExpiration(TimeSpan.FromDays(5));
+                return GenerateUniquePairList();
+            });
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _uniquePairs = null;
             Logger.LogInformation("Failed to load unique pairs for TOT vote. Add items to the database to generate unique pairs");
         }
+
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
     }
 
@@ -201,12 +208,13 @@ else
             {
                 _imageWidth = 500;
             }
-            
+
             BrowserService.OnResize += HandleResize;
             await BrowserService.InitializeResizeListener();
             StateHasChanged();
         }
     }
+
     private void HandleResize(int width, int height)
     {
         _imageWidth = width / 2;
@@ -214,6 +222,7 @@ else
         {
             _imageWidth = 500;
         }
+
         StateHasChanged();
     }
 
@@ -224,6 +233,7 @@ else
         {
             return [];
         }
+
         var uniquePairs = new List<(VehicleSuggestion, VehicleSuggestion)>();
         for (var i = 0; i < _vehicleSuggestions.Count; i++)
         {
@@ -232,12 +242,13 @@ else
                 uniquePairs.Add((_vehicleSuggestions[i], _vehicleSuggestions[j]));
             }
         }
+
         return uniquePairs;
     }
 
     private async Task<(VehicleSuggestion, VehicleSuggestion)?> GenerateRandomSuggestionVoteAsync()
     {
-        if (_vehicleSuggestions.Count < 2 || CurrentUser is null || _uniquePairs is null)
+        if (_vehicleSuggestions.Count < 2 || _uniquePairs is null)
         {
             return null;
         }
@@ -254,20 +265,22 @@ else
         {
             return null;
         }
+
         _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
         var voteCounts = await dbContext.SuggestionVotes
             .GroupBy(v => new { v.VehicleSuggestion1Id, v.VehicleSuggestion2Id })
-            .Select(g => new { 
-                Vehicle1Id = g.Key.VehicleSuggestion1Id, 
-                Vehicle2Id = g.Key.VehicleSuggestion2Id, 
-                Count = g.Count() 
+            .Select(g => new
+            {
+                Vehicle1Id = g.Key.VehicleSuggestion1Id,
+                Vehicle2Id = g.Key.VehicleSuggestion2Id,
+                Count = g.Count()
             })
             .ToDictionaryAsync(x => (x.Vehicle1Id, x.Vehicle2Id), x => x.Count);
         var pairsWithVoteCounts = availablePairs
-            .Select(pair => new 
+            .Select(pair => new
             {
                 Pair = pair,
-                TotalVotes = (voteCounts.TryGetValue((pair.Item1.Id, pair.Item2.Id), out var count1) ? count1 : 0) + 
+                TotalVotes = (voteCounts.TryGetValue((pair.Item1.Id, pair.Item2.Id), out var count1) ? count1 : 0) +
                              (voteCounts.TryGetValue((pair.Item2.Id, pair.Item1.Id), out var count2) ? count2 : 0)
             })
             .ToList();
@@ -290,7 +303,7 @@ else
         {
             UserId = CurrentUser.Id,
             Id = Guid.CreateVersion7(),
-            VehicleSuggestion1Id = CurrentChoice.Value.Item1.Id,
+            VehicleSuggestion1Id = CurrentChoice!.Value.Item1.Id,
             VehicleSuggestion2Id = CurrentChoice.Value.Item2.Id,
             VotedForVehicleId = selected.Id,
         };
@@ -305,12 +318,12 @@ else
         _lastTotalAgainst = allVotes.Count - _lastTotalFor;
         _userTotalVotes = allVotes.Count(x => x.UserId == CurrentUser.Id);
         CurrentChoice = await GenerateRandomSuggestionVoteAsync();
-        lastSelection = await dbContext.VehicleSuggestions.Include(x => x.VotesFor).FirstAsync(x => x.Id == selected.Id);
+        _lastSelection = await dbContext.VehicleSuggestions.Include(x => x.VotesFor).FirstAsync(x => x.Id == selected.Id);
         var leaderboard = LeaderboardService.GetLeaderboard();
-        _leaderboardUpdateTime = LeaderboardService.GetNextRefreshTime().AddMinutes(-5); // 5 minutes before next refresh is when it was last updated
-        _totalVehicles = leaderboard?.Count ?? 0;
-    
-        var entry = leaderboard?.FirstOrDefault(x => x.VehicleSuggestion.Id == selected.Id);
+        _leaderboardUpdateTime = LeaderboardService.GetNextRefreshTime().AddMinutes(-5);
+        _totalVehicles = leaderboard.Count;
+
+        ThisOrThatLeaderboardService.LeaderboardEntry? entry = leaderboard.FirstOrDefault(x => x.VehicleSuggestion.Id == selected.Id);
         _leaderboardRank = entry?.Rank;
 
         _addingVote = false;
@@ -318,11 +331,13 @@ else
         StateHasChanged();
         StartStatsTimer();
     }
+
     private void HandleTouchStart(TouchEventArgs e)
     {
         _isSwiping = true;
         _touchStartX = e.Touches[0].ClientX;
     }
+
     private void HandleTouchMove(TouchEventArgs e)
     {
         if (!_isSwiping) return;
@@ -334,14 +349,17 @@ else
             _leftImageTransform = -diffX;
             _rightImageTransform = 0;
         }
+
         if (e.Touches.Last().ClientX < _touchStartX)
         {
             _leftImageTransform = 0;
             _rightImageTransform = -diffX;
         }
+
         StateHasChanged();
 
     }
+
     private async Task HandleTouchEnd(TouchEventArgs e)
     {
         if (!_isSwiping) return;
@@ -375,26 +393,28 @@ else
         StateHasChanged();
 
     }
-    
+
     private void StartStatsTimer()
     {
         _timerSeconds = 10;
         _timerProgress = 100;
-    
+
         _statsTimer?.Dispose();
         _statsTimer = new Timer(TimerCallback, null, 0, 1000);
     }
+
     private void TimerCallback(object? state)
     {
         _timerSeconds--;
         _timerProgress = _timerSeconds * 10;
-    
+
         if (_timerSeconds <= 0)
         {
             _statsTimer?.Dispose();
             _statsTimer = null;
-        
-            InvokeAsync(() => {
+
+            InvokeAsync(() =>
+            {
                 _showingStats = false;
                 StateHasChanged();
             });
