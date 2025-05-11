@@ -80,14 +80,14 @@ Almost every part  of this website is work in progress, so expect bugs and pages
                     {
                         <div class="vote-result">
                             <p>You voted for @UserVote.VotedForVehicle!.Brand - @UserVote.VotedForVehicle.Model (@UserVote.VotedForVehicle.Year)</p>
-                            <p>If you want to vote on more options, <a href="/ThisOrThat/Vote">head over to the This or That voting page</a>.</p>
+                            <p>If you want to vote on more options, <NavLink href="/ThisOrThat/Vote">head over to the This or That voting page</NavLink>.</p>
 
                         </div>
                     }
                 </Authorized>
                 <NotAuthorized>
                     <div class="login-message">
-                        <p>Please <a href="/api/Auth/login">log in</a> to vote on today's matchup!</p>
+                        <p>Please <a href="/api/Auth/login" class="login-link">log in</a> to vote on today's matchup!</p>
                     </div>
                 </NotAuthorized>
             </AuthorizeView>
@@ -171,7 +171,7 @@ Almost every part  of this website is work in progress, so expect bugs and pages
 
     private string DailyVoteMeta()
     {
-        var vote = DailyVoteService.GetDailyVote();
-        return $"Current daily vote: {vote.VehicleSuggestion1.Brand} - {vote.VehicleSuggestion1.Description}({vote.VehicleSuggestion1.Year}) VS. {vote.VehicleSuggestion2.Brand} - {vote.VehicleSuggestion2.Description}({vote.VehicleSuggestion2.Year})";
+        DailyVote? vote = DailyVoteService.GetDailyVote();
+        return vote is null ? "Daily vote not generated" : $"Current daily vote: {vote.VehicleSuggestion1!.Brand} - {vote.VehicleSuggestion1.Description}({vote.VehicleSuggestion1.Year}) VS. {vote.VehicleSuggestion2!.Brand} - {vote.VehicleSuggestion2.Description}({vote.VehicleSuggestion2.Year})";
     }
 }
