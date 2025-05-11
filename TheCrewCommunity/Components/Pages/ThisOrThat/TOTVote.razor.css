@@ -329,7 +329,9 @@ h6 {
 .view-leaderboard-link:hover {
     text-decoration: underline;
 }
-
+.mobile-vote-buttons{
+    display: none;
+}
 
 @media (pointer: fine) {
     .swipe-hint {
@@ -356,30 +358,106 @@ h6 {
     .container{
         overflow-x: scroll;
     }
+    /* Vote buttons for mobile fallback */
+    .mobile-vote-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+    }
+
+    .mobile-vote-button {
+        background-color: #2a2a2a;
+        color: white;
+        padding: 12px 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        border: 1px solid yellow;
+        width: 48%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .mobile-vote-button i {
+        margin-right: 5px;
+    }
 }
 
 @media screen and (max-width: 768px){
-    .container{
+    .container {
         flex-direction: column;
-    }
-    .image-container{
-        width: 100%;
-        margin-bottom: 5px;
-    }
-    .stats-container {
-        border-radius: 0;
-        box-shadow: none;
+        overflow-x: hidden; /* Don't allow horizontal scrolling */
+        min-height: unset; /* Don't force a specific height on mobile */
+        max-height: unset;
+        height: auto;
+        position: relative;
+        padding-bottom: 10px;
     }
 
-    .vehicle-image img {
-        max-height: 250px;
+    .image-container {
+        width: 100%;
+        height: auto;
+        margin-bottom: 15px;
+        position: relative;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
+
+    .image-container img {
+        border-radius: 8px;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+    }
+
+    /* Improve the info area for better readability */
+    .image-container .info {
+        padding: 8px 0;
+    }
+
+    .image-container h4 {
+        font-size: 1.2rem;
+        margin: 5px 0;
+    }
+
+    /* Enhanced swipe hint */
+    .swipe-hint {
+        display: block;
+        text-align: center;
+        padding: 8px;
+        margin: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 0, 0.3);
+        font-style: normal;
+        font-weight: bold;
+    }
+
+    /* Visual feedback for swiping */
+    .image-container.swiping-left {
+        transform: translateX(-40px) rotate(-3deg);
+        opacity: 0.9;
+    }
+
+    .image-container.swiping-right {
+        transform: translateX(40px) rotate(3deg);
+        opacity: 0.9;
+    }
+
+    /* Stats container mobile adjustments */
+    .stats-container {
+        margin-top: 15px;
+    }
+
+    .stats-header h4 {
+        font-size: 1.3rem;
+    }
+
     .vehicle-display {
-        display: flex;
-        flex-direction: column; 
+        flex-direction: column;
         align-items: center;
         gap: 15px;
     }
+
     .vehicle-image {
         width: 100%;
         max-width: 350px;
@@ -389,5 +467,62 @@ h6 {
         width: 100%;
     }
 
+    .vehicle-image img {
+        max-height: 200px;
+    }
 
 }
+@media screen and (orientation: landscape) and (pointer: coarse) {
+    .container {
+        flex-direction: row; /* Keep images side by side in landscape */
+        flex-wrap: wrap; /* Allow wrapping for the vote buttons */
+        max-height: none; /* Remove fixed height constraints */
+        min-height: auto;
+        height: auto;
+        position: relative;
+        padding-bottom: 60px; /* Create space for buttons below */
+    }
+
+    .image-container {
+        width: 50%; /* Keep each image taking half the width */
+        height: 60vh; /* Use viewport height for images */
+        margin-bottom: 5px;
+    }
+
+    .image-container img {
+        object-fit: cover;
+        height: 100%;
+        max-height: 60vh;
+    }
+
+    /* Position the buttons horizontally below the images */
+    .mobile-vote-buttons {
+        display: flex;
+        flex-direction: row; /* Keep buttons horizontal */
+        justify-content: space-between;
+        width: 100%; /* Full width */
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+
+    .mobile-vote-button {
+        width: 48%; /* Allow space between buttons */
+        padding: 12px 15px;
+    }
+
+    /* Adjust swipe hints for landscape orientation */
+    .swipe-hint {
+        padding: 5px;
+        font-size: 0.8rem;
+    }
+
+    /* Ensure Google AdSense appears below everything */
+    :global(.ad-container) {
+        margin-top: 60px; /* Add space after the buttons */
+        width: 100%;
+    }
+}
+
