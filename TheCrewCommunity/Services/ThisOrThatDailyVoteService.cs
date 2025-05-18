@@ -107,7 +107,7 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
         if (uniquePairs.Count < 1) return null;
         // Get a list of daily vote pairs from the last 10 days
         var recentPairs = await dbContext.DailyVotes
-            .Where(dv => dv.Date > today.AddDays(-10) && dv.Date < today)
+            .Where(dv => dv.Date > today.AddDays(-1000) && dv.Date < today)
             .Select(dv => new HashSet<Guid>
             {
                 dv.VehicleSuggestion1Id,
@@ -142,14 +142,22 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
 
         var voteCounts = pairVotes.ToDictionary(
                 pv=> [pv.Pair.Id1, pv.Pair.id2], pv=>pv.Count, HashSet<Guid>.CreateSetComparer());
-        
-        (VehicleSuggestion, VehicleSuggestion) selectedPair = freePairs
-            .OrderBy(pair =>
-            {
+        var minVoteCount = freePairs
+            .Min(pair => {
                 var pairIds = new HashSet<Guid> { pair.Item1.Id, pair.Item2.Id };
                 return voteCounts.TryGetValue(pairIds, out int count) ? count : 0;
+            });
+
+        var candidatePairs = freePairs
+            .Where(pair => {
+                var pairIds = new HashSet<Guid> { pair.Item1.Id, pair.Item2.Id };
+                return (voteCounts.TryGetValue(pairIds, out int count) ? count : 0) == minVoteCount;
             })
-            .First();
+            .ToList();
+
+        var random = new Random();
+        (VehicleSuggestion, VehicleSuggestion) selectedPair = candidatePairs[random.Next(candidatePairs.Count)];
+
         // create database entry for this nonsense :)
         dbContext.Attach(selectedPair.Item1);
         dbContext.Attach(selectedPair.Item2);
