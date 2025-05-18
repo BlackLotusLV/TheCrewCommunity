@@ -36,7 +36,7 @@ public static partial class TimeoutCommand
             .WithColor(DiscordColor.Gold);
         DiscordInteractionResponseBuilder confirmationResponse= new DiscordInteractionResponseBuilder()
             .AddEmbed(embed)
-            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, "confirm", "Confirm"), new DiscordButtonComponent(DiscordButtonStyle.Danger, "cancel", "Cancel"));
+            .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Success, "confirm", "Confirm"), new DiscordButtonComponent(DiscordButtonStyle.Danger, "cancel", "Cancel"));
         DiscordMessage confirmationMessage = await ctx.EditResponseAsync(confirmationResponse);
         var interaction = await interactivity.WaitForButtonAsync(confirmationMessage, ctx.User);
         if (interaction.TimedOut)

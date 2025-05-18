@@ -10,8 +10,8 @@ public static class CreateFaqCommand
     {
         var customId = $"FAQ-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("New FAQ entry").WithCustomId(customId)
-            .AddComponents(new DiscordTextInputComponent("Question", "Question", required: true, style: DiscordTextInputStyle.Paragraph))
-            .AddComponents(new DiscordTextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: DiscordTextInputStyle.Paragraph));
+            .AddTextInputComponent(new DiscordTextInputComponent("Question", "Question", required: true, style: DiscordTextInputStyle.Paragraph))
+            .AddTextInputComponent(new DiscordTextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: DiscordTextInputStyle.Paragraph));
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);

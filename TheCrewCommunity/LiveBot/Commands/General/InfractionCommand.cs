@@ -47,7 +47,7 @@ public class InfractionCommand(IModeratorWarningService warningService)
             stopButton = new(DiscordButtonStyle.Danger, stopButtonId, "", false, new DiscordComponentEmoji("⏹️")),
             rightButton = new(DiscordButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
 
-        webhookBuilder.AddComponents(leftButton, stopButton, rightButton);
+        webhookBuilder.AddActionRowComponent(leftButton, stopButton, rightButton);
         DiscordMessage message = await ctx.EditResponseAsync(webhookBuilder);
 
         while (true)
@@ -91,7 +91,7 @@ public class InfractionCommand(IModeratorWarningService warningService)
 
             webhookBuilder
                 .AddEmbeds(new[] { embeds[0], embeds[currentPage] })
-                .AddComponents(leftButton, stopButton, rightButton);
+                .AddActionRowComponent(leftButton, stopButton, rightButton);
             await ctx.EditResponseAsync(webhookBuilder);
             await result.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         }

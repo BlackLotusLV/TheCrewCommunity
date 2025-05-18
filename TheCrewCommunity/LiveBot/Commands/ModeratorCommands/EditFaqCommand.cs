@@ -16,8 +16,8 @@ public static class EditFaqCommand
 
         var customId = $"FAQ-Editor-{ctx.User.Id}";
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("FAQ Editor").WithCustomId(customId)
-            .AddComponents(new DiscordTextInputComponent("Question", "Question", null, question, true, DiscordTextInputStyle.Paragraph))
-            .AddComponents(new DiscordTextInputComponent("Answer", "Answer", null, answer, true, DiscordTextInputStyle.Paragraph));
+            .AddTextInputComponent(new DiscordTextInputComponent("Question", "Question", null, question, true, DiscordTextInputStyle.Paragraph))
+            .AddTextInputComponent(new DiscordTextInputComponent("Answer", "Answer", null, answer, true, DiscordTextInputStyle.Paragraph));
 
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
 

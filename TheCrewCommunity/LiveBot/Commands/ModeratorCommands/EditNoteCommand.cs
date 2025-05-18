@@ -29,7 +29,7 @@ public static class EditNoteCommand
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
             .WithTitle("Edit users note")
             .WithCustomId(customId)
-            .AddComponents(new DiscordTextInputComponent("Content", "Content", null, oldNote, true, DiscordTextInputStyle.Paragraph));
+            .AddTextInputComponent(new DiscordTextInputComponent("Content", "Content", null, oldNote, true, DiscordTextInputStyle.Paragraph));
         await ctx.RespondWithModalAsync(modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);

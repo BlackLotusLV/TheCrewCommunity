@@ -39,7 +39,7 @@ public static class GetInfractionOnButton
             rightButton = new(DiscordButtonStyle.Primary, rightButtonId, "", false, new DiscordComponentEmoji("➡️"));
 
         webhookBuilder.AddEmbed(embeds[currentPage])
-            .AddComponents(leftButton, stopButton, rightButton);
+            .AddActionRowComponent(leftButton, stopButton, rightButton);
         DiscordMessage message = await e.Interaction.EditOriginalResponseAsync(webhookBuilder);
         
         while (true)
@@ -78,7 +78,7 @@ public static class GetInfractionOnButton
             }
             webhookBuilder
                 .AddEmbeds(new []{embeds[0],embeds[currentPage]})
-                .AddComponents(leftButton, stopButton, rightButton);
+                .AddActionRowComponent(leftButton, stopButton, rightButton);
             await e.Interaction.EditOriginalResponseAsync(webhookBuilder);
             await result.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
         }

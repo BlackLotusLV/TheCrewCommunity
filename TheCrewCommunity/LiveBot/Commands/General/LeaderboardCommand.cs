@@ -24,7 +24,7 @@ public class LeaderboardCommand(IDbContextFactory<LiveBotDbContext> dbContextFac
             new DiscordButtonComponent(DiscordButtonStyle.Primary, "right", "", false, new DiscordComponentEmoji("▶️"))
         ];
         string board = await GenerateLeaderboardAsync(ctx, page);
-        DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(board).AddComponents(buttons));
+        DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(board).AddActionRowComponent(buttons));
 
         var end = false;
         do

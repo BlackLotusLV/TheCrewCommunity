@@ -221,7 +221,9 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
             
             DiscordButtonComponent closeButton = new(DiscordButtonStyle.Danger, $"{CloseButtonPrefix}{newEntry.Id}", "Close", false, new DiscordComponentEmoji("✖️"));
 
-            await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(closeButton).WithContent($"**----------------------------------------------------**\n" +
+            await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder()
+                .AddActionRowComponent(closeButton)
+                .WithContent($"**----------------------------------------------------**\n" +
                             $"ModMail entry **open** with `{guild.Name}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {TimeoutMinutes} minutes after last message is sent.*\n" +
                             $"**Subject: No subject, Mod Mail Opened with button**"));
 
@@ -242,7 +244,7 @@ public class ModMailService(IDbContextFactory<LiveBotDbContext> dbContextFactory
             {
                 DiscordChannel modMailChannel = await guild.GetChannelAsync(modMailChannelId.Value);
                 await new DiscordMessageBuilder()
-                    .AddComponents(closeButton)
+                    .AddActionRowComponent(closeButton)
                     .AddEmbed(embed)
                     .SendAsync(modMailChannel);
             }
