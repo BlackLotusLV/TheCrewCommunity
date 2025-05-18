@@ -252,10 +252,7 @@ else
 
     private async Task<(VehicleSuggestion, VehicleSuggestion)?> GenerateRandomSuggestionVoteAsync()
     {
-        if (_vehicleSuggestions.Count < 2 || _uniquePairs is null)
-        {
-            return null;
-        }
+        if (_vehicleSuggestions.Count < 2 || _uniquePairs is null) return null;
 
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
         var existingPairs = dbContext.SuggestionVotes
@@ -265,12 +262,9 @@ else
         var availablePairs = _uniquePairs
             .Where(pair => !existingPairs.Contains([pair.Item1.Id, pair.Item2.Id]))
             .ToList();
-        if (availablePairs.Count is 0)
-        {
-            return null;
-        }
+        if (availablePairs.Count is 0) return null;
 
-        _progress = ((double)existingPairs.Count / (existingPairs.Count + availablePairs.Count)) * 100;
+        _progress = (double)existingPairs.Count / (existingPairs.Count + availablePairs.Count) * 100;
         var voteCounts = await dbContext.SuggestionVotes
             .GroupBy(v => new { v.VehicleSuggestion1Id, v.VehicleSuggestion2Id })
             .Select(g => new
