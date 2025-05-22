@@ -30,7 +30,8 @@ public class CreateAirlockCommand(IDbContextFactory<LiveBotDbContext> dbContextF
         DiscordMessageBuilder messageBuilder = new();
         messageBuilder.EnableV2Components()
             .AddTextDisplayComponent(new DiscordTextDisplayComponent(headText.ToString()))
-            .AddMediaGalleryComponent(new DiscordMediaGalleryItem(imagePath + "ubiName.png"), new DiscordMediaGalleryItem(imagePath + "airlockExample.webp"))
+            .AddMediaGalleryComponent(new DiscordMediaGalleryItem(imagePath + "ubiName.png"))
+            .AddMediaGalleryComponent(new DiscordMediaGalleryItem(imagePath + "airlockExample.webp"))
             .AddTextDisplayComponent("3️⃣ Click the \"Verify\" button below this message.")
             .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Primary, "Activate", "Verify"));
 
