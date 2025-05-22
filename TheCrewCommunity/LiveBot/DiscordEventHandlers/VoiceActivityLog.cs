@@ -14,24 +14,26 @@ public static class VoiceActivityLog
         var dbContextFactory = client.ServiceProvider.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();
         var databaseMethodService = client.ServiceProvider.GetRequiredService<IDatabaseMethodService>();
         await using LiveBotDbContext liveBotDbContext = await dbContextFactory.CreateDbContextAsync();
-        Guild guild = await liveBotDbContext.Guilds.FindAsync(e.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(e.Guild.Id));
-
+        DiscordGuild? discordGuild = await e.GetGuildAsync();
+        DiscordUser? discordUser = await e.GetUserAsync();
+        if (discordGuild is null || discordUser is null) return;
+        Guild guild = await liveBotDbContext.Guilds.FindAsync(discordGuild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(discordGuild.Id));
         if (guild.VoiceActivityLogChannelId == null) return;
-        DiscordChannel vcActivityLogChannel = await e.Guild.GetChannelAsync(guild.VoiceActivityLogChannelId.Value);
+        DiscordChannel vcActivityLogChannel = await discordGuild.GetChannelAsync(guild.VoiceActivityLogChannelId.Value);
         DiscordEmbedBuilder embed = new()
         {
             Author = new DiscordEmbedBuilder.EmbedAuthor
             {
-                IconUrl = e.User.AvatarUrl,
-                Name = $"{e.User.Username} ({e.User.Id})"
+                IconUrl = discordUser.AvatarUrl,
+                Name = $"{discordUser.Username} ({discordUser.Id})"
             },
             Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
             {
-                Url = e.User.AvatarUrl
+                Url = discordUser.AvatarUrl
             }
         };
-        DiscordChannel? beforeChannel = e.Before?.Channel ?? null; //ignore warning that ? is not needed, DSP issue, it needs to be there!
-        DiscordChannel? afterChannel = e.After.Channel ?? null;
+        DiscordChannel? beforeChannel = await e.Before.GetChannelAsync() ?? null;
+        DiscordChannel? afterChannel = await e.After.GetChannelAsync() ?? null;
         
         if (afterChannel is not null && beforeChannel is null)
         {

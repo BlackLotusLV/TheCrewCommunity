@@ -11,6 +11,8 @@ public class AddButtonCommand(InteractivityExtension interactivity)
     [Command("AddButton"), SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu), RequireGuild, RequirePermissions(DiscordPermission.ManageMessages)]
     public async Task AddButton(SlashCommandContext ctx, DiscordMessage targetMessage)
     {
+        await ctx.RespondAsync("Command broken. Don't use");
+        /*
         if (targetMessage.Author is null || targetMessage.Author != ctx.Client.CurrentUser)
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("To add a button, the bot must be the author of the message. Try again").AsEphemeral());
@@ -23,9 +25,9 @@ public class AddButtonCommand(InteractivityExtension interactivity)
             Title = "Button Parameters",
             CustomId = customId
         };
-        response.AddComponents(new DiscordTextInputComponent("Custom ID", "customId"));
-        response.AddComponents(new DiscordTextInputComponent("Label", "label"));
-        response.AddComponents(new DiscordTextInputComponent("Emoji", "emoji", required: false));
+        response.AddTextInputComponent(new DiscordTextInputComponent("Custom ID", "customId"));
+        response.AddTextInputComponent(new DiscordTextInputComponent("Label", "label"));
+        response.AddTextInputComponent(new DiscordTextInputComponent("Emoji", "emoji", required: false));
 
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, response);
         var modalResponse = await interactivity.WaitForModalAsync(customId, ctx.User);
@@ -44,7 +46,7 @@ public class AddButtonCommand(InteractivityExtension interactivity)
 
         if (targetMessage.Components is null || targetMessage.Components.Count == 0)
         {
-            modified.AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
+            modified.AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
         }
 
         if (targetMessage.Components is not null && targetMessage.Components.Count > 0)
@@ -53,13 +55,13 @@ public class AddButtonCommand(InteractivityExtension interactivity)
             {
                 if (row.Components.Count == 5)
                 {
-                    modified.AddComponents(row);
+                    modified.AddActionRowComponent(row);
                 }
                 else
                 {
                     var buttons = row.Components.ToList();
                     buttons.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, modalResponse.Result.Values["customId"], modalResponse.Result.Values["label"], emoji: emoji));
-                    modified.AddComponents(buttons);
+                    modified.addcompo(buttons.ToArray());
                 }
             }
         }
@@ -67,5 +69,6 @@ public class AddButtonCommand(InteractivityExtension interactivity)
         await targetMessage.ModifyAsync(modified);
         await modalResponse.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().WithContent($"Button added to the message. **Custom ID:** {modalResponse.Result.Values["customId"]}").AsEphemeral());
+        */
     }
 }

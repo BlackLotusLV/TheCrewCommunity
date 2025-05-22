@@ -41,7 +41,7 @@ public static class DeleteNoteCommand
         };
         DiscordWebhookBuilder responseBuilder = new DiscordWebhookBuilder()
             .AddEmbed(embed)
-            .AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Success, "yes", "Yes"),
+            .AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Success, "yes", "Yes"),
                 new DiscordButtonComponent(DiscordButtonStyle.Danger, "no", "No"));
         
         DiscordMessage message = await ctx.EditResponseAsync(responseBuilder);

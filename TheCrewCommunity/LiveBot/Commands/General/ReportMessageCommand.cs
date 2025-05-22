@@ -34,7 +34,7 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
         DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
             .WithTitle("Report Message")
             .WithCustomId("report_message")
-            .AddComponents(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",null,true,DiscordTextInputStyle.Paragraph)
+            .AddTextInputComponent(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",null,true,DiscordTextInputStyle.Paragraph)
             );
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,modal);
         
@@ -50,7 +50,7 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
         
         DiscordMessageBuilder reportMessage = new DiscordMessageBuilder()
             .AddEmbed(reportEmbed)
-            .AddComponents(raiseHandButton);
+            .AddActionRowComponent(raiseHandButton);
             
         DiscordChannel reportChannel = await ctx.Guild.GetChannelAsync(guild.UserReportsChannelId.Value);
         await reportChannel.SendMessageAsync(reportMessage);
