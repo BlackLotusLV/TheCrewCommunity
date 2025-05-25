@@ -1,0 +1,35 @@
+﻿@page "/TOTVoterStats"
+@using TheCrewCommunity.Services
+@inject IThisOrThatLeaderboardService LeaderboardService
+
+<div class="header-container">
+    <h3>TOTVoterStats</h3>
+    <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
+</div>
+<div class="content-container">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Votes</th>
+                    <th>Completion</th>
+                </tr>
+            </thead>
+            <tbody>
+            <Virtualize Items="@LeaderboardService.GetVoterList()" Context="entry" ItemSize="50" OverscanCount="20">
+                <tr>
+                    <td>@entry.Rank</td>
+                    <td>@entry.Username</td>
+                    <td>@entry.TotalMatches</td>
+                    <td>@entry.Percent.ToString("P2")</td>
+                </tr>
+            </Virtualize>
+            </tbody>
+        </table>
+    </div>
+</div>
+@code {
+    
+}

@@ -10,6 +10,7 @@ public interface IThisOrThatLeaderboardService
     List<ThisOrThatLeaderboardService.VoterEntry> GetVoterList();
     DateTime GetNextRefreshTime();
     Task UpdateLeaderboardAsync();
+    Task UpdateVoterListAsync();
 }
 
 public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<ThisOrThatLeaderboardService> logger) : IHostedService, IThisOrThatLeaderboardService, IDisposable
@@ -24,6 +25,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         logger.LogInformation("ThisOrThatLeaderboardService is starting.");
         await UpdateLeaderboardAsync();
+        await UpdateVoterListAsync();
         _timer = new Timer(RefreshLeaderboardCallback, null, _updateInterval, _updateInterval);
         _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
     }
@@ -125,7 +127,6 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         int totalSuggestions = await dbContext.VehicleSuggestions.CountAsync();
         int totalMatchups = totalSuggestions * (totalSuggestions + 1) / 2;
-        
         _voters = dbContext.ApplicationUsers
             .Include(x=>x.SuggestionVotes)
             .ThenInclude(x=>x.VotedForVehicle)
@@ -136,7 +137,6 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
                 Username = appUser.GlobalUsername ?? string.Empty
             })
             .ToList();
-
         for (var i = 0; i < _voters.Count; i++)
         {
             _voters[i].Rank = i + 1;
@@ -155,8 +155,8 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     public class VoterEntry
     {
         public int Rank { get; set; }
-        public required string Username { get; set; }
-        public required float Percent { get; set; }
-        public required int TotalMatches { get; set; }
+        public required string Username { get; init; }
+        public required float Percent { get; init; }
+        public required int TotalMatches { get; init; }
     }
 }
