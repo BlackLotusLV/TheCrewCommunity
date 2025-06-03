@@ -9,12 +9,14 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.WebData
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject IHttpClientFactory HttpClientFactory
 @inject ILogger<Registering> Logger
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @rendermode InteractiveServer
 
 
@@ -156,7 +158,9 @@ else
 
     private async Task<bool> CreateAndUpdateUser(AuthDiscordUser discordUser, AuthDiscordGuild[] userGuilds)
     {
-        Logger.LogDebug("Looking up User of ID:{UserId}", discordUser.Id);
+        Logger.LogDebug("Looking up Discord User of ID:{UserId}", discordUser.Id);
+        await CreateUserIfNull(discordUser.Id);
+        Logger.LogDebug("Looking up App User of ID:{UserId}", discordUser.Id);
         ApplicationUser? appUser = await UserManager.Users.FirstOrDefaultAsync(x => x.DiscordId == discordUser.Id);
 
         string avatarUrl = AvatarUrlCreator(discordUser);
@@ -185,6 +189,17 @@ else
         Logger.LogDebug("Saving user data to database via user manager");
         IdentityResult saveResult = await UserManager.UpdateAsync(appUser);
         return saveResult.Succeeded;
+    }
+
+    private async Task CreateUserIfNull(ulong discordId)
+    {
+        LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        User? user = await dbContext.Users.FindAsync(discordId);
+        if (user is null)
+        {
+            await dbContext.Users.AddAsync(new User(discordId));
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     private static string AvatarUrlCreator(AuthDiscordUser user)
