@@ -14,13 +14,13 @@
             <thead>
             <tr class="table-row">
                 <th>Rank</th>
-                <th>Name</th>
+                <th style="width: 100%">Name</th>
                 <th>Votes</th>
                 <th>Completion</th>
             </tr>
             </thead>
             <tbody>
-            <Virtualize Items="@LeaderboardService.GetVoterList()" Context="entry" ItemSize="50" OverscanCount="20">
+            <Virtualize Items="@LeaderboardService.GetVoterList()" Context="entry" ItemSize="20" OverscanCount="50">
                 <tr>
                     <td>@entry.Rank</td>
                     <td>@entry.Username</td>
