@@ -7,13 +7,16 @@ namespace TheCrewCommunity.Services;
 public interface IThisOrThatLeaderboardService
 {
     List<ThisOrThatLeaderboardService.LeaderboardEntry> GetLeaderboard();
+    List<ThisOrThatLeaderboardService.VoterEntry> GetVoterList();
     DateTime GetNextRefreshTime();
     Task UpdateLeaderboardAsync();
+    Task UpdateVoterListAsync();
 }
 
 public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<ThisOrThatLeaderboardService> logger) : IHostedService, IThisOrThatLeaderboardService, IDisposable
 {
     private List<LeaderboardEntry> _leaderboard = [];
+    private List<VoterEntry> _voters = [];
     private Timer? _timer;
     private readonly TimeSpan _updateInterval = TimeSpan.FromMinutes(5);
     private DateTime _nextRefresh;
@@ -22,6 +25,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         logger.LogInformation("ThisOrThatLeaderboardService is starting.");
         await UpdateLeaderboardAsync();
+        await UpdateVoterListAsync();
         _timer = new Timer(RefreshLeaderboardCallback, null, _updateInterval, _updateInterval);
         _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
     }
@@ -49,12 +53,13 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         try
         {
-            logger.LogInformation("Refreshing leaderboard");
+            logger.LogInformation("Refreshing leaderboards");
             await UpdateLeaderboardAsync();
+            await UpdateVoterListAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error refreshing leaderboard");
+            logger.LogError(ex, "Error refreshing leaderboards");
         }
     }
 
@@ -80,6 +85,10 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     public List<LeaderboardEntry> GetLeaderboard()
     {
         return _leaderboard;
+    }
+    public List<VoterEntry> GetVoterList()
+    {
+        return _voters;
     }
 
     public async Task UpdateLeaderboardAsync()
@@ -113,6 +122,27 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
     }
 
+    public async Task UpdateVoterListAsync()
+    {
+        await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+        int totalSuggestions = await dbContext.VehicleSuggestions.CountAsync();
+        int totalMatchups = totalSuggestions / 2;
+        _voters = dbContext.ApplicationUsers
+            .Include(x=>x.SuggestionVotes)
+            .ThenInclude(x=>x.VotedForVehicle)
+            .Select(appUser => new VoterEntry
+            {
+                TotalMatches = appUser.SuggestionVotes.Count,
+                Percent = (float)appUser.SuggestionVotes.Count / totalMatchups,
+                Username = appUser.GlobalUsername ?? string.Empty
+            })
+            .ToList();
+        for (var i = 0; i < _voters.Count; i++)
+        {
+            _voters[i].Rank = i + 1;
+        }
+    }
+
     public class LeaderboardEntry
     {
         public int Rank { get; set; }
@@ -120,5 +150,13 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         public int TotalMatches { get; init; }
         public int TotalWins { get; init; }
         public double WinRatio { get; set; }
+    }
+
+    public class VoterEntry
+    {
+        public int Rank { get; set; }
+        public required string Username { get; init; }
+        public required float Percent { get; init; }
+        public required int TotalMatches { get; init; }
     }
 }

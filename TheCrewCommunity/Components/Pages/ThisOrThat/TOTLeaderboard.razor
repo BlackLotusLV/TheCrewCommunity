@@ -41,7 +41,7 @@
             }
             else
             {
-                <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="10">
+                <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="20">
                     <tr class="table-row" @onmouseover="() => ShowPreview(entry)">
                         <td>@entry.Rank</td>
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
