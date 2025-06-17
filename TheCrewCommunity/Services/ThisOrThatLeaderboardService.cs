@@ -126,7 +126,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         int totalSuggestions = await dbContext.VehicleSuggestions.CountAsync();
-        int totalMatchups = totalSuggestions * (totalSuggestions + 1) / 2;
+        int totalMatchups = totalSuggestions / 2;
         _voters = dbContext.ApplicationUsers
             .Include(x=>x.SuggestionVotes)
             .ThenInclude(x=>x.VotedForVehicle)

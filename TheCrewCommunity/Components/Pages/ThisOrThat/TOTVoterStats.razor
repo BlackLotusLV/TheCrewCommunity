@@ -1,21 +1,23 @@
-﻿@page "/TOTVoterStats"
+﻿@page "/ThisOrThat/VoterStats"
 @using TheCrewCommunity.Services
 @inject IThisOrThatLeaderboardService LeaderboardService
+@inject IHttpContextAccessor HttpContextAccessor
+@rendermode InteractiveServer
 
 <div class="header-container">
-    <h3>TOTVoterStats</h3>
+    <h3>Voter Leaderboard</h3>
     <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
 </div>
 <div class="content-container">
     <div class="table-container">
         <table>
             <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Votes</th>
-                    <th>Completion</th>
-                </tr>
+            <tr class="table-row">
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Votes</th>
+                <th>Completion</th>
+            </tr>
             </thead>
             <tbody>
             <Virtualize Items="@LeaderboardService.GetVoterList()" Context="entry" ItemSize="50" OverscanCount="20">
@@ -30,6 +32,20 @@
         </table>
     </div>
 </div>
+@if (!_isMobile)
+{
+    <GoogleAdSense AdsFormat="horizontal" Slot="8708810204" Style="display:inline-block;width:700px;height:100px" FullWidthResponsive="false"/>
+}
 @code {
-    
+    bool _isMobile = false;
+    protected override Task OnInitializedAsync()
+    {
+        var userAgent = HttpContextAccessor?.HttpContext?.Request.Headers["User-Agent"].ToString();
+        if (userAgent != null && (userAgent.Contains("Android") || userAgent.Contains("iPhone")))
+        {
+            _isMobile = true;
+        }
+
+        return Task.CompletedTask;
+    }
 }
