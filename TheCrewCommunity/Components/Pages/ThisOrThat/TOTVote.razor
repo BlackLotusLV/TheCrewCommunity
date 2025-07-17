@@ -1,4 +1,5 @@
 ﻿@page "/ThisOrThat/Vote"
+@page "/ThisOrThat/Vote/{StatsTimerSeconds:int?}"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -149,6 +150,7 @@ else
 
 @code {
     [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+    [Parameter] public int? StatsTimerSeconds { get; set; }
     List<VehicleSuggestion> _vehicleSuggestions = null!;
     List<(VehicleSuggestion, VehicleSuggestion)>? _uniquePairs;
     private ApplicationUser CurrentUser { get; set; } = null!;
@@ -158,6 +160,7 @@ else
     const int SwipeThreshold = 50;
     private VehicleSuggestion _lastSelection = null!;
     private int _timerSeconds = 10;
+    private int _configuredTimerSeconds = 10;
     private double _timerProgress = 100;
     private Timer? _statsTimer;
     private int _lastMatchupFor, _lastMatchupAgainst, _lastTotalFor, _lastTotalAgainst, _userTotalVotes, _totalVehicles, _imageWidth;
@@ -167,6 +170,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        _configuredTimerSeconds = StatsTimerSeconds ?? 10;
+        if (_configuredTimerSeconds < 1) _configuredTimerSeconds = 1;
+        if (_configuredTimerSeconds > 60) _configuredTimerSeconds = 60;
+
         if (AuthenticationState is null)
         {
             throw new Exception("Authentication state was null, stopping");
@@ -414,7 +421,7 @@ else
 
     private void StartStatsTimer()
     {
-        _timerSeconds = 10;
+        _timerSeconds = _configuredTimerSeconds;
         _timerProgress = 100;
 
         _statsTimer?.Dispose();
@@ -424,7 +431,7 @@ else
     private void TimerCallback(object? state)
     {
         _timerSeconds--;
-        _timerProgress = _timerSeconds * 10;
+        _timerProgress = (_timerSeconds * 100.0) / _configuredTimerSeconds;
 
         if (_timerSeconds <= 0)
         {
