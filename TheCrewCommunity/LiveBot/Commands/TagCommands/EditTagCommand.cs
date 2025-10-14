@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -40,16 +41,16 @@ public static class EditTagCommand
             return;
         }
 
-        DiscordInteractionResponseBuilder responseBuilder = new();
+        DiscordModalBuilder responseBuilder = new();
 
         const string modalId = "tag_edit";
         responseBuilder
             .WithTitle("Edit Tag")
             .WithCustomId(modalId)
-            .AddTextInputComponent(new DiscordTextInputComponent("Name", "name", value: tag.Name, min_length: 1))
-            .AddTextInputComponent(new DiscordTextInputComponent("Content", "content", value: tag.Content, min_length: 1, style: DiscordTextInputStyle.Paragraph));
+            .AddTextInput(new DiscordTextInputComponent("Name", "name", value: tag.Name, min_length: 1), "Name")
+            .AddTextInput(new DiscordTextInputComponent("Content", "content", value: tag.Content, min_length: 1, style: DiscordTextInputStyle.Paragraph), "Content");
 
-        await ctx.RespondAsync(responseBuilder);
+        await ctx.RespondWithModalAsync(responseBuilder);
         
         var result = await interactivity.WaitForModalAsync(modalId,ctx.User);
         if (result.TimedOut)
@@ -58,8 +59,10 @@ public static class EditTagCommand
             return;
         }
         await result.Result.Interaction.DeferAsync(true);
-        string name = result.Result.Values["name"];
-        string content = result.Result.Values["content"];
+        result.Result.Values.TryGetValue("name",out IModalSubmission? nameValue);
+        result.Result.Values.TryGetValue("content",out IModalSubmission? contentValue);
+        string name = nameValue is TextInputModalSubmission textInput ? textInput.Value : tag.Name;
+        string content = contentValue is TextInputModalSubmission textInput2 ? textInput2.Value : tag.Content;
 
         if (tags.All(x => x.Name != name))
         {

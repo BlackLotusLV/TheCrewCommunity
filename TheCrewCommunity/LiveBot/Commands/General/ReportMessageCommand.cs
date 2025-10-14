@@ -31,11 +31,10 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             return;
         }
         
-        DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
+        DiscordModalBuilder modal = new DiscordModalBuilder()
             .WithTitle("Report Message")
             .WithCustomId("report_message")
-            .AddTextInputComponent(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",null,true,DiscordTextInputStyle.Paragraph)
-            );
+            .AddTextInput(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",false, DiscordTextInputStyle.Paragraph),"Complaint");
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,modal);
         
         var response = await interactivity.WaitForModalAsync(modal.CustomId, ctx.User);

@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -26,11 +27,11 @@ public static class CreateTagCommand
         }
         
         const string modalId = "tag_create";
-        DiscordInteractionResponseBuilder responseBuilder = new();
+        DiscordModalBuilder responseBuilder = new();
         responseBuilder
             .WithTitle($"Create tag Named {name}")
             .WithCustomId(modalId)
-            .AddTextInputComponent(new DiscordTextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: DiscordTextInputStyle.Paragraph));
+            .AddTextInput(new DiscordTextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: DiscordTextInputStyle.Paragraph), "Content");
         await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, responseBuilder);
 
         var modalInteractivity = await interactivity.WaitForModalAsync(modalId,ctx.User);
@@ -40,7 +41,8 @@ public static class CreateTagCommand
             return;
         }
         await modalInteractivity.Result.Interaction.DeferAsync(true);
-        string content = modalInteractivity.Result.Values["content"];
+        modalInteractivity.Result.Values.TryGetValue("Content", out IModalSubmission? contentValue);
+        string content = contentValue is TextInputModalSubmission textInput ? textInput.Value : "";
         
         Tag tag = new()
         {
