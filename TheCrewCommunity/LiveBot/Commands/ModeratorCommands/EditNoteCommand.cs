@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
@@ -26,15 +27,16 @@ public static class EditNoteCommand
 
         string oldNote = infraction.Reason??"*No note content*";
         var customId = $"EditNote-{ctx.User.Id}";
-        DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder()
+        DiscordModalBuilder modal = new DiscordModalBuilder()
             .WithTitle("Edit users note")
             .WithCustomId(customId)
-            .AddTextInputComponent(new DiscordTextInputComponent("Content", "Content", null, oldNote, true, DiscordTextInputStyle.Paragraph));
+            .AddTextInput(new DiscordTextInputComponent("Content", "Content", oldNote, true, DiscordTextInputStyle.Paragraph), "Content");
         await ctx.RespondWithModalAsync(modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (response.TimedOut) return;
-        infraction.Reason = response.Result.Values["Content"];
+        response.Result.Values.TryGetValue("Content", out IModalSubmission? contentValue);
+        infraction.Reason = contentValue is TextInputModalSubmission textInput ? textInput.Value : "";
         dbContext.Infractions.Update(infraction);
         await dbContext.SaveChangesAsync();
         await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
