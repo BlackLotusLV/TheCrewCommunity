@@ -23,9 +23,15 @@ public static class AddNoteCommand
         }
         await databaseMethodService.AddInfractionsAsync(new Infraction(ctx.User.Id, user.Id, ctx.Guild.Id, note, false, InfractionType.Note));
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})"));
+        StringBuilder confirmationBuilder = new();
+        confirmationBuilder.AppendLine($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})");
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
         Guild guild = await dbContext.Guilds.FindAsync(ctx.Guild.Id) ?? await databaseMethodService.AddGuildAsync(new Guild(ctx.Guild.Id));
+        if (guild.ModerationLogChannelId == 0)
+        {
+            confirmationBuilder.AppendLine("This server is not set up for logging moderation actions. Contact an Admin to resolve the issue.");
+        }
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(confirmationBuilder.ToString()));
         DiscordChannel channel = await ctx.Guild.GetChannelAsync(Convert.ToUInt64(guild.ModerationLogChannelId));
         StringBuilder descriptionBuilder = new();
         descriptionBuilder.AppendLine("# 📝 Note Added")
