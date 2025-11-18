@@ -17,5 +17,6 @@ public class DailyVoteConfig : IEntityTypeConfiguration<DailyVote>
             .HasForeignKey(dv=>dv.VehicleSuggestion2Id);
 
         builder.HasIndex(dv => dv.Date).IsUnique();
+        builder.Property(x=>x.IsPostedOnDiscord).HasDefaultValue(false);
     }
 }

@@ -20,7 +20,7 @@ public class Guild
     public ulong? DeleteLogChannelId
     {
         get => _deleteLogChannelId;
-        init => _deleteLogChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _deleteLogChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _deleteLogChannelId;
@@ -28,7 +28,7 @@ public class Guild
     public ulong? UserTrafficChannelId
     {
         get => _userTrafficChannelId;
-        init => _userTrafficChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _userTrafficChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _userTrafficChannelId;
@@ -36,7 +36,7 @@ public class Guild
     public ulong? ModerationLogChannelId
     {
         get => _moderationLogChannelId;
-        init => _moderationLogChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _moderationLogChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _moderationLogChannelId;
@@ -44,7 +44,7 @@ public class Guild
     public ulong? ModMailChannelId
     {
         get => _modMailChannelId;
-        init => _modMailChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _modMailChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _modMailChannelId;
@@ -53,7 +53,7 @@ public class Guild
     public ulong? VoiceActivityLogChannelId
     {
         get => _voiceActivityLogChannelId;
-        init => _voiceActivityLogChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _voiceActivityLogChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _voiceActivityLogChannelId;
@@ -61,7 +61,7 @@ public class Guild
     public ulong? EventLogChannelId
     {
         get => _eventLogChannelId;
-        init => _eventLogChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _eventLogChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _eventLogChannelId;
@@ -71,7 +71,7 @@ public class Guild
     public ulong? WelcomeChannelId
     {
         get => _welcomeChannelId;
-        init => _welcomeChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _welcomeChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _welcomeChannelId;
@@ -84,7 +84,7 @@ public class Guild
     public ulong? RoleId
     {
         get => _roleId;
-        init => _roleId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _roleId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _roleId;
@@ -92,7 +92,7 @@ public class Guild
     public ulong? WhiteListRoleId
     {
         get => _whiteListRoleId;
-        init => _whiteListRoleId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _whiteListRoleId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _whiteListRoleId;
@@ -100,17 +100,24 @@ public class Guild
     public ulong? UserReportsChannelId
     {
         get => _userReportsChannelId;
-        init => _userReportsChannelId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _userReportsChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
     private readonly ulong? _userReportsChannelId;
 
     public ulong? SupporterRoleId
     {
         get => _supporterRoleId;
-        init => _supporterRoleId = value.HasValue ? Convert.ToUInt64(value) : default(ulong?);
+        init => _supporterRoleId = value.HasValue ? Convert.ToUInt64(value) : null;
     }
 
     private readonly ulong? _supporterRoleId;
+
+    public ulong? ThisOrThatDailyChannelId
+    {
+        get => _thisOrThatDailyChannelId;
+        init=> _thisOrThatDailyChannelId = value.HasValue ? Convert.ToUInt64(value) : null;
+    }
+    private readonly ulong? _thisOrThatDailyChannelId;
 
     public ICollection<GuildUser>? GuildUsers { get; init; }
     public ICollection<RankRoles>? RankRoles { get; init; }
