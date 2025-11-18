@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
 using TheCrewCommunity.Data.WebData;
 using TheCrewCommunity.Data.WebData.ThisOrThat;
@@ -26,6 +27,7 @@ public interface IDatabaseMethodService
     Task<int> GetImageLikesCountAsync(Guid imageId);
     Task DeleteImageAsync(Guid imageId);
     Task AddVehicleSuggestionAsync(Guid imageId, string brand, string model, string year, string? description = null);
+    Task<ApplicationUser> AddApplicationUserAsync(ApplicationUser applicationUser);
 }
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
@@ -36,6 +38,20 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
         Guild guildEntity= (await context.Guilds.AddAsync(guild)).Entity;
         await context.SaveChangesAsync();
         return guildEntity;
+    }
+
+    public async Task<ApplicationUser> AddApplicationUserAsync(ApplicationUser applicationUser)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        if (await context.Users.FindAsync(applicationUser.DiscordId)==null)
+        {
+            await AddUserAsync(new User(applicationUser.DiscordId));
+        }
+        ApplicationUser? appUser = await context.ApplicationUsers.FirstOrDefaultAsync(x=>x.DiscordId==applicationUser.DiscordId);
+        if (appUser != null) return appUser;
+        appUser = (await context.ApplicationUsers.AddAsync(applicationUser)).Entity;
+        await context.SaveChangesAsync();
+        return appUser;
     }
 
     public async Task<User> AddUserAsync(User user)

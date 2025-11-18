@@ -20,6 +20,7 @@ public static class HandleEvent
         var moderatorLoggingService = client.ServiceProvider.GetRequiredService<IModeratorLoggingService>();
         var modMailService = client.ServiceProvider.GetRequiredService<IModMailService>();
         var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
+        var thisOrThatDailyVoteService = client.ServiceProvider.GetRequiredService<IThisOrThatDailyVoteService>();
         string customId = eventArgs.Interaction.Data.CustomId;
         Task task = customId switch
         {
@@ -29,6 +30,7 @@ public static class HandleEvent
             _ when customId.Contains(warningService.UserInfoButtonPrefix) => GetUserInfoOnButton.OnButtonClick(client, eventArgs),
             _ when customId.Contains(ButtonRolePrefix) => GetRole.OnButtonClickAsync(client,eventArgs),
             _ when customId.Contains(WhiteListPrefix) => WhiteListCheck.OnButtonClick(client,eventArgs),
+            _ when customId.Contains("DailyVote")=>thisOrThatDailyVoteService.Vote(client, eventArgs),
             _ => Task.CompletedTask
         };
         await task;
