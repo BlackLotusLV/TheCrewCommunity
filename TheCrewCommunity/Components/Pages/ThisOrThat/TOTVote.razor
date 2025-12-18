@@ -313,6 +313,14 @@ else
             VotedForVehicleId = selected.Id,
         };
         await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        if (dbContext.SuggestionVotes.Any(x=>x.UserId==CurrentUser.Id && ((x.VehicleSuggestion1Id==CurrentChoice.Value.Item1.Id && x.VehicleSuggestion2Id==CurrentChoice.Value.Item2.Id)||(x.VehicleSuggestion1Id==CurrentChoice.Value.Item2.Id && x.VehicleSuggestion2Id==CurrentChoice.Value.Item1.Id))))
+        {
+            _addingVote = false;
+            GenerateUniquePairList();
+            CurrentChoice = await GenerateRandomSuggestionVoteAsync();
+            ResetSwipeState();
+            return;
+        }
         dbContext.SuggestionVotes.Add(vote);
         await dbContext.SaveChangesAsync();
         var matchupVotes = await dbContext.SuggestionVotes.Where(x => x.VehicleSuggestion1Id == CurrentChoice.Value.Item1.Id && x.VehicleSuggestion2Id == CurrentChoice.Value.Item2.Id || x.VehicleSuggestion1Id == CurrentChoice.Value.Item2.Id && x.VehicleSuggestion2Id == CurrentChoice.Value.Item1.Id).ToListAsync();
