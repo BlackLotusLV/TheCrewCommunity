@@ -28,10 +28,29 @@ public interface IDatabaseMethodService
     Task DeleteImageAsync(Guid imageId);
     Task AddVehicleSuggestionAsync(Guid imageId, string brand, string model, string year, string? description = null);
     Task<ApplicationUser> AddApplicationUserAsync(ApplicationUser applicationUser);
+    Task<SuggestionVote> AddSuggestionVoteAsync(SuggestionVote vote);
 }
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
 {
+    public async Task<SuggestionVote> AddSuggestionVoteAsync(SuggestionVote vote)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        SuggestionVote? existingVote = await context.SuggestionVotes
+            .Include(x=>x.VotedForVehicle)
+            .FirstOrDefaultAsync(x=>
+            x.UserId == vote.UserId &&
+            (
+                (x.VehicleSuggestion1Id == vote.VehicleSuggestion1Id && x.VehicleSuggestion2Id == vote.VehicleSuggestion2Id) ||
+                (x.VehicleSuggestion1Id == vote.VehicleSuggestion2Id && x.VehicleSuggestion2Id == vote.VehicleSuggestion1Id)
+            )
+        );
+        Console.WriteLine(existingVote==null);
+        if (existingVote is not null) return existingVote;
+        context.SuggestionVotes.Add(vote);
+        await context.SaveChangesAsync();
+        return vote;
+    }
     public async Task<Guild> AddGuildAsync(Guild guild)
     {
         await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
