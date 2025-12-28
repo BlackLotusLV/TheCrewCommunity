@@ -1,6 +1,7 @@
 ﻿@inject NavigationManager NavigationManager
 @inject IThisOrThatDailyVoteService DailyVoteService
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject IDatabaseMethodService DatabaseMethodService
 @page "/"
 @using System.Security.Claims
 @using TheCrewCommunity.Services
@@ -154,13 +155,8 @@ Almost every part  of this website is work in progress, so expect bugs and pages
                 VehicleSuggestion2Id = _dailyVote.VehicleSuggestion2Id,
                 VotedForVehicleId = vehicleId
             };
-            await using LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
-            dbContext.SuggestionVotes.Add(vote);
-            await dbContext.SaveChangesAsync();
-            UserVote = await dbContext.SuggestionVotes
-                .Include(x => x.VotedForVehicle)
-                .FirstOrDefaultAsync(x => x.Id == vote.Id);
-            DailyVotes.Add(vote);
+            UserVote = await DatabaseMethodService.AddSuggestionVoteAsync(vote);
+            DailyVotes.Add(UserVote);
         }
         finally
         {
