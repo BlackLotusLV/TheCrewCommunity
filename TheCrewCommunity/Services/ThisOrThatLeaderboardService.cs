@@ -95,21 +95,88 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
 
-        _leaderboard = dbContext.VehicleSuggestions
-            .Include(x => x.VotesFor)
-            .AsEnumerable()
-            .Select(suggestion =>
+        List<VehicleSuggestion> suggestions = await dbContext.VehicleSuggestions.ToListAsync();
+        List<SuggestionVote> allVotes = await dbContext.SuggestionVotes.ToListAsync();
+
+        Dictionary<Guid, int> winsMap = suggestions.ToDictionary(s => s.Id, _ => 0);
+        Dictionary<Guid, int> matchesMap = suggestions.ToDictionary(s => s.Id, _ => 0);
+        foreach (SuggestionVote vote in allVotes)
+        {
+            if (winsMap.ContainsKey(vote.VotedForVehicleId))
             {
-                using LiveBotDbContext internalDbContext = dbContextFactory.CreateDbContext();
-                var entry = new LeaderboardEntry
+                winsMap[vote.VotedForVehicleId]++;
+            }
+
+            if (matchesMap.ContainsKey(vote.VehicleSuggestion1Id))
+            {
+                matchesMap[vote.VehicleSuggestion1Id]++;
+            }
+
+            if (matchesMap.ContainsKey(vote.VehicleSuggestion2Id))
+            {
+                matchesMap[vote.VehicleSuggestion2Id]++;
+            }
+        }
+
+        var leaderboardEntries = suggestions.Select(suggestion =>
+        {
+            var entry = new LeaderboardEntry
+            {
+                VehicleSuggestion = suggestion,
+                TotalWins = winsMap[suggestion.Id],
+                TotalMatches = matchesMap[suggestion.Id]
+            };
+            entry.WinRatio = entry.TotalMatches > 0 ? (double)entry.TotalWins / entry.TotalMatches : 0;
+            return entry;
+        }).ToList();
+
+        // V2 Ranking logic
+        var matchups = allVotes.GroupBy(v =>
+        {
+            var id1 = v.VehicleSuggestion1Id;
+            var id2 = v.VehicleSuggestion2Id;
+            return id1.CompareTo(id2) < 0 ? (id1, id2) : (id2, id1);
+        }).ToList();
+
+        Dictionary<Guid, double> v2PointsMap = suggestions.ToDictionary(s => s.Id, _ => 0.0);
+
+        foreach (var matchup in matchups)
+        {
+            Guid vehicle1Id = matchup.Key.Item1;
+            Guid vehicle2Id = matchup.Key.Item2;
+
+            int vehicle1Votes = 0;
+            int vehicle2Votes = 0;
+            foreach (SuggestionVote vote in matchup)
+            {
+                if (vote.VotedForVehicleId == vehicle1Id)
                 {
-                    VehicleSuggestion = suggestion,
-                    TotalWins = suggestion.VotesFor!.Count(vote => vote.VotedForVehicleId == suggestion.Id),
-                    TotalMatches = internalDbContext.SuggestionVotes.Count(vote => vote.VehicleSuggestion1Id == suggestion.Id || vote.VehicleSuggestion2Id == suggestion.Id)
-                };
-                entry.WinRatio = entry.TotalMatches > 0 ? (double)entry.TotalWins / entry.TotalMatches : 0;
-                return entry;
-            })
+                    vehicle1Votes++;
+                }
+                else if (vote.VotedForVehicleId == vehicle2Id)
+                {
+                    vehicle2Votes++;
+                }
+            }
+
+            int difference = Math.Abs(vehicle1Votes - vehicle2Votes);
+
+            if (vehicle1Votes > vehicle2Votes)
+            {
+                v2PointsMap[vehicle1Id] += difference;
+            }
+            else if (vehicle2Votes > vehicle1Votes)
+            {
+                v2PointsMap[vehicle2Id] += difference;
+            }
+        }
+
+        foreach (LeaderboardEntry entry in leaderboardEntries)
+        {
+            entry.V2Points = v2PointsMap[entry.VehicleSuggestion.Id];
+        }
+
+        _leaderboard = leaderboardEntries
             .OrderByDescending(entry => entry.WinRatio)
             .ThenByDescending(entry => entry.TotalWins)
             .ToList();
@@ -118,7 +185,13 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         {
             _leaderboard[i].Rank = i + 1;
         }
-        
+
+        List<LeaderboardEntry> v2Sorted = [.. _leaderboard.OrderByDescending(e => e.V2Points)];
+        for (var i = 0; i < v2Sorted.Count; i++)
+        {
+            v2Sorted[i].V2Rank = i + 1;
+        }
+
         _nextRefresh = DateTime.UtcNow.Add(_updateInterval);
     }
 
@@ -151,6 +224,8 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         public int TotalMatches { get; init; }
         public int TotalWins { get; init; }
         public double WinRatio { get; set; }
+        public double V2Points { get; set; }
+        public int V2Rank { get; set; }
     }
 
     public class VoterEntry
