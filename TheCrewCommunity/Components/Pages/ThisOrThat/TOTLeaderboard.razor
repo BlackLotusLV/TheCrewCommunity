@@ -24,11 +24,13 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>Rank</th>
+                <th>V1 Rank</th>
                 <th style="width: 100%">Vehicle</th>
                 <th>Total Wins</th>
                 <th>Total Matches</th>
                 <th>Win Ratio</th>
+                <th>V2 Rank</th>
+                <th>V2 Points</th>
                 <th class="table-image-column">Image</th>
             </tr>
             </thead>
@@ -48,6 +50,8 @@
                         <td>@entry.TotalWins</td>
                         <td>@entry.TotalMatches</td>
                         <td>@entry.WinRatio.ToString("P2")</td>
+                        <td>@entry.V2Rank</td>
+                        <td>@entry.V2Points</td>
                         <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
                     </tr>
                 </Virtualize>
