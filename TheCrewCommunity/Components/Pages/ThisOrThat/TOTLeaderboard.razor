@@ -24,13 +24,13 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>V1 Rank</th>
+                <th @onclick="() => SetSortMode(SortMode.V1)" style="cursor: pointer">V1 Rank @(GetSortIndicator(SortMode.V1))</th>
                 <th style="width: 100%">Vehicle</th>
                 <th>Total Wins</th>
                 <th>Total Matches</th>
                 <th>Win Ratio</th>
-                <th>V2 Rank</th>
-                <th>V2 Points</th>
+                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer">V2 Rank @(GetSortIndicator(SortMode.V2))</th>
+                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer">V2 Points @(GetSortIndicator(SortMode.V2))</th>
                 <th class="table-image-column">Image</th>
             </tr>
             </thead>
@@ -76,11 +76,29 @@
 }
 
 @code {
+    private enum SortMode
+    {
+        V1,
+        V2
+    }
+    
+    private SortMode _currentSortMode = SortMode.V1;
     TimeSpan UntilRefresh { get; set; }
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
     ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
     string _searchText = "";
     bool _isMobile = false;
+
+    private void SetSortMode(SortMode mode)
+    {
+        _currentSortMode = mode;
+    }
+
+    private string GetSortIndicator(SortMode mode)
+    {
+        return _currentSortMode == mode ? "▼" : "";
+    }
+    
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? FilteredEntries
     {
         get
@@ -88,13 +106,19 @@
             if (_leaderboardEntries is null) return null;
             if (string.IsNullOrWhiteSpace(_searchText))
             {
-                var sorted = _leaderboardEntries
-                    .OrderByDescending(entry => entry.WinRatio)
-                    .ThenByDescending(entry => entry.TotalWins)
-                    .ToList();
-                return sorted;
+                return _currentSortMode switch
+                {
+                    SortMode.V1 => _leaderboardEntries
+                        .OrderByDescending(entry => entry.WinRatio)
+                        .ThenByDescending(entry => entry.TotalWins)
+                        .ToList(),
+                    SortMode.V2 => _leaderboardEntries
+                        .OrderByDescending(entry => entry.V2Points)
+                        .ToList(),
+                    _ => _leaderboardEntries
+                };
             }
-            return _leaderboardEntries
+                var query = _leaderboardEntries
                 .Select(entry => new
                 {
                     Entry = entry,
@@ -104,9 +128,18 @@
                         $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}".AsSpan()
                     )
                 })
-                .OrderByDescending(x => x.Similarity)
-                .ThenByDescending(x => x.Entry.WinRatio)
-                .ThenByDescending(x => x.Entry.TotalWins)
+                .OrderByDescending(x => x.Similarity);
+
+            if (_currentSortMode == SortMode.V1)
+            {
+                return query
+                    .ThenByDescending(x => x.Entry.WinRatio)
+                    .ThenByDescending(x => x.Entry.TotalWins)
+                    .Select(x => x.Entry)
+                    .ToList();
+            }
+            return query
+                .ThenByDescending(x => x.Entry.V2Points)
                 .Select(x => x.Entry)
                 .ToList();
         }
