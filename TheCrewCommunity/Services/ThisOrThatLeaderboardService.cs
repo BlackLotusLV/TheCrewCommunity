@@ -159,15 +159,31 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
                 }
             }
 
-            int difference = Math.Abs(vehicle1Votes - vehicle2Votes);
+            int totalVotes = vehicle1Votes + vehicle2Votes;
+
+            if (totalVotes == 0) continue;
 
             if (vehicle1Votes > vehicle2Votes)
             {
-                v2PointsMap[vehicle1Id] += difference;
+                double ratio = (double)vehicle1Votes / totalVotes;
+                int points = ratio switch
+                {
+                    1.0 => 10,
+                    >= 0.75 => 5,
+                    _ => 1
+                };
+                v2PointsMap[vehicle1Id] += points;
             }
             else if (vehicle2Votes > vehicle1Votes)
             {
-                v2PointsMap[vehicle2Id] += difference;
+                double ratio = (double)vehicle2Votes / totalVotes;
+                int points = ratio switch
+                {
+                    1.0 => 10,
+                    >= 0.75 => 5,
+                    _ => 1
+                };
+                v2PointsMap[vehicle2Id] += points;
             }
         }
 
