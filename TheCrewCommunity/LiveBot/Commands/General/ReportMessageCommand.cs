@@ -35,7 +35,7 @@ public class ReportMessageCommand(IDbContextFactory<LiveBotDbContext> dbContextF
             .WithTitle("Report Message")
             .WithCustomId("report_message")
             .AddTextInput(new DiscordTextInputComponent("Complaint","Complaint","What is your complaint?",false, DiscordTextInputStyle.Paragraph),"Complaint");
-        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,modal);
+        await ctx.RespondWithModalAsync(modal);
         
         var response = await interactivity.WaitForModalAsync(modal.CustomId, ctx.User);
         if (response.TimedOut) return;
