@@ -13,7 +13,7 @@ public static class CreateFaqCommand
         DiscordModalBuilder modal = new DiscordModalBuilder().WithTitle("New FAQ entry").WithCustomId(customId)
             .AddTextInput(new DiscordTextInputComponent("Question", "Question", required: true, style: DiscordTextInputStyle.Paragraph), "Question")
             .AddTextInput(new DiscordTextInputComponent("Answer", "Answer", "Answer to the question", required: true, style: DiscordTextInputStyle.Paragraph), "Answer");
-        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
+        await ctx.RespondWithModalAsync(modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (response.TimedOut) return;

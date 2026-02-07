@@ -20,7 +20,7 @@ public static class EditFaqCommand
             .AddTextInput(new DiscordTextInputComponent("Question", "Question", question, true, DiscordTextInputStyle.Paragraph), "Question")
             .AddTextInput(new DiscordTextInputComponent("Answer", "Answer", answer, true, DiscordTextInputStyle.Paragraph), "Answer");
 
-        await ctx.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, modal);
+        await ctx.RespondWithModalAsync(modal);
 
         var response = await interactivity.WaitForModalAsync(customId, ctx.User);
         if (!response.TimedOut)
