@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -18,8 +17,8 @@ public interface IThisOrThatDailyVoteService
 
 public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<ThisOrThatDailyVoteService> logger, DiscordClient discordClient, IDatabaseMethodService databaseMethodService) : IThisOrThatDailyVoteService, IHostedService, IDisposable
 {
-    private DailyVote? _dailyVote = null;
-    private Timer? _timer = null;
+    private DailyVote? _dailyVote;
+    private Timer? _timer;
     
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -75,10 +74,10 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
     
     private DateTime CalculateNextRunTime(DateTime now)
     {
-        // Set target time to 00:05:00 (5 minutes after midnight)
+        // Set the target time to 00:05:00 (5 minutes after midnight)
         var target = new DateTime(now.Year, now.Month, now.Day, 0, 5, 0, DateTimeKind.Utc);
         
-        // If it's already past the target time, move to next day
+        // If it's already past the target time, move to the next day
         if (now > target)
         {
             target = target.AddDays(1);
@@ -205,32 +204,32 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
         }
         return uniquePairs;
     }
-    private bool methodLockout = false;
+    private bool _methodLockout;
 
     private async Task PostOrDailyVoteToDiscordAsync()
     {
-        if (methodLockout) return;
-        methodLockout = true;
+        if (_methodLockout) return;
+        _methodLockout = true;
         try
         {
             logger.LogDebug(CustomLogEvents.DailyTot, "Daily vote method lockout enabled, continuing");
             await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
-            Guild[] guilds = await dbContext.Guilds.Where(x => x.ThisOrThatDailyChannelId != null).ToArrayAsync();
+            var guilds = await dbContext.Guilds.Where(x => x.ThisOrThatDailyChannelId != null).ToArrayAsync();
             if (guilds.Length < 1) return;
             logger.LogDebug(CustomLogEvents.DailyTot, "Found guilds with this or that daily channel set");
             DailyVote? dailyVote = GetDailyVote();
             if (dailyVote is null || dailyVote.IsPostedOnDiscord) return;
             logger.LogDebug(CustomLogEvents.DailyTot, "Daily vote database entry found and not posted on discord");
-            string vehicle1Name = $"{dailyVote.VehicleSuggestion1.Brand} - {dailyVote.VehicleSuggestion1.Model}({dailyVote.VehicleSuggestion1.Year})";
-            string vehicle2Name = $"{dailyVote.VehicleSuggestion2.Brand} - {dailyVote.VehicleSuggestion2.Model}({dailyVote.VehicleSuggestion2.Year})";
+            var vehicle1Name = $"{dailyVote.VehicleSuggestion1!.Brand} - {dailyVote.VehicleSuggestion1.Model}({dailyVote.VehicleSuggestion1.Year})";
+            var vehicle2Name = $"{dailyVote.VehicleSuggestion2!.Brand} - {dailyVote.VehicleSuggestion2.Model}({dailyVote.VehicleSuggestion2.Year})";
 
-            StringBuilder HeadTextBuilder = new();
-            HeadTextBuilder.AppendLine("# This or That *[Discord Beta]*");
-            HeadTextBuilder.AppendLine($"## {vehicle1Name} VS {vehicle2Name}");
+            StringBuilder headTextBuilder = new();
+            headTextBuilder.AppendLine("# This or That *[Discord Beta]*");
+            headTextBuilder.AppendLine($"## {vehicle1Name} VS {vehicle2Name}");
 
             DiscordMessageBuilder messageBuilder = new();
             messageBuilder.EnableV2Components()
-                .AddTextDisplayComponent(HeadTextBuilder.ToString())
+                .AddTextDisplayComponent(headTextBuilder.ToString())
                 .AddMediaGalleryComponent(
                     new DiscordMediaGalleryItem($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{dailyVote.VehicleSuggestion1.ImageId}/public", vehicle1Name),
                     new DiscordMediaGalleryItem($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{dailyVote.VehicleSuggestion2.ImageId}/public", vehicle2Name))
@@ -247,7 +246,7 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
                 DiscordGuild server = await dGuilds.FirstOrDefaultAsync(x => x.Id == guild.Id);
                 if (server is null) continue;
                 logger.LogDebug(CustomLogEvents.DailyTot, "Server found");
-                DiscordChannel totChannel = await server.GetChannelAsync(guild.ThisOrThatDailyChannelId.Value);
+                DiscordChannel? totChannel = await server.GetChannelAsync(guild.ThisOrThatDailyChannelId.Value);
                 if (totChannel is null) continue;
                 logger.LogDebug(CustomLogEvents.DailyTot, "Channel found");
                 await messageBuilder.SendAsync(totChannel);
@@ -265,7 +264,7 @@ public class ThisOrThatDailyVoteService(IDbContextFactory<LiveBotDbContext> dbCo
         }
         finally
         {
-            methodLockout = false;
+            _methodLockout = false;
             logger.LogDebug(CustomLogEvents.DailyTot, "Daily vote method lockout disabled");
         }
     }
