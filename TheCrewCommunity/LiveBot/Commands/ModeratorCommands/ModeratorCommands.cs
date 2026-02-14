@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ContextChecks;
 using DSharpPlus.Commands.Processors.SlashCommands;
@@ -12,8 +13,13 @@ using TheCrewCommunity.Services;
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;
 
 [Command("Mod"), Description("Moderator commands"), RequireGuild]
-public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModeratorWarningService warningService, IModeratorLoggingService moderatorLoggingService, IModMailService modMailService, InteractivityExtension interactivity)
+public class ModeratorCommands(IDbContextFactory<LiveBotDbContext> dbContextFactory, IDatabaseMethodService databaseMethodService, IModeratorWarningService warningService, IModeratorLoggingService moderatorLoggingService, IModMailService modMailService, InteractivityExtension interactivity, IPersistentMessageService persistentMessageService)
 {
+    [Command("persistent-message"), Description("Sets or updates a persistent message for a channel"), RequirePermissions(DiscordPermission.ManageMessages)]
+    public async Task SetPersistentMessage(SlashCommandContext ctx,
+        [Description("The ID of the message to use as content")] string messageId,
+        [Description("The channel to post the message in (defaults to current channel)")] DiscordChannel? channel = null)
+        => await SetPersistentMessageCommand.ExecuteAsync(dbContextFactory, persistentMessageService, ctx, messageId, channel);
     [Command("warn"), Description("Warns a user"), RequirePermissions(DiscordPermission.KickMembers)]
     public async Task Warn(SlashCommandContext ctx,
         [Description("User to warn")] DiscordUser user,

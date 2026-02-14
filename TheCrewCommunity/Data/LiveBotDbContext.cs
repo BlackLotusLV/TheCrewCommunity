@@ -41,6 +41,7 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
     public DbSet<VehicleSuggestion> VehicleSuggestions { get; init; }
     public DbSet<SuggestionVote> SuggestionVotes { get; init; }
     public DbSet<DailyVote> DailyVotes { get; init; }
+    public DbSet<PersistentMessage> PersistentMessages { get; init; }
 
     public LiveBotDbContext()
     {
@@ -83,6 +84,7 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
         modelBuilder.Entity<Vehicle>().HasKey(x => x.Id);
         modelBuilder.Entity<MtfstCarProSettings>().HasKey(x => x.Id);
         modelBuilder.Entity<MtfstCarProSettingsLikes>().HasKey(x => x.Id);
+        modelBuilder.Entity<PersistentMessage>().HasKey(x => x.ChannelId);
         
         modelBuilder.Entity<Vehicle>()
             .HasOne(v=>v.VCat)

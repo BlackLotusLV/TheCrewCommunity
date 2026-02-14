@@ -47,6 +47,9 @@ public static class ServiceConfiguration
                 .First(service => service is ThisOrThatDailyVoteService);
         });
         
+        services.AddSingleton<IPersistentMessageService, PersistentMessageService>();
+        services.AddHostedService(provider => (PersistentMessageService)provider.GetRequiredService<IPersistentMessageService>());
+
         services.AddSingleton<IModeratorLoggingService, ModeratorLoggingService>();
         services.AddSingleton<IModeratorWarningService, ModeratorWarningService>();
         services.AddSingleton<IModMailService, ModMailService>();

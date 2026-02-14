@@ -8,7 +8,8 @@ public class LiveBotService(
     IModeratorLoggingService moderatorLoggingService,
     IModeratorWarningService moderatorWarningService,
     DiscordClient discordClient,
-    IUserActivityService userActivityService)
+    IUserActivityService userActivityService,
+    IPersistentMessageService persistentMessageService)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -18,6 +19,7 @@ public class LiveBotService(
 
         moderatorLoggingService.StartService(discordClient);
         moderatorWarningService.StartService(discordClient);
+        ((PersistentMessageService)persistentMessageService).StartService(discordClient);
         await userActivityService.StartAsync();
 
         DiscordActivity botActivity = new("/send-modmail to open chat with moderators", DiscordActivityType.Playing);

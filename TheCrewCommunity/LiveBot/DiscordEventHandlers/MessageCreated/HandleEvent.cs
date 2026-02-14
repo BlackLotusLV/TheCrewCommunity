@@ -16,6 +16,7 @@ public static class HandleEvent
         var modMailService = client.ServiceProvider.GetRequiredService<IModMailService>();
         var warningService = client.ServiceProvider.GetRequiredService<IModeratorWarningService>();
         var userActivityService = client.ServiceProvider.GetRequiredService<IUserActivityService>();
+        var persistentMessageService = client.ServiceProvider.GetRequiredService<IPersistentMessageService>();
         
         if (eventArgs.Guild is null)
         {
@@ -26,5 +27,6 @@ public static class HandleEvent
         }
         if(eventArgs.Guild is null || eventArgs.Author.IsBot) return;
         await userActivityService.UpdateUserActivityAsync(eventArgs.Author, eventArgs.Guild);
+        persistentMessageService.EnqueueMessageUpdate(eventArgs.Channel.Id);
     }
 }
