@@ -29,7 +29,7 @@ public static class CreateTagCommand
         const string modalId = "tag_create";
         DiscordModalBuilder responseBuilder = new();
         responseBuilder
-            .WithTitle($"Create tag Named {name}")
+            .WithTitle($"Create tag Named {(name.Length>10 ? name[..10]+"..." : name)}")
             .WithCustomId(modalId)
             .AddTextInput(new DiscordTextInputComponent("Content", "content", "Content of the tag", min_length: 1, max_length: 1900, style: DiscordTextInputStyle.Paragraph), "Content");
         await ctx.RespondWithModalAsync(responseBuilder);
