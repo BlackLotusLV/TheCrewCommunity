@@ -1,0 +1,191 @@
+@page "/Account/Profile"
+@page "/Account/Profile/{UserId}"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@using TheCrewCommunity.Data
+@using TheCrewCommunity.Data.WebData
+@using TheCrewCommunity.Services
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDbContextFactory<LiveBotDbContext> DbContextFactory
+@inject IThisOrThatLeaderboardService LeaderboardService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>User Profile - @(_user?.GlobalUsername ?? "Loading...")</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="profile-loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading profile...</p>
+    </div>
+}
+else if (_user == null)
+{
+    <div class="profile-error">
+        <div class="alert alert-danger">
+            User not found.
+        </div>
+    </div>
+}
+else
+{
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="avatar-container">
+                <img src="@(_user.AvatarUrl ?? "assets/Icons/default_avatar.png")" alt="@_user.GlobalUsername's avatar" class="profile-avatar" />
+            </div>
+            <div class="user-info">
+                <h1 class="username">@(_user.GlobalUsername ?? _user.UserName)</h1>
+                <div class="user-badges">
+                    @if (_voterEntry != null)
+                    {
+                        <div class="rank-badge @GetRankClass(_voterEntry)">
+                            <img src="@GetRankMedal(_voterEntry)" class="rank-medal" alt="Rank Medal" />
+                            <span class="rank-text">Rank #@_voterEntry.Rank (@(_voterEntry.Percent.ToString("P1")))</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="stats-sidebar">
+                <div class="stats-card">
+                    <h3>This or That Stats</h3>
+                    @if (_voterEntry != null)
+                    {
+                        <div class="stat-item">
+                            <span class="stat-label">Total Votes:</span>
+                            <span class="stat-value">@_voterEntry.TotalMatches</span>
+                        </div>
+                        @if (_voterEntry.TopVehicle != null)
+                        {
+                            <div class="favorite-vehicle">
+                                <span class="stat-label">Favorite Vehicle:</span>
+                                <div class="vehicle-info">
+                                    <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_voterEntry.TopVehicle.ImageId/public" alt="@_voterEntry.TopVehicle.Brand @_voterEntry.TopVehicle.Model" class="vehicle-preview" />
+                                    <p class="vehicle-name">@_voterEntry.TopVehicle.Brand @_voterEntry.TopVehicle.Model</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>No This or That stats available.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="images-main">
+                <div class="section-header">
+                    <h2>Uploaded Images (@(_user.Images?.Count ?? 0))</h2>
+                </div>
+                @if (_user.Images != null && _user.Images.Any())
+                {
+                    <div class="image-grid">
+                        @foreach (var image in _user.Images.OrderByDescending(i => i.UploadDateTime))
+                        {
+                            <div class="image-card" @onclick="() => NavigateToImage(image.Id)">
+                                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@image.Id/Thumbnail" alt="@image.Title" class="image-thumb" />
+                                <div class="image-overlay">
+                                    <span class="image-title">@image.Title</span>
+                                    <span class="image-likes"><i class="fa fa-heart"></i> @image.LikesCount</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-images">
+                        <p>This user hasn't uploaded any images yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+
+    private ApplicationUser? _user;
+    private ThisOrThatLeaderboardService.VoterEntry? _voterEntry;
+    private bool _isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isLoading = true;
+        await LoadProfile();
+        _isLoading = false;
+    }
+
+    private async Task LoadProfile()
+    {
+        Guid? targetUserId = null;
+        if (Guid.TryParse(UserId, out Guid parsedUserId))
+        {
+            targetUserId = parsedUserId;
+        }
+        else
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out Guid currentUserId))
+            {
+                targetUserId = currentUserId;
+            }
+            else if (ulong.TryParse(userIdClaim, out ulong discordId))
+            {
+                await using var dbContextLookup = await DbContextFactory.CreateDbContextAsync();
+                var appUser = await dbContextLookup.ApplicationUsers
+                    .FirstOrDefaultAsync(u => u.DiscordId == discordId);
+                targetUserId = appUser?.Id;
+            }
+        }
+
+        if (targetUserId == null) return;
+
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        _user = await dbContext.ApplicationUsers
+            .Include(u => u.Images)
+            .FirstOrDefaultAsync(u => u.Id == targetUserId);
+
+        _voterEntry = LeaderboardService.GetVoterList().FirstOrDefault(v => v.UserId == targetUserId);
+    }
+
+    private string GetRankClass(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        return entry.Percent switch
+        {
+            >= 1.0f => "rank-legend",
+            >= 0.85f => "rank-platinum",
+            >= 0.70f => "rank-gold",
+            >= 0.50f => "rank-silver",
+            _ => "rank-bronze"
+        };
+    }
+
+    private string GetRankMedal(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        return entry.Percent switch
+        {
+            >= 1.0f => "assets/PVP_Medals/GR_Legend.png",
+            >= 0.85f => "assets/PVP_Medals/GR_Platinum.png",
+            >= 0.70f => "assets/PVP_Medals/GR_Gold.png",
+            >= 0.50f => "assets/PVP_Medals/GR_Silver.png",
+            _ => "assets/PVP_Medals/GR_Bronze.png"
+        };
+    }
+
+    private void NavigateToImage(Guid imageId)
+    {
+        NavigationManager.NavigateTo($"/PhotoMode/Browse?imageId={imageId}");
+    }
+}

@@ -221,6 +221,8 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
             .ThenInclude(x=>x.VotedForVehicle)
             .Select(appUser => new VoterEntry
             {
+                UserId = appUser.Id,
+                DiscordId = appUser.DiscordId,
                 TotalMatches = appUser.SuggestionVotes.Count,
                 Percent = (float)appUser.SuggestionVotes.Count / totalMatchups,
                 Username = appUser.UserName ?? string.Empty,
@@ -252,6 +254,8 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     public class VoterEntry
     {
         public int Rank { get; set; }
+        public required Guid UserId { get; init; }
+        public required ulong DiscordId { get; init; }
         public required string Username { get; init; }
         public required float Percent { get; init; }
         public required int TotalMatches { get; init; }
