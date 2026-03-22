@@ -2,6 +2,7 @@
 @inject IThisOrThatDailyVoteService DailyVoteService
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject IDatabaseMethodService DatabaseMethodService
+@inject IThisOrThatLeaderboardService LeaderboardService
 @page "/"
 @using System.Security.Claims
 @using TheCrewCommunity.Services
@@ -17,91 +18,132 @@
     <meta property="og:url" content="@NavigationManager.Uri" />
     <meta property="og:description" content="Place for all things The Crew. @DailyVoteMeta()" />
     <meta property="og:type" content="website" />
-    
 </HeadContent>
 
 <PageTitle>The Crew Community</PageTitle>
 
+<div class="home-container">
+    <section class="welcome-section">
+        <h1 class="page-title">The Crew Community Hub</h1>
+        <div class="welcome-content">
+            <p>Welcome to the ultimate hub for all things The Crew. Whether you're looking for the perfect <strong>Pro Settings</strong>, browsing stunning <strong>PhotoMode</strong> captures, or participating in the community-driven <strong>This or That</strong> rankings, you're in the right place.</p>
+            <p>Our platform is built by the community, for the community. Explore, vote, and share your passion for the road!</p>
+        </div>
+    </section>
 
-<h1>The Crew Community Hub</h1>
-
-Welcome, this is the community hub for all things The Crew. Share pro settings, PhotoMode pictures and read up on community guides.
-Almost every part  of this website is work in progress, so expect bugs and pages that lead to nowhere. It is being developed in free time. Thanks everyone for the feedback and understanding. ;)
-@if (_dailyVote is { VehicleSuggestion1: not null, VehicleSuggestion2: not null })
-{
-    <div class="daily-vote-wrapper">
-        <div class="daily-vote-container">
-            <h2>This or That Daily vote</h2>
-            <div class="image-options">
-                <div class="option-card">
-                    <div class="image-container">
-                        <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion1.ImageId/w=500" 
-                             alt="@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)"/>
+    @if (_currentUser != null && _userVoterEntry != null)
+    {
+        <section class="user-stats-section">
+            <div class="stats-card">
+                <div class="stat-item">
+                    <span class="stat-label">Your TOT Progress</span>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: @($"{(_userVoterEntry.Percent * 100):F0}%")"></div>
+                        <span class="progress-text">@((_userVoterEntry.Percent * 100).ToString("F1"))%</span>
                     </div>
-                    <p class="vehicle-name">@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)</p>
                 </div>
-                
-                <div class="versus">VS</div>
-                
-                <div class="option-card">
-                    <div class="image-container">
-                        <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion2.ImageId/w=500" 
-                             alt="@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)"/>
+                <div class="stat-item rank-item">
+                    <span class="stat-label">Current Rank</span>
+                    <div class="rank-display">
+                        <img src="@GetRankMedal(_userVoterEntry)" alt="Rank Medal" class="rank-medal-small" />
+                        <span class="rank-number">#@_userVoterEntry.Rank</span>
                     </div>
-                    <p class="vehicle-name">@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)</p>
                 </div>
             </div>
-            <div class="vote-progress-container">
-                <div class="vote-label left-vote">
-                    @Option1Percentage%
-                </div>
-                <div class="vote-progress">
-                    <div class="vote-progress-bar" style="width: @Option1Percentage%"></div>
-                </div>
-                <div class="vote-label right-vote">
-                    @Option2Percentage%
-                </div>
-            </div>
-            <div class="vote-count">Total votes: @TotalVotes</div>
+        </section>
+    }
 
-            <AuthorizeView>
-                <Authorized>
-                    @if (UserVote is null)
-                    {
-                        <div class="vote-buttons">
-                            <button class="vote-button" disabled="@_isVoting" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion1Id)">
-                                Vote for @_dailyVote.VehicleSuggestion1.Brand @_dailyVote.VehicleSuggestion1.Model
-                            </button>
-                            <button class="vote-button" disabled="@_isVoting" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion2Id)">
-                                Vote for @_dailyVote.VehicleSuggestion2.Brand @_dailyVote.VehicleSuggestion2.Model
-                            </button>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="vote-result">
-                            <p>You voted for @UserVote.VotedForVehicle!.Brand - @UserVote.VotedForVehicle.Model (@UserVote.VotedForVehicle.Year)</p>
-                            <p>If you want to vote on more options, <NavLink href="/ThisOrThat/Vote">head over to the This or That voting page</NavLink>.</p>
-
-                        </div>
-                    }
-                </Authorized>
-                <NotAuthorized>
-                    <div class="login-message">
-                        <p>Please <a href="/api/Auth/login" class="login-link">log in</a> to vote on today's matchup!</p>
+    <div class="content-grid">
+        <div class="main-column">
+            @if (_dailyVote is { VehicleSuggestion1: not null, VehicleSuggestion2: not null })
+            {
+                <section class="daily-vote-section">
+                    <div class="section-header">
+                        <h2 class="section-title">This or That Daily Vote</h2>
+                        <NavLink href="/ThisOrThat/Vote" class="view-all-link">VOTE MORE <span class="oi oi-arrow-right"></span></NavLink>
                     </div>
-                </NotAuthorized>
-            </AuthorizeView>
+                    <div class="daily-vote-card">
+                        <div class="image-options">
+                            <div class="option-card @(UserVote?.VotedForVehicleId == _dailyVote.VehicleSuggestion1Id ? "selected" : "")" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion1Id)">
+                                <div class="image-container">
+                                    <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion1.ImageId/w=500" 
+                                         alt="@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)"/>
+                                    <div class="selection-overlay">
+                                        <span class="oi oi-check"></span>
+                                    </div>
+                                </div>
+                                <p class="vehicle-name">@_dailyVote.VehicleSuggestion1.Brand - @_dailyVote.VehicleSuggestion1.Model (@_dailyVote.VehicleSuggestion1.Year)</p>
+                            </div>
+                            
+                            <div class="versus">VS</div>
+                            
+                            <div class="option-card @(UserVote?.VotedForVehicleId == _dailyVote.VehicleSuggestion2Id ? "selected" : "")" @onclick="() => VoteAsync(_dailyVote.VehicleSuggestion2Id)">
+                                <div class="image-container">
+                                    <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_dailyVote.VehicleSuggestion2.ImageId/w=500" 
+                                         alt="@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)"/>
+                                    <div class="selection-overlay">
+                                        <span class="oi oi-check"></span>
+                                    </div>
+                                </div>
+                                <p class="vehicle-name">@_dailyVote.VehicleSuggestion2.Brand - @_dailyVote.VehicleSuggestion2.Model (@_dailyVote.VehicleSuggestion2.Year)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="vote-results-container">
+                            <div class="vote-progress-wrapper">
+                                <div class="vote-label left">@Option1Percentage%</div>
+                                <div class="vote-progress-bar-bg">
+                                    <div class="vote-progress-bar-fill" style="width: @($"{Option1Percentage}%")"></div>
+                                </div>
+                                <div class="vote-label right">@Option2Percentage%</div>
+                            </div>
+                            <div class="vote-meta">
+                                <span class="total-votes">TOTAL VOTES: @TotalVotes</span>
+                                <AuthorizeView>
+                                    <NotAuthorized>
+                                        <a href="/api/Auth/login" class="login-to-vote">LOG IN TO VOTE</a>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+        </div>
+
+        <div class="side-column">
+            <section class="hot-images-section">
+                <div class="section-header">
+                    <h2 class="section-title">Trending Photos</h2>
+                    <NavLink href="/PhotoMode/Browse" class="view-all-link">VIEW ALL</NavLink>
+                </div>
+                <div class="hot-images-carousel">
+                    @foreach (var img in _hotImages)
+                    {
+                        <div class="hot-image-item" @onclick="@(_ => NavigationManager.NavigateTo($"/PhotoMode/Browse?imageId={img.Id}"))">
+                            <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{img.Id}/Thumbnail")" alt="@img.Title" />
+                            <div class="image-overlay">
+                                <span class="image-author">@img.ApplicationUser?.GlobalUsername</span>
+                                <div class="image-stats">
+                                    <span class="oi oi-heart"></span> @img.LikesCount
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
         </div>
     </div>
-}
+</div>
 
 @code{
     [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
     DailyVote? _dailyVote;
     List<SuggestionVote> DailyVotes { get; set; } = [];
     SuggestionVote? UserVote { get; set; }
-    private ApplicationUser? CurrentUser { get; set; }
+    private ApplicationUser? _currentUser;
+    private ThisOrThatLeaderboardService.VoterEntry? _userVoterEntry;
+    private UserImage[] _hotImages = [];
     bool _isVoting;
 
     private int TotalVotes => DailyVotes.Count;
@@ -116,12 +158,19 @@ Almost every part  of this website is work in progress, so expect bugs and pages
         AuthenticationState authState = await AuthenticationState!;
         ClaimsPrincipal user = authState.User;
         LiveBotDbContext dbContext = await DbContextFactory.CreateDbContextAsync();
+        
         if (user.Identity is { IsAuthenticated: true })
         {
             string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            CurrentUser = await dbContext.ApplicationUsers
+            _currentUser = await dbContext.ApplicationUsers
                 .Include(x => x.SuggestionVotes)
                 .FirstOrDefaultAsync(x => x.DiscordId == ulong.Parse(userId!));
+            
+            if (_currentUser != null)
+            {
+                var voterList = LeaderboardService.GetVoterList();
+                _userVoterEntry = voterList.FirstOrDefault(x => x.Username == _currentUser.UserName);
+            }
         }
 
         if (_dailyVote is not null)
@@ -134,22 +183,47 @@ Almost every part  of this website is work in progress, so expect bugs and pages
                     (vote.VehicleSuggestion1Id == _dailyVote.VehicleSuggestion1Id && vote.VehicleSuggestion2Id == _dailyVote.VehicleSuggestion2Id) ||
                     (vote.VehicleSuggestion1Id == _dailyVote.VehicleSuggestion2Id && vote.VehicleSuggestion2Id == _dailyVote.VehicleSuggestion1Id)
                 ).ToList();
-            if (CurrentUser is not null)
+            if (_currentUser is not null)
             {
-                UserVote = DailyVotes.FirstOrDefault(x => x.UserId == CurrentUser.Id);
+                UserVote = DailyVotes.FirstOrDefault(x => x.UserId == _currentUser.Id);
             }
         }
+
+        // Fetch hot images
+        var images = await dbContext.UserImages
+            .Include(x => x.ApplicationUser)
+            .Include(x => x.ImageLikes)
+            .OrderByDescending(x => x.UploadDateTime)
+            .Take(50)
+            .ToArrayAsync();
+        
+        _hotImages = images.Select(x => new
+            {
+                Image = x,
+                Weighting = x.ImageLikes!.Where(like => like.Date > DateTime.UtcNow.AddHours(-24))
+                    .Select(like =>
+                    {
+                        var likesInLastHour = x.ImageLikes!.Count(imageLike => imageLike.Date >= DateTime.UtcNow.AddHours(-1));
+                        var recency = DateTime.UtcNow - like.Date;
+                        return Math.Pow(likesInLastHour, 1.2) / Math.Pow(recency.TotalHours + 2, 1.5);
+                    })
+                    .Sum()
+            })
+            .OrderByDescending(x => x.Weighting)
+            .Take(6)
+            .Select(x => x.Image)
+            .ToArray();
     }
 
     private async Task VoteAsync(Guid vehicleId)
     {
-        if (_isVoting || _dailyVote is null) return;
+        if (_isVoting || _dailyVote is null || _currentUser == null || UserVote != null) return;
         _isVoting = true;
         try
         {
             var vote = new SuggestionVote
             {
-                UserId = CurrentUser!.Id,
+                UserId = _currentUser.Id,
                 Id = Guid.CreateVersion7(),
                 VehicleSuggestion1Id = _dailyVote.VehicleSuggestion1Id,
                 VehicleSuggestion2Id = _dailyVote.VehicleSuggestion2Id,
@@ -169,5 +243,17 @@ Almost every part  of this website is work in progress, so expect bugs and pages
     {
         DailyVote? vote = DailyVoteService.GetDailyVote();
         return vote is null ? "Daily vote not generated" : $"Current daily vote: {vote.VehicleSuggestion1!.Brand} - {vote.VehicleSuggestion1.Description}({vote.VehicleSuggestion1.Year}) VS. {vote.VehicleSuggestion2!.Brand} - {vote.VehicleSuggestion2.Description}({vote.VehicleSuggestion2.Year})";
+    }
+
+    private string GetRankMedal(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        return entry.Percent switch
+        {
+            1.0f => "assets/PVP_Medals/GR_Legend.png",
+            >= 0.85f => "assets/PVP_Medals/GR_Platinum.png",
+            >= 0.70f => "assets/PVP_Medals/GR_Gold.png",
+            >= 0.50f => "assets/PVP_Medals/GR_Silver.png",
+            _ => "assets/PVP_Medals/GR_Bronze.png"
+        };
     }
 }
