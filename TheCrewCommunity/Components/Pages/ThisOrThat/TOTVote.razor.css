@@ -1,22 +1,12 @@
 ﻿.header-container {
-    padding: 10px 0;
-    text-align: center;
 }
 .main-title {
-    color: white;
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-transform: uppercase;
 }
 
 .content-layout {
     display: flex;
     gap: 20px;
     height: calc(100vh - 280px);
-    background-color: #1a1a1a;
-    padding: 20px;
-    border-radius: 12px;
     justify-content: center;
     align-items: center;
 }

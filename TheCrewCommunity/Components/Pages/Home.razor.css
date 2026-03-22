@@ -1,37 +1,9 @@
 ﻿.home-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-transform: uppercase;
 }
 
-.page-title {
-    color: #e0c040;
-    font-weight: 900;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-    border-left: 5px solid #e0c040;
-    padding-left: 15px;
-    font-size: 2.5rem;
-}
-
-.welcome-section {
-    margin-bottom: 40px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 4px;
-    border: 1px solid rgba(224, 192, 64, 0.2);
-}
-
-.welcome-content p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 15px;
-    color: #ccc;
-    text-transform: none; /* Keep intro text readable */
-}
 
 .welcome-content strong {
     color: #e0c040;
@@ -119,21 +91,6 @@
     gap: 40px;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid rgba(224, 192, 64, 0.3);
-    padding-bottom: 10px;
-}
-
-.section-title {
-    font-size: 1.2rem;
-    color: #e0c040;
-    margin: 0;
-    font-weight: bold;
-}
 
 .view-all-link {
     color: #aaa;
@@ -337,10 +294,6 @@
 }
 
 @media (max-width: 576px) {
-    .page-title {
-        font-size: 1.8rem;
-    }
-    
     .hot-images-carousel {
         grid-template-columns: 1fr;
     }
