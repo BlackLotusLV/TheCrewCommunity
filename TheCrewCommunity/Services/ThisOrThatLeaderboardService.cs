@@ -223,7 +223,12 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
             {
                 TotalMatches = appUser.SuggestionVotes.Count,
                 Percent = (float)appUser.SuggestionVotes.Count / totalMatchups,
-                Username = appUser.UserName ?? string.Empty
+                Username = appUser.UserName ?? string.Empty,
+                TopVehicle = appUser.SuggestionVotes
+                    .GroupBy(v => v.VotedForVehicle)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key)
+                    .FirstOrDefault()
             })
             .OrderByDescending(x=>x.Percent)
             .ToList();
@@ -250,5 +255,6 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         public required string Username { get; init; }
         public required float Percent { get; init; }
         public required int TotalMatches { get; init; }
+        public VehicleSuggestion? TopVehicle { get; init; }
     }
 }

@@ -32,7 +32,7 @@
         <table class="table">
             <thead>
             <tr>
-                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer; text-align: center;">Rank</th>
+                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer;">Rank</th>
                 <th style="width: 100%">Vehicle</th>
                 <th>Total Wins</th>
                 <th>Points</th>
@@ -50,7 +50,13 @@
             {
                 <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="20">
                     <tr class="table-row @(_selectedEntry == entry ? "selected-row" : "")" @onclick="() => SelectEntry(entry)">
-                        <td class="rank-cell @GetRankClass(entry.V2Rank)">@entry.V2Rank</td>
+                        <td class="rank-cell @GetRankClass(entry.V2Rank)">
+                            <img src="@GetRankMedal(entry.V2Rank)" class="rank-medal" alt="Rank Medal"/>
+                            @if (entry.V2Rank != 1)
+                            {
+                                <span class="rank-number">@entry.V2Rank</span>
+                            }
+                        </td>
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
                         <td>@entry.TotalWins</td>
                         <td>@entry.V2Points</td>
@@ -158,10 +164,23 @@
     {
         return rank switch
         {
+            1 => "rank-legend",
             <= 3 => "rank-platinum",
             <= 10 => "rank-gold",
             <= 25 => "rank-silver",
             _ => "rank-bronze"
+        };
+    }
+
+    private string GetRankMedal(int rank)
+    {
+        return rank switch
+        {
+            1 => "assets/PVP_Medals/GR_Legend.png",
+            <= 3 => "assets/PVP_Medals/GR_Platinum.png",
+            <= 10 => "assets/PVP_Medals/GR_Gold.png",
+            <= 25 => "assets/PVP_Medals/GR_Silver.png",
+            _ => "assets/PVP_Medals/GR_Bronze.png"
         };
     }
 

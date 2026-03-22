@@ -101,7 +101,7 @@
 }
 th {
     color: #e0c040;
-    text-align: left;
+    text-align: center;
     padding: 10px;
     font-weight: bold;
     border-bottom: 1px solid #333;
@@ -120,8 +120,10 @@ th {
 }
 .table-row td {
     padding: 8px 10px;
+    margin: 5px;
     color: #ccc;
     vertical-align: middle;
+    text-align: center;
 }
 .selected-row {
     outline: 2px solid #e0c040;
@@ -140,29 +142,44 @@ th {
 }
 
 .rank-cell {
+    position: relative;
     text-align: center !important;
     font-weight: bold;
-    min-width: 50px;
+    min-width: 60px;
+    height: 50px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.rank-medal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.rank-number {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 0 4px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,1);
+    color: white !important;
+    line-height: 1;
+}
+
+.rank-legend {
+}
 .rank-platinum {
-    background-color: #e5e4e2; /* Platinum */
-    color: #333 !important;
 }
-
 .rank-gold {
-    background-color: #ffd700; /* Gold */
-    color: #333 !important;
 }
-
 .rank-silver {
-    background-color: #c0c0c0; /* Silver */
-    color: #333 !important;
 }
-
 .rank-bronze {
-    background-color: #cd7f32; /* Bronze */
-    color: #333 !important;
 }
 
 .thumbnail-cell img {
