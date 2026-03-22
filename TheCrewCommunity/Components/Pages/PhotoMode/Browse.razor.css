@@ -1,7 +1,4 @@
 ﻿.browse-container {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 20px;
     color: white;
 }
 
@@ -15,16 +12,6 @@
     gap: 20px;
 }
 
-.page-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    background: linear-gradient(45deg, #fff, #e0c040);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
 
 .filters-group {
     display: flex;
@@ -56,16 +43,6 @@
     margin-bottom: 50px;
 }
 
-.section-title {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #e0c040;
-    text-transform: uppercase;
-    font-weight: 700;
-}
 
 .top-hot-grid {
     display: grid;
@@ -607,9 +584,6 @@
     }
     .image-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-    .page-title {
-        font-size: 2rem;
     }
 }
 
