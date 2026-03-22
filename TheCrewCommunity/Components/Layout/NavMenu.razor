@@ -4,73 +4,104 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 <CascadingAuthenticationState>
-    <UploadImageDialog ShowDialog="false" @ref="_uploadImageDialog"/>
-    <nav class="navbar @NavBarClasses">
-        <button class="hamburger" type="button" @onclick="ToggleMenu">
-            <i class="fa fa-bars"></i>
-        </button>
-        <a href="/"><i class="fa fa-home"></i> Home</a>
-        <div class="dropdown">
-            <button class="dropdown-button" type="button"><i class="fa fa-camera"></i> Photo Mode <i class="fa fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="/PhotoMode/Browse">Browse</a>
+    <UploadImageDialog @ref="_uploadImageDialog"/>
+    <nav class="nav-container">
+        <div class="nav-content">
+            <div class="nav-left">
+                <button class="menu-toggle" type="button" @onclick="ToggleMenu" aria-label="Toggle menu">
+                    <i class="fa @(_isMenuOpen ? "fa-times" : "fa-bars")"></i>
+                </button>
+                <NavLink href="/" class="brand-link" Match="NavLinkMatch.All">
+                    <i class="fa fa-home"></i>
+                </NavLink>
+            </div>
+
+            <div class="nav-links @(_isMenuOpen ? "show" : "")">
+                <div class="nav-item has-dropdown">
+                    <button class="nav-link dropdown-toggle" type="button">
+                        <i class="fa fa-camera"></i> Photo Mode <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <NavLink href="/PhotoMode/Browse" class="dropdown-item" @onclick="CloseMenu">Browse</NavLink>
+                        <AuthorizeView>
+                            <Authorized>
+                                <button class="dropdown-item" @onclick="() => { _uploadImageDialog!.ToggleDialog(); CloseMenu(); }">Upload</button>
+                            </Authorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+
+                <div class="nav-item has-dropdown">
+                    <button class="nav-link dropdown-toggle" type="button">
+                        <i class="fa fa-right-left"></i> This or That <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <NavLink href="/ThisOrThat/Vote" class="dropdown-item" @onclick="CloseMenu">Vote</NavLink>
+                        <NavLink href="/ThisOrThat/Leaderboard" class="dropdown-item" @onclick="CloseMenu"><i class="fa fa-ranking-star"></i> Leaderboard</NavLink>
+                        <NavLink href="/ThisOrThat/VoterStats" class="dropdown-item" @onclick="CloseMenu"><i class="fa fa-chart-simple"></i> User Stats</NavLink>
+                        <AuthorizeView Roles="Administrator">
+                            <Authorized>
+                                <NavLink href="/ThisOrThat/New" class="dropdown-item" @onclick="CloseMenu">New</NavLink>
+                            </Authorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+
+                <NavLink href="/Map" class="nav-link" @onclick="CloseMenu"><i class="fa fa-map"></i> Tomco's Map</NavLink>
+
+                <div class="nav-item has-dropdown">
+                    <button class="nav-link dropdown-toggle" type="button">
+                        <i class="fa-brands fa-discord"></i> Discord <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="https://discord.gg/thecrew" class="dropdown-item" target="_blank" @onclick="CloseMenu">The Crew Community <i class="fa-solid fa-link"></i></a>
+                        <a href="https://discord.gg/tcu" class="dropdown-item" target="_blank" @onclick="CloseMenu">The Crew Unlimited <i class="fa-solid fa-link"></i></a>
+                    </div>
+                </div>
+
+                <NavLink href="/Rules" class="nav-link" @onclick="CloseMenu"><i class="fa fa-gavel"></i> Rules</NavLink>
+            </div>
+
+            <div class="nav-right">
                 <AuthorizeView>
                     <Authorized>
-                        <a @onclick="_uploadImageDialog!.ToggleDialog">Upload</a>
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </div>
-        <div class="dropdown">
-            <button class="dropdown-button" type="button"><i class="fa fa-right-left"></i> This or That <i class="fa fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="/ThisOrThat/Vote">Vote</a>
-                <a href="/ThisOrThat/Leaderboard"><i class="fa fa-ranking-star"></i> Leaderboard</a>
-                <a href="/ThisOrThat/VoterStats"><i class="fa fa-chart-simple"></i> User Stats</a>
-                <AuthorizeView Roles="Administrator">
-                    <Authorized>
-                        <a href="/ThisOrThat/New">New</a>
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </div>
-        <a href="/Map"><i class="fa fa-map"></i> Tomco's Map</a>
-        <div class = "dropdown">
-            <button class="dropdown-button" type="button"><i class="fa-brands fa-discord"></i> Discord <i class="fa fa-caret-down"></i></button>
-            <div class="dropdown-content">
-                <a href="https://discord.gg/thecrew" target="_blank">The Crew Community <i class="fa-solid fa-link"></i></a>
-                <a href="https://discord.gg/tcu" target="_blank">The Crew Unlimited <i class="fa-solid fa-link"></i></a>
-            </div>
-        </div>
-        <a href="/Rules"><i class="fa fa-gavel"></i> Rules</a>
-        <div class="navbar-right">
-            <AuthorizeView>
-                <Authorized>
-                    <div class="dropdown">
-                        <button class="dropdown-button" type="button">@_user!.Identity!.Name</button>
-                        <div class="dropdown-content">
-                            <a>place holder</a>
-                            <a href="/api/auth/logout">Logout</a>
+                        <div class="nav-item has-dropdown user-dropdown">
+                            <button class="nav-link dropdown-toggle user-btn" type="button">
+                                <span class="username">@_user?.Identity?.Name</span>
+                                <i class="fa fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu align-right">
+                                <a href="/api/auth/logout" class="dropdown-item logout-link">
+                                    <i class="fa fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <a href="@GetLoginUrl()">Login with Discord</a>
-                </NotAuthorized>
-            </AuthorizeView>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="@GetLoginUrl()" class="login-btn">
+                            <i class="fa-brands fa-discord"></i> Login
+                        </a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
         </div>
     </nav>
 </CascadingAuthenticationState>
 @code
 {
     bool _isMenuOpen = false;
-    string NavBarClasses => _isMenuOpen ? "responsive" : string.Empty;
     UploadImageDialog? _uploadImageDialog;
 
     void ToggleMenu()
     {
         _isMenuOpen = !_isMenuOpen;
     }
+
+    void CloseMenu()
+    {
+        _isMenuOpen = false;
+    }
+
     ClaimsPrincipal? _user;
     protected override async Task OnInitializedAsync()
     {

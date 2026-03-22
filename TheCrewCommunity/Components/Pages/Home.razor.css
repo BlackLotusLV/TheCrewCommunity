@@ -7,9 +7,9 @@
     margin: 2rem 0;
     padding: 1.5rem;
     border-radius: 8px;
-    background-color: #2a2a2a;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background-color: #1a1a1a;
+    border: 2px solid #e0c040;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     width: 80%;
     max-width: 900px;
 }
@@ -17,7 +17,8 @@
 .daily-vote-container h2 {
     text-align: center;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid yellow;
+    border-bottom: 2px solid #e0c040;
+    color: #e0c040;
     padding-bottom: 0.5rem;
 }
 
@@ -43,7 +44,7 @@
 .versus {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #444;
+    color: #e0c040;
 }
 
 .image-container {
@@ -76,17 +77,18 @@
 .vote-progress {
     flex: 1;
     height: 24px;
-    background-color: lightblue;
+    background-color: #333;
     border-radius: 12px;
     overflow: hidden;
     position: relative;
+    border: 1px solid #444;
 }
 
 .vote-progress-bar {
     height: 100%;
-    background: lightgreen;
+    background: linear-gradient(90deg, #e0c040, #ffeb3b);
     border-radius: 12px;
-    transition: width 0.5s ease;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vote-label {
@@ -98,7 +100,7 @@
 .vote-count {
     text-align: center;
     font-size: 0.9rem;
-    color: #666;
+    color: #aaa;
     margin-bottom: 1rem;
 }
 
@@ -111,19 +113,22 @@
 
 .vote-button {
     flex: 1;
-    background-color: #2a2a2a;
-    color: white;
-    border: 1px solid yellow;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    background-color: transparent;
+    color: #e0c040;
+    border: 2px solid #e0c040;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
     font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .vote-button:hover:not(:disabled) {
-    background-color: yellow;
-    color: #2a2a2a;
+    background-color: #e0c040;
+    color: #1a1a1a;
+    box-shadow: 0 0 15px rgba(224, 192, 64, 0.4);
 }
 
 .vote-button:disabled {
@@ -139,13 +144,15 @@
 }
 
 .vote-result {
-    background-color: #E8F5E9;
-    color: #2E7D32;
+    background-color: rgba(46, 125, 50, 0.1);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
 }
 
 .login-message {
-    background-color: #E3F2FD;
-    color: #1565C0;
+    background-color: rgba(21, 101, 192, 0.1);
+    color: #64B5F6;
+    border: 1px solid #64B5F6;
 }
 .login-message p {
     margin: 0;
