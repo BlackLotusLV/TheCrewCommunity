@@ -13,46 +13,54 @@
     <meta property="og:description" content="@GetTop5VehiclesDescription()" />
 </HeadContent>
 <div class="header-container">
-    <h3>This or That Leaderboard</h3>
-    <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
+    <div class="header-content">
+        <h1 class="main-title">This or That Leaderboard</h1>
+        <div class="controls-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-box" placeholder="Search" @bind-value="_searchText" @bind-value:event="oninput"/>
+                @if (!string.IsNullOrEmpty(_searchText))
+                {
+                    <button class="clear-search-button" @onclick="() => _searchText = string.Empty">✖</button>
+                }
+                <i class="search-icon">🔍</i>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="content-layout">
     <div class="table-container">
-        <div class="search-container">
-            <input type="text" class="search-box" placeholder="Search..." @bind-value="_searchText" @bind-value:event="oninput"/>
-        </div>
-        <table class="table table-striped">
+        <table class="table">
             <thead>
             <tr>
-                <th @onclick="() => SetSortMode(SortMode.V1)" style="cursor: pointer">V1 Rank @(GetSortIndicator(SortMode.V1))</th>
+                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer;">Rank</th>
                 <th style="width: 100%">Vehicle</th>
                 <th>Total Wins</th>
-                <th>Total Matches</th>
-                <th>Win Ratio</th>
-                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer">V2 Rank @(GetSortIndicator(SortMode.V2))</th>
-                <th @onclick="() => SetSortMode(SortMode.V2)" style="cursor: pointer">V2 Points @(GetSortIndicator(SortMode.V2))</th>
-                <th class="table-image-column">Image</th>
+                <th>Points</th>
+                <th class="table-image-column">Thumbnail</th>
             </tr>
             </thead>
             <tbody>
             @if (FilteredEntries == null)
             {
                 <tr>
-                    <td colspan="6">Loading...</td>
+                    <td colspan="5">Loading...</td>
                 </tr>
             }
             else
             {
                 <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="20">
-                    <tr class="table-row" @onmouseover="() => ShowPreview(entry)">
-                        <td>@entry.Rank</td>
+                    <tr class="table-row @(_selectedEntry == entry ? "selected-row" : "")" @onclick="() => SelectEntry(entry)">
+                        <td class="rank-cell @GetRankClass(entry.V2Rank)">
+                            <img src="@GetRankMedal(entry.V2Rank)" class="rank-medal" alt="Rank Medal"/>
+                            @if (entry.V2Rank != 1)
+                            {
+                                <span class="rank-number">@entry.V2Rank</span>
+                            }
+                        </td>
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
                         <td>@entry.TotalWins</td>
-                        <td>@entry.TotalMatches</td>
-                        <td>@entry.WinRatio.ToString("P2")</td>
-                        <td>@entry.V2Rank</td>
                         <td>@entry.V2Points</td>
-                        <td><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
+                        <td class="thumbnail-cell"><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
                     </tr>
                 </Virtualize>
             }
@@ -62,11 +70,7 @@
     <div class="preview-container">
         @if (_selectedEntry != null)
         {
-            <img class="preview-image" src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_selectedEntry.VehicleSuggestion.ImageId/public" alt="@_selectedEntry.VehicleSuggestion.Brand - @_selectedEntry.VehicleSuggestion.Model - @_selectedEntry.VehicleSuggestion.Year"/>
-        }
-        else
-        {
-            <p>Select a vehicle from the table</p>
+            <img class="preview-image selected-preview" src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_selectedEntry.VehicleSuggestion.ImageId/public" alt="@_selectedEntry.VehicleSuggestion.Brand - @_selectedEntry.VehicleSuggestion.Model - @_selectedEntry.VehicleSuggestion.Year"/>
         }
     </div>
 </div>
@@ -82,7 +86,7 @@
         V2
     }
     
-    private SortMode _currentSortMode = SortMode.V1;
+    private SortMode _currentSortMode = SortMode.V2;
     TimeSpan UntilRefresh { get; set; }
     List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
     ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
@@ -146,9 +150,38 @@
     }
 
 
-    private void ShowPreview(ThisOrThatLeaderboardService.LeaderboardEntry entry)
+    private void SelectEntry(ThisOrThatLeaderboardService.LeaderboardEntry entry)
     {
+        if (_selectedEntry == entry)
+        {
+            _selectedEntry = null;
+            return;
+        }
         _selectedEntry = entry;
+    }
+
+    private string GetRankClass(int rank)
+    {
+        return rank switch
+        {
+            1 => "rank-legend",
+            <= 3 => "rank-platinum",
+            <= 10 => "rank-gold",
+            <= 25 => "rank-silver",
+            _ => "rank-bronze"
+        };
+    }
+
+    private string GetRankMedal(int rank)
+    {
+        return rank switch
+        {
+            1 => "assets/PVP_Medals/GR_Legend.png",
+            <= 3 => "assets/PVP_Medals/GR_Platinum.png",
+            <= 10 => "assets/PVP_Medals/GR_Gold.png",
+            <= 25 => "assets/PVP_Medals/GR_Silver.png",
+            _ => "assets/PVP_Medals/GR_Bronze.png"
+        };
     }
 
     protected override async Task OnInitializedAsync()

@@ -11,64 +11,123 @@
 @inject ILogger<TOTNew> Logger
 @inject IMemoryCache MemoryCache
 @inject IThisOrThatLeaderboardService LeaderboardService
+@inject GeneralUtils GeneralUtils
+@inject IHttpContextAccessor HttpContextAccessor
 @rendermode InteractiveServer
-@if (_isUploading)
-{
-    <div class="loading">
-        <i class="fa fa-spinner fa-spin"></i>
-    </div>
-}
-else
-{
-    <div>
-        <h1>Add new This or That entry</h1>
-    </div>
-    <EditForm model="_uploadModel" OnValidSubmit="HandleValidSubmit" class="form-container">
-        <DataAnnotationsValidator/>
-        <ValidationSummary/>
-        <div class="form-group">
-            <label for="Image">Image</label>
-            <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
-            @if (_isLoading)
-            {
-                <span><i class="fa fa-spinner fa-spin-pulse"></i></span>
-            }
-            @if (_isLoaded)
-            {
-                <span><i class="fa fa-check" style="color: green"></i></span>
-            }
-            @if (_isTooBig)
-            {
-                <span><i class="fa fa-x" style="color: red"></i> File too large</span>
-            }
-            <ValidationMessage For="@(() => _uploadModel.Image)"/>
-        </div>
-        <div class="form-group">
-            <label for="BrandName">Brand Name</label>
-            <InputText type="text" class="form-control" id="BrandName" placeholder="Brand Name" @bind-value="@_uploadModel.Brand"/>
-            <ValidationMessage For="@(() => _uploadModel.Brand)"/>
-        </div>
-        <div class="form-group">
-            <label for="Model">Model</label>
-            <InputText type="text" class="form-control" id="Model" placeholder="Model" @bind-value="@_uploadModel.Model"/>
-            <ValidationMessage For="@(() => _uploadModel.Model)"/>
-        </div>
-        <div class="form-group">
-            <label for="Year">Year</label>
-            <InputText type="text" class="form-control" id="Year" placeholder="Year" @bind-value="@_uploadModel.Year" pattern="\d*"/>
-            <ValidationMessage For="@(() => _uploadModel.Year)"/>
-        </div>
-        <div class="form-group">
-            <label for="Description">Description</label>
-            <InputText type="text" class="form-control" id="Description" placeholder="Description" @bind-Value="@_uploadModel.Description"/>
-            <ValidationMessage For="@(() => _uploadModel.Description)"/>
-        </div>
-        <div>
-            <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
-        </div>
-    </EditForm>
-}
 
+<div class="header-container">
+    <div class="header-content">
+        <h1 class="main-title">Add new This or That entry</h1>
+    </div>
+</div>
+
+<div class="content-layout">
+    <div class="form-section">
+        @if (_isUploading)
+        {
+            <div class="loading">
+                <i class="fa fa-spinner fa-spin"></i>
+                <p>UPLOADING...</p>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="_uploadModel" OnValidSubmit="HandleValidSubmit" class="form-container">
+                <DataAnnotationsValidator/>
+                <div class="form-group">
+                    <label for="Image">IMAGE</label>
+                    <div class="input-wrapper">
+                        <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected" class="form-control file-input"/>
+                        @if (_isLoading)
+                        {
+                            <span class="status-icon"><i class="fa fa-spinner fa-spin-pulse"></i></span>
+                        }
+                        @if (_isLoaded)
+                        {
+                            <span class="status-icon success"><i class="fa fa-check"></i></span>
+                        }
+                        @if (_isTooBig)
+                        {
+                            <span class="status-icon error"><i class="fa fa-x"></i> FILE TOO LARGE</span>
+                        }
+                    </div>
+                    <ValidationMessage For="@(() => _uploadModel.Image)"/>
+                </div>
+                <div class="form-group">
+                    <label for="BrandName">BRAND NAME</label>
+                    <InputText type="text" class="form-control" id="BrandName" placeholder="BRAND NAME" @bind-Value="@_uploadModel.Brand" @bind-Value:after="OnInputChanged"/>
+                    <ValidationMessage For="@(() => _uploadModel.Brand)"/>
+                </div>
+                <div class="form-group">
+                    <label for="Model">MODEL</label>
+                    <InputText type="text" class="form-control" id="Model" placeholder="MODEL" @bind-Value="@_uploadModel.Model" @bind-Value:after="OnInputChanged"/>
+                    <ValidationMessage For="@(() => _uploadModel.Model)"/>
+                </div>
+                <div class="form-group">
+                    <label for="Year">YEAR</label>
+                    <InputText type="text" class="form-control" id="Year" placeholder="YEAR" @bind-Value="@_uploadModel.Year" pattern="\d*" @bind-Value:after="OnInputChanged"/>
+                    <ValidationMessage For="@(() => _uploadModel.Year)"/>
+                </div>
+                <div class="form-group">
+                    <label for="Description">DESCRIPTION</label>
+                    <InputText type="text" class="form-control" id="Description" placeholder="DESCRIPTION" @bind-Value="@_uploadModel.Description"/>
+                    <ValidationMessage For="@(() => _uploadModel.Description)"/>
+                </div>
+                @if (IsDuplicate)
+                {
+                    <div class="error-message">
+                        <i class="fa fa-warning"></i> THIS VEHICLE MIGHT ALREADY EXIST IN THE LIST
+                    </div>
+                }
+                <div class="button-group">
+                    <button type="submit" class="upload-button" disabled="@(!_isLoaded)">UPLOAD</button>
+                </div>
+            </EditForm>
+        }
+    </div>
+
+    <div class="list-section">
+        <h2 class="section-title">EXISTING VEHICLES</h2>
+        <div class="search-wrapper">
+            <input type="text" class="search-box" placeholder="SEARCH" @bind-value="_searchText" @bind-value:event="oninput"/>
+            @if (!string.IsNullOrEmpty(_searchText))
+            {
+                <button class="clear-search-button" @onclick="ClearSearch">✖</button>
+            }
+            <i class="search-icon">🔍</i>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width: 100%">VEHICLE</th>
+                    <th class="table-image-column">THUMBNAIL</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if (FilteredEntries == null)
+                {
+                    <tr>
+                        <td colspan="2">LOADING...</td>
+                    </tr>
+                }
+                else
+                {
+                    <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="20">
+                        <tr class="table-row">
+                            <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
+                            <td class="thumbnail-cell">
+                                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" 
+                                     alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/>
+                            </td>
+                        </tr>
+                    </Virtualize>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 @code {
     bool _isUploading = false;
@@ -76,6 +135,50 @@ else
     bool _isLoaded = false;
     bool _isTooBig = false;
     readonly UploadModel _uploadModel = new();
+    string _searchText = string.Empty;
+    List<ThisOrThatLeaderboardService.LeaderboardEntry>? _leaderboardEntries;
+
+    private void OnInputChanged()
+    {
+        _searchText = $"{_uploadModel.Brand} {_uploadModel.Model} {_uploadModel.Year}".Trim();
+    }
+
+    private void ClearSearch()
+    {
+        _searchText = string.Empty;
+    }
+
+    private bool IsDuplicate => FilteredEntries?.Any(x => 
+        x.VehicleSuggestion.Brand.Equals(_uploadModel.Brand, StringComparison.OrdinalIgnoreCase) && 
+        x.VehicleSuggestion.Model.Equals(_uploadModel.Model, StringComparison.OrdinalIgnoreCase) && 
+        x.VehicleSuggestion.Year.Equals(_uploadModel.Year, StringComparison.OrdinalIgnoreCase)) ?? false;
+
+    List<ThisOrThatLeaderboardService.LeaderboardEntry>? FilteredEntries
+    {
+        get
+        {
+            if (_leaderboardEntries is null) return null;
+            if (string.IsNullOrWhiteSpace(_searchText)) return _leaderboardEntries;
+
+            return _leaderboardEntries
+                .Select(entry => new
+                {
+                    Entry = entry,
+                    Similarity = GeneralUtils.CalculateStringSimilarity(
+                        _searchText.AsSpan(),
+                        $"{entry.VehicleSuggestion.Brand} {entry.VehicleSuggestion.Model} {entry.VehicleSuggestion.Year}".AsSpan()
+                    )
+                })
+                .OrderByDescending(x => x.Similarity)
+                .Select(x => x.Entry)
+                .ToList();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _leaderboardEntries = LeaderboardService.GetLeaderboard();
+    }
 
     class UploadModel
     {

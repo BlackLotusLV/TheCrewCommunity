@@ -13,66 +13,81 @@
 @inject ICloudFlareImageService CfImageService
 @inject IDatabaseMethodService DatabaseMethodService
 @inject NavigationManager NavigationManager
-@if (ShowDialog && _isLoggedIn)
+@if (ShowDialog)
 {
-    <div class="modal-background" @onclick="ToggleDialog">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            @if (_isUploading)
-            {
-                <div class="loading">
-                    <i class="fa fa-spinner fa-spin"></i>
-                </div>
-            }
-            else
-            {
+    @if (_isLoggedIn)
+    {
+        <div class="modal-background" @onclick="ToggleDialog">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                @if (_isUploading)
+                {
+                    <div class="loading">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                }
+                else
+                {
+                    <div class="close" @onclick="ToggleDialog">
+                        <i class="fa fa-x"></i>
+                    </div>
+                    <h2 class="modal-title"><i class="fa fa-upload"></i> Upload Image</h2>
+                    <p class="modal-message">Select an image and the game that it belongs to. Familiarize yourself with the <a href="/Rules">Rules</a></p>
+                    <EditForm Model="_uploadModel" OnValidSubmit="HandleUpload" class="form-container">
+                        <DataAnnotationsValidator/>
+                        <ValidationSummary/>
+                        <div class="form-group">
+                            <label for="Image">Image</label>
+                            <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
+                            @if (_isLoading)
+                            {
+                                <span><i class="fa fa-spinner fa-spin-pulse"></i></span>
+                            }
+                            @if (_isLoaded)
+                            {
+                                <span><i class="fa fa-check" style="color: green"></i></span>
+                            }
+                            @if (_isTooBig)
+                            {
+                                <span><i class="fa fa-x" style="color: red"></i> File too large</span>
+                            }
+                            <ValidationMessage For="@(() => _uploadModel.Image)"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="GameId">Game</label>
+                            <select id="GameId" class="game-select" @bind="@_uploadModel.GameId">
+                                <option value="" disabled selected>-- Select a game --</option>
+                                @foreach (Game game in _games)
+                                {
+                                    <option value="@game.Id">@game.Name</option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => _uploadModel.GameId)"/>
+                        </div>
+                        <div>
+                            <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </div>
+    }
+    else if (!_isLoadingInitial)
+    {
+        <div class="modal-background" @onclick="ToggleDialog">
+            <div class="modal-content" @onclick:stopPropagation="true">
                 <div class="close" @onclick="ToggleDialog">
                     <i class="fa fa-x"></i>
                 </div>
-                <h2 class="modal-title"><i class="fa fa-upload"></i> Upload Image</h2>
-                <p class="modal-message">Select an image and the game that it belongs to. Familiarize yourself with the <a href="/Rules">Rules</a></p>
-                <EditForm Model="_uploadModel" OnValidSubmit="HandleUpload" class="form-container">
-                    <DataAnnotationsValidator/>
-                    <ValidationSummary/>
-                    <div class="form-group">
-                        <label for="Image">Image</label>
-                        <InputFile id="Image" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleFileSelected"/>
-                        @if (_isLoading)
-                        {
-                            <span><i class="fa fa-spinner fa-spin-pulse"></i></span>
-                        }
-                        @if (_isLoaded)
-                        {
-                            <span><i class="fa fa-check" style="color: green"></i></span>
-                        }
-                        @if (_isTooBig)
-                        {
-                            <span><i class="fa fa-x" style="color: red"></i> File too large</span>
-                        }
-                        <ValidationMessage For="@(() => _uploadModel.Image)"/>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="GameId">Game</label>
-                        <select id="GameId" class="game-select" @bind="@_uploadModel.GameId">
-                            <option value="" disabled selected>-- Select a game --</option>
-                            @foreach (Game game in _games)
-                            {
-                                <option value="@game.Id">@game.Name</option>
-                            }
-                        </select>
-                        <ValidationMessage For="@(() => _uploadModel.GameId)"/>
-                    </div>
-                    <div>
-                        <button type="submit" class="button" disabled="@(!_isLoaded)">Upload</button>
-                    </div>
-                </EditForm>
-            }
+                <h2 class="modal-title">Access Denied</h2>
+                <p>You must be logged in to upload images. Please <a href="/api/Auth/login">login</a>.</p>
+            </div>
         </div>
-    </div>
+    }
 }
 
 @code {
-    [Parameter] public bool ShowDialog { get; set; }
+    public bool ShowDialog { get; set; }
 
     string _title;
     readonly UploadModel _uploadModel = new();
@@ -83,6 +98,7 @@
     bool _isLoggedIn = false;
     bool _isUploading = false;
     bool _isTooBig = false;
+    bool _isLoadingInitial = true;
 
     class UploadModel
     {
@@ -107,6 +123,7 @@
         }
 
         _isLoggedIn = _user is not null;
+        _isLoadingInitial = false;
     }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
@@ -162,11 +179,17 @@
     public void ToggleDialog()
     {
         ShowDialog = !ShowDialog;
-        if (ShowDialog) return;
-        _isLoaded = false;
-        _uploadModel.Image = [];
-        _uploadModel.GameId = null;
-        _isUploading = false;
+        if (ShowDialog)
+        {
+            _isLoaded = false;
+            _isUploading = false;
+        }
+        else
+        {
+            _uploadModel.Image = [];
+            _uploadModel.GameId = null;
+        }
+        StateHasChanged();
     }
 
 }

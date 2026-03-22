@@ -1,20 +1,29 @@
-﻿.container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    max-height: calc(100vh - 205px);
-    min-height: calc(100vh - 205px);
+﻿.header-container {
+    padding: 10px 0;
+    text-align: center;
+}
+.main-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
-h3{
-    height: 40px;
-    text-align: center;
-    box-sizing: border-box;
-    padding: 7px;
-    font-size: 25px;
-    margin: 0;
+.content-layout {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 280px);
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+.voting-layout {
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .image-container {
@@ -22,12 +31,15 @@ h3{
     width: 50%;
     height: 100%;
     overflow: hidden;
+    cursor: pointer;
 }
 
-.image-container img {
+.vote-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #444;
 }
 
 .image-container .info {
@@ -37,33 +49,41 @@ h3{
     width: 100%;
     color: white;
     text-align: center;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay for readability */
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    z-index: 2;
+    text-transform: uppercase;
 }
 
 .image-container h4 {
-    margin: 10px;
-    font-size: 1.5rem;
+    margin: 5px 0;
+    font-size: 1.4rem;
     font-weight: bold;
+    color: #e0c040;
 }
 
-/* The overlay for hover */
 .image-container .overlay {
     position: absolute;
-    top: 100%; /* Start hidden below the image */
+    top: 100%;
     left: 0;
     width: 100%;
-    height: 100%; /* Cover the entire image */
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.3); /* Semi-transparent black background */
+    background: rgba(224, 192, 64, 0.3);
     color: white;
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: bold;
     text-transform: uppercase;
-    transition: top 0.2s ease; /* Smooth sliding animation */
-    z-index: 1; /* Ensure it's above other content but below .info */
-    opacity: 0; /* Keep invisible when not active */
+    transition: all 0.3s ease;
+    z-index: 3;
+    opacity: 0;
+}
+
+.image-container:hover .overlay {
+    top: 0;
+    opacity: 1;
 }
 
 .overlay-container {
@@ -72,81 +92,68 @@ h3{
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* Ensure it is above all other elements */
-    color: white;
+    z-index: 9999;
+    color: #e0c040;
     font-size: 1.5rem;
+    text-transform: uppercase;
 }
+
 .progress-container {
     width: 100%;
-    border-radius: 4px;
-    height: 2px;
-    overflow: hidden;
+    height: 4px;
+    background-color: #333;
+    border-radius: 2px;
+    margin-bottom: 10px;
 }
 
 .progress-bar {
     height: 100%;
-    background-color: yellow;
-    transition: width 0.3s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.progress-text {
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-}
-
-.swipe-hint {
-    color: #777;
-    font-size: 0.9rem;
-    margin: 4px 0;
-    font-style: italic;
-}
-
-.swipe-hint i {
-    margin: 0 4px;
+    background-color: #e0c040;
+    transition: width 0.3s ease;
 }
 
 .stats-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin: 0 auto;
+    height: 100%;
     background-color: #2a2a2a;
-    overflow: hidden;
+    border-radius: 8px;
+    overflow-y: auto;
+    border: 1px solid #444;
 }
 
 .stats-header {
     padding: 15px;
-    background-color: #2a2a2a;
-    border-bottom: 1px solid yellow;
+    background-color: #1a1a1a;
+    border-bottom: 2px solid #e0c040;
+    text-align: center;
 }
 
 .stats-header h4 {
-    margin: 0 0 10px 0;
+    margin: 0;
     font-size: 1.5rem;
-    text-align: center;
+    color: #e0c040;
+    font-weight: bold;
 }
 
 .timer-container {
     position: relative;
-    height: 20px;
-    background-color: #2a2a2a;
-    border-radius: 10px;
+    height: 24px;
+    background-color: #333;
+    border-radius: 12px;
     overflow: hidden;
     margin-top: 10px;
+    border: 1px solid #444;
 }
 
 .timer-bar {
     height: 100%;
-    background-color: yellow;
-    border-radius: 10px;
+    background-color: #e0c040;
     transition: width 1s linear;
 }
 
@@ -159,370 +166,227 @@ h3{
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #212529;
-    font-size: 0.9rem;
+    color: #1a1a1a;
+    font-size: 0.85rem;
     font-weight: bold;
 }
 
 .stats-content {
     padding: 20px;
-}
-
-.selected-vehicle {
-    text-align: center;
+    flex: 1;
 }
 
 .selected-vehicle h5 {
-    margin-bottom: 15px;
-    color: #6c757d;
+    color: #e0c040;
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 .vehicle-display {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 20px;
+    gap: 30px;
+    align-items: flex-start;
 }
 
 .vehicle-image {
-    flex: 0 0 auto;
+    flex: 1;
 }
 
-.vehicle-image img {
+.selected-preview {
     width: 100%;
-    height: auto;
-    object-fit: contain;
-    max-height: 350px;
+    border-radius: 8px;
+    border: 2px solid #e0c040;
+    box-shadow: 0 0 15px rgba(224, 192, 64, 0.4);
 }
 
 .vehicle-info {
-    flex: 1 1 auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .vehicle-name {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.vote-count {
-    color: #28a745;
-    font-weight: bold;
-}
-
-.vote-count i {
-    margin-right: 5px;
-}
-
-.stats-footer {
-    padding: 15px;
-    text-align: center;
-    border-top: 1px solid yellow;
-}
-
-.next-vote-btn {
-    background-color: #2a2a2a;
     color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border: 1px solid yellow;
+    margin: 0;
+    text-transform: uppercase;
 }
 
-.next-vote-btn:hover {
-    background-color: yellow;
-    color:black;
-    border: 1px solid #2a2a2a;
-}
-.vote-stats {
-    margin: 12px 0;
+.vote-stats h6 {
+    color: #e0c040;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .vote-bar-container {
-    background-color: #f0f0f0;
+    background-color: #333;
     border-radius: 4px;
-    height: 20px;
+    height: 24px;
     width: 100%;
     position: relative;
     overflow: hidden;
-    margin: 8px 0;
+    border: 1px solid #444;
 }
+
+.vote-bar {
+    background-color: #e0c040;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    transition: width 0.5s ease-out;
+}
+
+.vote-percent {
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
 .user-vote-marker {
     position: absolute;
     left: 0;
     top: 0;
     height: 100%;
-    background-color: #FFC107;
-    border-radius: 4px 0 0 4px;
-    opacity: 0.8;
+    background-color: white;
+    opacity: 0.3;
     z-index: 1;
 }
 
-.vote-bar {
-    background-color: #4CAF50;
-    height: 100%;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 8px;
-    transition: width 0.5s ease-in-out;
-    min-width: 30px;
-    position: relative;
-}
-
-.vote-percent {
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    position: relative;
-    z-index: 2;
-}
-
 .vote-details {
-    font-size: 14px;
-    color: #666;
-    margin: 4px 0;
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-top: 5px;
+    text-transform: uppercase;
 }
 
-h6 {
-    margin: 6px 0;
-    font-size: 16px;
-}
 .leaderboard-info {
-    margin: 12px 0;
-    padding: 8px;
-    border: 1px solid rgba(255, 255, 0, 0.3);
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    padding: 15px;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    border-left: 4px solid #e0c040;
+}
+
+.leaderboard-info h6 {
+    color: #e0c040;
+    margin: 0 0 10px 0;
 }
 
 .leaderboard-rank {
-    font-size: 15px;
-    margin: 8px 0;
+    color: #ccc;
+    font-size: 1rem;
+    margin: 0;
 }
 
 .rank-value {
+    color: white;
     font-weight: bold;
-    font-size: 18px;
-    color: #FFC107;
+    font-size: 1.2rem;
 }
 
 .leaderboard-update-info {
-    font-size: 12px;
-    color: #999;
-    font-style: italic;
     display: block;
-    margin-top: 4px;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 5px;
 }
 
 .view-leaderboard-link {
     display: inline-block;
-    margin-top: 8px;
-    color: #FFC107;
+    margin-top: 10px;
+    color: #e0c040;
     text-decoration: none;
-    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
 }
 
 .view-leaderboard-link:hover {
-    text-decoration: underline;
+    color: white;
 }
-.mobile-vote-buttons{
+
+.stats-footer {
+    padding: 15px;
+    text-align: center;
+    background-color: #1a1a1a;
+    border-top: 1px solid #444;
+}
+
+.next-vote-btn {
+    background-color: #e0c040;
+    color: #1a1a1a;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+
+.next-vote-btn:hover {
+    background-color: white;
+}
+
+.mobile-vote-buttons {
     display: none;
 }
 
-@media (pointer: fine) {
-    .swipe-hint {
-        display: none;
-    }
-    .image-container:hover .overlay {
-        top: 0;
-        opacity: 1;
-        transition: top 0.2s ease, opacity 0.2s ease;
-    }
-
-}
-@media (pointer: coarse) {
-    .image-container .overlay {
-        display: none !important; /* Use !important to override any other styles */
-    }
-
-    /* Ensure the overlay doesn't appear on hover for touch devices */
-    .image-container:hover .overlay {
-        display: none !important;
-        top: 100%;
-        opacity: 0;
-    }
-    .container{
-        overflow-x: scroll;
-    }
-    /* Vote buttons for mobile fallback */
-    .mobile-vote-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin: 10px 0;
-    }
-
-    .mobile-vote-button {
-        background-color: #2a2a2a;
-        color: white;
-        padding: 12px 15px;
-        border-radius: 8px;
-        font-weight: bold;
-        border: 1px solid yellow;
-        width: 48%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .mobile-vote-button i {
-        margin-right: 5px;
-    }
+.swipe-hint {
+    display: none;
 }
 
-@media screen and (max-width: 768px){
-    .container {
+@media (max-width: 1024px) {
+    .vehicle-display {
         flex-direction: column;
-        overflow-x: hidden; /* Don't allow horizontal scrolling */
-        min-height: unset; /* Don't force a specific height on mobile */
-        max-height: unset;
-        height: auto;
-        position: relative;
-        padding-bottom: 10px;
     }
+    .content-layout {
+        height: auto;
+        min-height: calc(100vh - 280px);
+    }
+}
 
+@media (max-width: 768px) {
+    .voting-layout {
+        flex-direction: column;
+    }
     .image-container {
         width: 100%;
         height: auto;
-        margin-bottom: 15px;
-        position: relative;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
-
-    .image-container img {
-        border-radius: 8px;
+    .vote-image {
         aspect-ratio: 16/9;
         object-fit: cover;
     }
-
-    /* Improve the info area for better readability */
-    .image-container .info {
-        padding: 8px 0;
-    }
-
-    .image-container h4 {
-        font-size: 1.2rem;
-        margin: 5px 0;
-    }
-
-    /* Enhanced swipe hint */
-    .swipe-hint {
-        display: block;
-        text-align: center;
-        padding: 8px;
-        margin: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        border-bottom: 1px solid rgba(255, 255, 0, 0.3);
-        font-style: normal;
-        font-weight: bold;
-    }
-
-    /* Visual feedback for swiping */
-    .image-container.swiping-left {
-        transform: translateX(-40px) rotate(-3deg);
-        opacity: 0.9;
-    }
-
-    .image-container.swiping-right {
-        transform: translateX(40px) rotate(3deg);
-        opacity: 0.9;
-    }
-
-    /* Stats container mobile adjustments */
-    .stats-container {
-        margin-top: 15px;
-    }
-
-    .stats-header h4 {
-        font-size: 1.3rem;
-    }
-
-    .vehicle-display {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .vehicle-image {
-        width: 100%;
-        max-width: 350px;
-    }
-
-    .vehicle-info {
-        width: 100%;
-    }
-
-    .vehicle-image img {
-        max-height: 200px;
-    }
-
-}
-@media screen and (orientation: landscape) and (pointer: coarse) {
-    .container {
-        flex-direction: row; /* Keep images side by side in landscape */
-        flex-wrap: wrap; /* Allow wrapping for the vote buttons */
-        max-height: none; /* Remove fixed height constraints */
-        min-height: auto;
-        height: auto;
-        position: relative;
-        padding-bottom: 60px; /* Create space for buttons below */
-    }
-
-    .image-container {
-        width: 50%; /* Keep each image taking half the width */
-        height: 60vh; /* Use viewport height for images */
-        margin-bottom: 5px;
-    }
-
-    .image-container img {
-        object-fit: cover;
-        height: 100%;
-        max-height: 60vh;
-    }
-
-    /* Position the buttons horizontally below the images */
     .mobile-vote-buttons {
         display: flex;
-        flex-direction: row; /* Keep buttons horizontal */
-        justify-content: space-between;
-        width: 100%; /* Full width */
-        position: absolute;
-        bottom: 10px;
-        left: 0;
-        padding: 0 10px;
-        box-sizing: border-box;
-    }
-
-    .mobile-vote-button {
-        width: 48%; /* Allow space between buttons */
-        padding: 12px 15px;
-    }
-
-    /* Adjust swipe hints for landscape orientation */
-    .swipe-hint {
-        padding: 5px;
-        font-size: 0.8rem;
-    }
-
-    /* Ensure Google AdSense appears below everything */
-    :global(.ad-container) {
-        margin-top: 60px; /* Add space after the buttons */
+        gap: 10px;
         width: 100%;
+        margin-top: 10px;
+    }
+    .mobile-vote-button {
+        flex: 1;
+        background-color: #e0c040;
+        color: #1a1a1a;
+        padding: 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        border: none;
+        text-transform: uppercase;
+    }
+    .swipe-hint {
+        display: block;
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-top: 5px;
     }
 }
 

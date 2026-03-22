@@ -1,43 +1,141 @@
 ﻿@page "/ThisOrThat/VoterStats"
 @using TheCrewCommunity.Services
+@inject GeneralUtils GeneralUtils
 @inject IThisOrThatLeaderboardService LeaderboardService
 @inject IHttpContextAccessor HttpContextAccessor
 @rendermode InteractiveServer
 
 <div class="header-container">
-    <h3>Voter Leaderboard</h3>
-    <p>Time till next refresh: @((LeaderboardService.GetNextRefreshTime()-DateTime.UtcNow).ToString("mm\\:ss"))</p>
+    <div class="header-content">
+        <h1 class="main-title">Voter Leaderboard</h1>
+        <div class="controls-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-box" placeholder="Search" @bind-value="_searchText" @bind-value:event="oninput"/>
+                @if (!string.IsNullOrEmpty(_searchText))
+                {
+                    <button class="clear-search-button" @onclick="() => _searchText = string.Empty">✖</button>
+                }
+                <i class="search-icon">🔍</i>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="content-container">
+
+<div class="content-layout">
     <div class="table-container">
-        <table>
+        <table class="table">
             <thead>
-            <tr class="table-row">
+            <tr>
                 <th>Rank</th>
                 <th style="width: 100%">Name</th>
                 <th>Votes</th>
                 <th>Completion</th>
+                <th>Favorite Vehicle</th>
             </tr>
             </thead>
             <tbody>
-            <Virtualize Items="@LeaderboardService.GetVoterList()" Context="entry" ItemSize="20" OverscanCount="50">
+            @if (FilteredEntries == null)
+            {
                 <tr>
-                    <td>@entry.Rank</td>
-                    <td>@entry.Username</td>
-                    <td>@entry.TotalMatches</td>
-                    <td>@entry.Percent.ToString("P2")</td>
+                    <td colspan="5">Loading...</td>
                 </tr>
-            </Virtualize>
+            }
+            else
+            {
+                <Virtualize Items="@FilteredEntries" Context="entry" ItemSize="50" OverscanCount="20">
+                    <tr class="table-row @(_selectedEntry == entry ? "selected-row" : "")" @onclick="() => SelectEntry(entry)">
+                        <td class="rank-cell @GetRankClass(entry)">
+                            <img src="@GetRankMedal(entry)" class="rank-medal" alt="Rank Medal"/>
+                            @if (entry.Percent < 1.0f)
+                            {
+                                <span class="rank-number">@entry.Rank</span>
+                            }
+                        </td>
+                        <td>@entry.Username</td>
+                        <td>@entry.TotalMatches</td>
+                        <td>@entry.Percent.ToString("P2")</td>
+                        <td>@(entry.TopVehicle != null ? $"{entry.TopVehicle.Brand} {entry.TopVehicle.Model}" : "N/A")</td>
+                    </tr>
+                </Virtualize>
+            }
             </tbody>
         </table>
     </div>
+    <div class="preview-container">
+        @if (_selectedEntry?.TopVehicle != null)
+        {
+            <div class="preview-wrapper">
+                <h3>Favorite Vehicle</h3>
+                <img class="preview-image selected-preview" src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_selectedEntry.TopVehicle.ImageId/public" alt="@_selectedEntry.TopVehicle.Brand - @_selectedEntry.TopVehicle.Model"/>
+                <p class="preview-info">@_selectedEntry.TopVehicle.Brand - @_selectedEntry.TopVehicle.Model (@_selectedEntry.TopVehicle.Year)</p>
+            </div>
+        }
+    </div>
 </div>
+
 @if (!_isMobile)
 {
     <GoogleAdSense AdsFormat="horizontal" Slot="8708810204" Style="display:inline-block;width:700px;height:100px" FullWidthResponsive="false"/>
 }
+
 @code {
     bool _isMobile = false;
+    string _searchText = "";
+    ThisOrThatLeaderboardService.VoterEntry? _selectedEntry;
+
+    List<ThisOrThatLeaderboardService.VoterEntry>? FilteredEntries
+    {
+        get
+        {
+            var entries = LeaderboardService.GetVoterList();
+            if (string.IsNullOrWhiteSpace(_searchText)) return entries;
+
+            return entries
+                .Select(entry => new
+                {
+                    Entry = entry,
+                    Similarity = GeneralUtils.CalculateStringSimilarity(_searchText.AsSpan(), entry.Username.AsSpan())
+                })
+                .OrderByDescending(x => x.Similarity)
+                .Select(x => x.Entry)
+                .ToList();
+        }
+    }
+
+    private void SelectEntry(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        if (_selectedEntry == entry)
+        {
+            _selectedEntry = null;
+            return;
+        }
+        _selectedEntry = entry;
+    }
+
+    private string GetRankClass(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        return entry.Percent switch
+        {
+            >= 1.0f => "rank-legend",
+            >= 0.85f => "rank-platinum",
+            >= 0.70f => "rank-gold",
+            >= 0.50f => "rank-silver",
+            _ => "rank-bronze"
+        };
+    }
+
+    private string GetRankMedal(ThisOrThatLeaderboardService.VoterEntry entry)
+    {
+        return entry.Percent switch
+        {
+            >= 1.0f => "assets/PVP_Medals/GR_Legend.png",
+            >= 0.85f => "assets/PVP_Medals/GR_Platinum.png",
+            >= 0.70f => "assets/PVP_Medals/GR_Gold.png",
+            >= 0.50f => "assets/PVP_Medals/GR_Silver.png",
+            _ => "assets/PVP_Medals/GR_Bronze.png"
+        };
+    }
+
     protected override Task OnInitializedAsync()
     {
         var userAgent = HttpContextAccessor?.HttpContext?.Request.Headers["User-Agent"].ToString();
