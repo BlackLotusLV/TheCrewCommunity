@@ -201,6 +201,18 @@ th {
     text-transform: uppercase;
 }
 
+.user-link {
+    color: #e0c040;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.user-link:hover {
+    color: white;
+    text-decoration: underline;
+}
+
 @media screen and (max-width: 1200px) {
     .content-layout {
         flex-direction: column;

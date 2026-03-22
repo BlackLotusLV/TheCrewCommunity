@@ -51,7 +51,7 @@
                                 <span class="rank-number">@entry.Rank</span>
                             }
                         </td>
-                        <td>@entry.Username</td>
+                        <td><a href="/Account/Profile/@entry.UserId" class="user-link" @onclick:stopPropagation="true">@entry.Username</a></td>
                         <td>@entry.TotalMatches</td>
                         <td>@entry.Percent.ToString("P2")</td>
                         <td>@(entry.TopVehicle != null ? $"{entry.TopVehicle.Brand} {entry.TopVehicle.Model}" : "N/A")</td>

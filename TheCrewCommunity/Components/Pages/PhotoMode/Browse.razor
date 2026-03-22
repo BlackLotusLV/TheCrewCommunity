@@ -47,7 +47,9 @@
                     <div class="hot-image-card" @onclick="@(_ => OpenImage(img.Id))">
                         <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{img.Id}/Thumbnail")" alt="@img.Id" />
                         <div class="author-overlay">
-                            @img.ApplicationUser?.GlobalUsername
+                            <a href="Account/Profile/@(img.ApplicationUser?.Id ?? Guid.Empty)" @onclick:stopPropagation="true">
+                                @img.ApplicationUser?.GlobalUsername
+                            </a>
                         </div>
                         <div class="hot-badge">
                             🔥 HOT
@@ -69,7 +71,9 @@
                 <div class="image-container" @onclick='@(_ => OpenImage(id))'>
                     <img class="image-thumb" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" />
                     <div class="author-overlay">
-                        @_images[i].ApplicationUser?.GlobalUsername
+                        <a href="Account/Profile/@(_images[i].ApplicationUser?.Id ?? Guid.Empty)" @onclick:stopPropagation="true">
+                            @_images[i].ApplicationUser?.GlobalUsername
+                        </a>
                     </div>
                     <img class="game-logo" src="assets/Icons/@game.IconFile" alt="@game.Name logo" />
                 </div>
@@ -134,7 +138,7 @@
                 <div class="lightbox-footer">
                     <div class="image-info">
                         <h3 class="image-title">@_selectedImage.Title</h3>
-                        <p class="image-author">By @_selectedImage.ApplicationUser?.GlobalUsername</p>
+                        <p class="image-author">By <a href="Account/Profile/@(_selectedImage.ApplicationUser?.Id ?? Guid.Empty)">@_selectedImage.ApplicationUser?.GlobalUsername</a></p>
                     </div>
                     <div class="image-actions">
                         <button class="action-button" @onclick="CopyImageUrl" title="Copy Image URL">
