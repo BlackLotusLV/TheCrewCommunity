@@ -3,6 +3,9 @@
 @using Microsoft.Extensions.Caching.Memory
 @using TheCrewCommunity.Data
 @using TheCrewCommunity.Data.GameData
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using TheCrewCommunity.Services
 @inject IDbContextFactory<LiveBotDbContext> DbContextFactory
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
@@ -11,46 +14,165 @@
 @rendermode InteractiveServer
 
 <PageTitle>Browsing Images</PageTitle>
-<div class="filters">
-    <h2>Filters:</h2>
-    <select class="filter-select" value="@_selectedGameId" @onchange="OnGameSelected">
-        <option value="@Guid.Empty">All Games</option>
-        @foreach (Game game in _games!)
-        {
-            <option value="@game.Id">@game.Name</option>
-        }
-    </select>
-    <select class="filter-select" value="@_selectedSortMode" @onchange="OnSortModeSelectedAsync">
-        @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
-        {
-            <option value="@option">@(GetEnumName(option))</option>
-        }
-    </select>
-</div>
-<div class="image-grid">
-    @for (var i = 0; i < _currentLoadEnd; i++)
-    {
-        Guid id = _images[i].Id;
-        Game game = _images[i].Game!;
-        <div class="image-container">
-            <img class="image-thumb" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" @onclick='@(_ => OpenImage(id))'/>
-            <img class="game-logo" src="assets/Icons/@game.IconFile" alt="@game.Name logo"/>
-        </div>
-    }
-</div>
 
-<div class="load-more">
-    @if (_isLoading)
+<div class="browse-container">
+    <header class="browse-header">
+        <h1 class="page-title">Browsing Images</h1>
+        <div class="filters-group">
+            <select class="filter-select" value="@_selectedGameId" @onchange="OnGameSelected">
+                <option value="@Guid.Empty">All Games</option>
+                @foreach (Game game in _games!)
+                {
+                    <option value="@game.Id">@game.Name</option>
+                }
+            </select>
+            <select class="filter-select" value="@_selectedSortMode" @onchange="OnSortModeSelectedAsync">
+                @foreach (SortMode option in Enum.GetValues(typeof(SortMode)))
+                {
+                    <option value="@option">@(GetEnumName(option))</option>
+                }
+            </select>
+        </div>
+    </header>
+
+    @if (_topHotImages.Length > 0)
     {
-        <p>Loading images...</p>
+        <section class="top-hot-section">
+            <h2 class="section-title">
+                <span class="oi oi-fire" aria-hidden="true"></span> Top 5 Hot
+            </h2>
+            <div class="top-hot-grid">
+                @foreach (var img in _topHotImages)
+                {
+                    <div class="hot-image-card" @onclick="@(_ => OpenImage(img.Id))">
+                        <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{img.Id}/Thumbnail")" alt="@img.Id" />
+                        <div class="author-overlay">
+                            @img.ApplicationUser?.GlobalUsername
+                        </div>
+                        <div class="hot-badge">
+                            🔥 HOT
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
     }
-    else if (_currentLoadEnd == _images.Length)
+
+    <section class="main-grid-section">
+        <h2 class="section-title">All Images</h2>
+        <div class="image-grid">
+            @for (var i = 0; i < _currentLoadEnd; i++)
+            {
+                if (i >= _images.Length) break;
+                Guid id = _images[i].Id;
+                Game game = _images[i].Game!;
+                <div class="image-container" @onclick='@(_ => OpenImage(id))'>
+                    <img class="image-thumb" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{id}/Thumbnail")" alt="@id" />
+                    <div class="author-overlay">
+                        @_images[i].ApplicationUser?.GlobalUsername
+                    </div>
+                    <img class="game-logo" src="assets/Icons/@game.IconFile" alt="@game.Name logo" />
+                </div>
+            }
+        </div>
+    </section>
+
+    <div class="load-more">
+        @if (_isLoading)
+        {
+            <p>Loading images...</p>
+        }
+        else if (_currentLoadEnd >= _images.Length && _images.Length > 0)
+        {
+            <p>All images loaded</p>
+        }
+        else if (_images.Length > 0)
+        {
+            <button class="load-more-button" @ref="_loadMoreButton" @onclick="LoadMoreImages">Load more</button>
+        }
+    </div>
+
+    @if (_selectedImage != null)
     {
-        <p>All images loaded</p>
-    }
-    else
-    {
-    <button class="load-more-button" @ref="_loadMoreButton" @onclick="LoadMoreImages">Load more</button>
+        <div class="lightbox-overlay" @onclick="CloseImage">
+            <div class="lightbox-content @(_navigatedOnce ? "navigating-once" : "")" @onclick:stopPropagation="true">
+                <button class="close-button" @onclick="CloseImage">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="lightbox-main">
+                    @if (_selectedImageIndex > 0)
+                    {
+                        <div class="nav-preview prev" @onclick="PreviousImage">
+                            <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{_images[_selectedImageIndex - 1].Id}/public")" alt="Previous" />
+                        </div>
+                    }
+
+                        <div class="image-wrapper @(_isNavigating ? "navigating " + _navigationDirection : "")">
+                            @for (int i = Math.Max(0, _selectedImageIndex - 2); i <= Math.Min(_images.Length - 1, _selectedImageIndex + 2); i++)
+                            {
+                                var localId = _images[i].Id;
+                                var localIndex = i;
+                                string imgClass = localIndex == _selectedImageIndex ? "active" : "preload";
+                                if (_isNavigating)
+                                {
+                                    if (_navigationDirection == "next" && localIndex == _selectedImageIndex - 1) imgClass = "outgoing";
+                                    else if (_navigationDirection == "prev" && localIndex == _selectedImageIndex + 1) imgClass = "outgoing";
+                                }
+                                <img @key="localId" src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{localId}/public")" class="@imgClass" alt="Image @localIndex" />
+                            }
+                        </div>
+
+                    @if (_selectedImageIndex < _images.Length - 1)
+                    {
+                        <div class="nav-preview next" @onclick="NextImage">
+                            <img src="@($"https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/{_images[_selectedImageIndex + 1].Id}/public")" alt="Next" />
+                        </div>
+                    }
+                </div>
+                
+                <div class="lightbox-footer">
+                    <div class="image-info">
+                        <h3 class="image-title">@_selectedImage.Title</h3>
+                        <p class="image-author">By @_selectedImage.ApplicationUser?.GlobalUsername</p>
+                    </div>
+                    <div class="image-actions">
+                        <button class="action-button" @onclick="CopyImageUrl" title="Copy Image URL">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        @if (_canDelete)
+                        {
+                            <button class="action-button delete" @onclick="() => _showDeleteConfirm = true" title="Delete Image">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        }
+                        <div class="likes-container">
+                            <span class="likes-count">@_likesCount</span>
+                            <button class="like-button @(_isLiked ? "liked" : "")" @onclick="ToggleLikeAsync" title="@(_currentUser == null ? "Log in to like" : "Like")">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        @if (_selectedImage.Game != null)
+                        {
+                            <img class="footer-game-logo" src="assets/Icons/@_selectedImage.Game.IconFile" alt="@_selectedImage.Game.Name" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (_showDeleteConfirm)
+        {
+            <div class="modal-overlay" @onclick="() => _showDeleteConfirm = false">
+                <div class="modal-content" @onclick:stopPropagation="true">
+                    <h3>Confirm Delete</h3>
+                    <p>Are you sure you want to delete this image? This action cannot be undone.</p>
+                    <div class="modal-buttons">
+                        <button class="modal-button cancel" @onclick="() => _showDeleteConfirm = false">Cancel</button>
+                        <button class="modal-button delete" @onclick="DeleteImageAsync">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
     }
 </div>
 @code {
@@ -75,7 +197,7 @@
         observer.observe(loadMoreButton);
     }
     function applyOnLoadToImages() {
-        let images = document.querySelectorAll('.image-grid img:not(.game-logo)');
+        let images = document.querySelectorAll('.image-grid img.image-thumb');
         console.log('Iterating on all images');
         images.forEach(function(img) {
             // remove the processed-image class if it is present
