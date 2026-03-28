@@ -44,6 +44,14 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
     public DbSet<DailyVote> DailyVotes { get; init; }
     public DbSet<PersistentMessage> PersistentMessages { get; init; }
     public DbSet<MotorfestVehicle> MotorfestVehicles { get; init; }
+    public DbSet<MotorfestVehicleBrand> MotorfestVehicleBrands { get; init; }
+    public DbSet<MotorfestVehicleCategory> MotorfestVehicleCategories { get; init; }
+    public DbSet<MotorfestVehicleCountry> MotorfestVehicleCountries { get; init; }
+    public DbSet<MotorfestVehicleEngineType> MotorfestVehicleEngineTypes { get; init; }
+    public DbSet<MotorfestVehiclePeriod> MotorfestVehiclePeriods { get; init; }
+    public DbSet<MotorfestVehicleStyle> MotorfestVehicleStyles { get; init; }
+    public DbSet<MotorfestVehicleTag> MotorfestVehicleTags { get; init; }
+    public DbSet<MotorfestVehicleType> MotorfestVehicleTypes { get; init; }
 
     public LiveBotDbContext()
     {

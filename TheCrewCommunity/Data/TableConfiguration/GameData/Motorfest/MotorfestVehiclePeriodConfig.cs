@@ -8,6 +8,7 @@ public class MotorfestVehiclePeriodConfig : IEntityTypeConfiguration<MotorfestVe
 {
     public void Configure(EntityTypeBuilder<MotorfestVehiclePeriod> builder)
     {
+        builder.ToTable("motorfest_vehicle_period");
         builder.HasKey(period => period.Id);
         builder.Property(period => period.Name)
             .IsRequired()

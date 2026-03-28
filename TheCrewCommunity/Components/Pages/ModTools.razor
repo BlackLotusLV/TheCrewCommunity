@@ -1,0 +1,24 @@
+@page "/ModTools"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrator")]
+
+<div class="header-container">
+    <div class="header-content">
+        <h1 class="main-title">Mod Tools</h1>
+    </div>
+</div>
+
+<div class="content-layout">
+    <div class="tools-grid">
+        <a href="/ModTools/MotorfestVehicles" class="tool-card">
+            <div class="tool-icon">
+                <i class="fa fa-car"></i>
+            </div>
+            <div class="tool-info">
+                <span class="tool-name">Motorfest Vehicles Management</span>
+                <span class="tool-description">Add and manage vehicles for The Crew Motorfest.</span>
+            </div>
+        </a>
+    </div>
+</div>

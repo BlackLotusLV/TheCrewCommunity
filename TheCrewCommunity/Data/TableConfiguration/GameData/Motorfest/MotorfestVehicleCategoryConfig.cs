@@ -8,6 +8,7 @@ public class MotorfestVehicleCategoryConfig : IEntityTypeConfiguration<Motorfest
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicleCategory> builder)
     {
+        builder.ToTable("motorfest_vehicle_category");
         builder.HasKey(category => category.Id);
         builder.Property(category => category.Name)
             .IsRequired()

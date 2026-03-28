@@ -5,6 +5,7 @@ using TheCrewCommunity.Data.Entities;
 using TheCrewCommunity.Data.Entities.Discord;
 using TheCrewCommunity.Data.Entities.WebData;
 using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
+using TheCrewCommunity.Data.Entities.GameData.Motorfest;
 
 namespace TheCrewCommunity.Services;
 
@@ -31,6 +32,24 @@ public interface IDatabaseMethodService
     Task AddVehicleSuggestionAsync(Guid imageId, string brand, string model, string year, string? description = null);
     Task<ApplicationUser> AddApplicationUserAsync(ApplicationUser applicationUser);
     Task<SuggestionVote> AddSuggestionVoteAsync(SuggestionVote vote);
+    Task AddMotorfestVehicleAsync(MotorfestVehicle vehicle);
+    Task<List<MotorfestVehicleBrand>> GetMotorfestVehicleBrandsAsync();
+    Task<List<MotorfestVehicleCategory>> GetMotorfestVehicleCategoriesAsync();
+    Task<List<MotorfestVehicleCountry>> GetMotorfestVehicleCountriesAsync();
+    Task<List<MotorfestVehicleEngineType>> GetMotorfestVehicleEngineTypesAsync();
+    Task<List<MotorfestVehiclePeriod>> GetMotorfestVehiclePeriodsAsync();
+    Task<List<MotorfestVehicleStyle>> GetMotorfestVehicleStylesAsync();
+    Task<List<MotorfestVehicleTag>> GetMotorfestVehicleTagsAsync();
+    Task<List<MotorfestVehicleType>> GetMotorfestVehicleTypesAsync();
+    Task<List<MotorfestVehicle>> GetMotorfestVehiclesAsync();
+    Task AddMotorfestVehicleBrandAsync(MotorfestVehicleBrand brand);
+    Task AddMotorfestVehicleCategoryAsync(MotorfestVehicleCategory category);
+    Task AddMotorfestVehicleCountryAsync(MotorfestVehicleCountry country);
+    Task AddMotorfestVehicleEngineTypeAsync(MotorfestVehicleEngineType engineType);
+    Task AddMotorfestVehiclePeriodAsync(MotorfestVehiclePeriod period);
+    Task AddMotorfestVehicleStyleAsync(MotorfestVehicleStyle style);
+    Task AddMotorfestVehicleTagAsync(MotorfestVehicleTag tag);
+    Task AddMotorfestVehicleTypeAsync(MotorfestVehicleType type);
 }
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
@@ -325,6 +344,127 @@ public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContext
             Description = description
         };
         await context.VehicleSuggestions.AddAsync(suggestion);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task AddMotorfestVehicleAsync(MotorfestVehicle vehicle)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicles.AddAsync(vehicle);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<List<MotorfestVehicleBrand>> GetMotorfestVehicleBrandsAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleBrands.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleCategory>> GetMotorfestVehicleCategoriesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleCategories.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleCountry>> GetMotorfestVehicleCountriesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleCountries.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleEngineType>> GetMotorfestVehicleEngineTypesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleEngineTypes.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehiclePeriod>> GetMotorfestVehiclePeriodsAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehiclePeriods.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleStyle>> GetMotorfestVehicleStylesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleStyles.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleTag>> GetMotorfestVehicleTagsAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleTags.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicleType>> GetMotorfestVehicleTypesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicleTypes.OrderBy(x => x.Name).ToListAsync();
+    }
+
+    public async Task<List<MotorfestVehicle>> GetMotorfestVehiclesAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.MotorfestVehicles
+            .Include(x=>x.Brand)
+            .Include(x=>x.Category)
+            .Include(x=>x.Country)
+            .Include(x=>x.EngineType)
+            .Include(x=>x.Period)
+            .Include(x=>x.Style)
+            .Include(x=>x.Tag)
+            .Include(x=>x.Type)
+            .OrderBy(x => x.Brand.Name)
+            .ThenBy(x => x.ModelName)
+            .ToListAsync();
+    }
+
+    public async Task AddMotorfestVehicleBrandAsync(MotorfestVehicleBrand brand)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleBrands.AddAsync(brand);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleCategoryAsync(MotorfestVehicleCategory category)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleCategories.AddAsync(category);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleCountryAsync(MotorfestVehicleCountry country)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleCountries.AddAsync(country);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleEngineTypeAsync(MotorfestVehicleEngineType engineType)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleEngineTypes.AddAsync(engineType);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehiclePeriodAsync(MotorfestVehiclePeriod period)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehiclePeriods.AddAsync(period);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleStyleAsync(MotorfestVehicleStyle style)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleStyles.AddAsync(style);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleTagAsync(MotorfestVehicleTag tag)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleTags.AddAsync(tag);
+        await context.SaveChangesAsync();
+    }
+    public async Task AddMotorfestVehicleTypeAsync(MotorfestVehicleType type)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        await context.MotorfestVehicleTypes.AddAsync(type);
         await context.SaveChangesAsync();
     }
 }

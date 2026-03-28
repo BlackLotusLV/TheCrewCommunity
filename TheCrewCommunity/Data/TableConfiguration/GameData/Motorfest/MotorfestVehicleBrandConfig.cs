@@ -8,6 +8,7 @@ public class MotorfestVehicleBrandConfig: IEntityTypeConfiguration<MotorfestVehi
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicleBrand> builder)
     {
+        builder.ToTable("motorfest_vehicle_brand");
         builder.HasKey(brand => brand.Id);
         builder.Property(brand => brand.Name)
             .IsRequired()

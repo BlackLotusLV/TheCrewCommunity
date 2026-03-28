@@ -1,0 +1,243 @@
+@using TheCrewCommunity.Data.Entities.GameData.Motorfest
+@using TheCrewCommunity.Services
+@inject IDatabaseMethodService DatabaseMethodService
+
+@if (ShowDialog)
+{
+    <div class="modal-background" @onclick="ToggleDialog">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="close" @onclick="ToggleDialog">
+                <i class="fa fa-x"></i>
+            </div>
+            <h2 class="modal-title"><i class="fa fa-plus-circle"></i> Add New @LookupType</h2>
+            
+            <div class="form-container">
+                @if (LookupType == "Country")
+                {
+                    <div class="form-group">
+                        <label>Country Code (e.g. US, GB, JP)</label>
+                        <input type="text" @bind="_newItemId" class="form-control" maxlength="2" />
+                    </div>
+                }
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" @bind="_newItemName" class="form-control" />
+                </div>
+                
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="error-message">
+                        <i class="fa fa-times-circle"></i> @_errorMessage
+                    </div>
+                }
+
+                <div class="button-group">
+                    <button type="button" class="button secondary" @onclick="ToggleDialog">Cancel</button>
+                    <button type="button" class="button" @onclick="HandleSave" disabled="@(string.IsNullOrWhiteSpace(_newItemName) || (LookupType == "Country" && string.IsNullOrWhiteSpace(_newItemId)) || _isSaving)">
+                        @if (_isSaving)
+                        {
+                            <i class="fa fa-spinner fa-spin"></i> <span>SAVING...</span>
+                        }
+                        else
+                        {
+                            <span>SAVE</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: #1a1a1a;
+        color: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        border: 1px solid #d4af37;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        cursor: pointer;
+        color: #888;
+        transition: color 0.2s;
+    }
+
+    .close:hover {
+        color: #d4af37;
+    }
+
+    .modal-title {
+        color: #d4af37;
+        margin-bottom: 1.5rem;
+        font-family: 'Agency FB', sans-serif;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #aaa;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 4px;
+    }
+
+    .form-control:focus {
+        border-color: #d4af37;
+        outline: none;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .button {
+        flex: 1;
+        padding: 0.75rem;
+        background-color: #d4af37;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: background-color 0.2s;
+    }
+
+    .button:hover:not(:disabled) {
+        background-color: #b8962d;
+    }
+    
+    .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .button.secondary {
+        background-color: #444;
+        color: #fff;
+    }
+
+    .button.secondary:hover {
+        background-color: #555;
+    }
+
+    .error-message {
+        color: #ff4d4d;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+
+@code {
+    [Parameter] public bool ShowDialog { get; set; }
+    [Parameter] public EventCallback<bool> ShowDialogChanged { get; set; }
+    [Parameter] public string LookupType { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnItemAdded { get; set; }
+
+    private string _newItemName = string.Empty;
+    private string _newItemId = string.Empty;
+    private string _errorMessage = string.Empty;
+    private bool _isSaving = false;
+
+    public void ToggleDialog()
+    {
+        ShowDialog = !ShowDialog;
+        if (ShowDialog)
+        {
+            _newItemName = string.Empty;
+            _newItemId = string.Empty;
+            _errorMessage = string.Empty;
+            _isSaving = false;
+        }
+        ShowDialogChanged.InvokeAsync(ShowDialog);
+    }
+
+    private async Task HandleSave()
+    {
+        if (string.IsNullOrWhiteSpace(_newItemName)) return;
+        _isSaving = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            switch (LookupType)
+            {
+                case "Brand":
+                    await DatabaseMethodService.AddMotorfestVehicleBrandAsync(new MotorfestVehicleBrand { Name = _newItemName });
+                    break;
+                case "Category":
+                    await DatabaseMethodService.AddMotorfestVehicleCategoryAsync(new MotorfestVehicleCategory { Name = _newItemName });
+                    break;
+                case "Country":
+                    if (string.IsNullOrWhiteSpace(_newItemId)) return;
+                    await DatabaseMethodService.AddMotorfestVehicleCountryAsync(new MotorfestVehicleCountry { Id = _newItemId, Name = _newItemName });
+                    break;
+                case "EngineType":
+                    await DatabaseMethodService.AddMotorfestVehicleEngineTypeAsync(new MotorfestVehicleEngineType { Name = _newItemName });
+                    break;
+                case "Period":
+                    await DatabaseMethodService.AddMotorfestVehiclePeriodAsync(new MotorfestVehiclePeriod { Name = _newItemName });
+                    break;
+                case "Style":
+                    await DatabaseMethodService.AddMotorfestVehicleStyleAsync(new MotorfestVehicleStyle { Name = _newItemName });
+                    break;
+                case "Tag":
+                    await DatabaseMethodService.AddMotorfestVehicleTagAsync(new MotorfestVehicleTag { Name = _newItemName });
+                    break;
+                case "Type":
+                    await DatabaseMethodService.AddMotorfestVehicleTypeAsync(new MotorfestVehicleType { Name = _newItemName });
+                    break;
+            }
+
+            await OnItemAdded.InvokeAsync();
+            ToggleDialog();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to add {LookupType}: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

@@ -4,9 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace TheCrewCommunity.Services;
 
+public enum CloudFlareImageContentType
+{
+    ThisOrThat,
+    PhotoMode,
+    MotorfestVehicle
+}
+
 public interface ICloudFlareImageService
 {
-    Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, CloudFlareImageService.ContentType contentType = CloudFlareImageService.ContentType.PhotoMode);
+    Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, CloudFlareImageContentType contentType = CloudFlareImageContentType.PhotoMode);
     Task<DeleteImageResponse> DeleteImageAsync(Guid imageId);
 }
 
@@ -26,17 +33,20 @@ public class CloudFlareImageService : ICloudFlareImageService
         _cfBaseUrl = new Uri($"https://api.cloudflare.com/client/v4/accounts/{configuration["CloudFlare:AccountId"]}/images/v1");
     }
 
-    public async Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, ContentType contentType = ContentType.PhotoMode)
+    public async Task<PostImageResponse> PostImageAsync(byte[] image, bool requireSignedUrls = false, CloudFlareImageContentType contentType = CloudFlareImageContentType.PhotoMode)
     {
         var metaDictionary = new Dictionary<string, string>();
 
         switch (contentType)
         {
-            case ContentType.ThisOrThat:
+            case CloudFlareImageContentType.ThisOrThat:
                 metaDictionary.Add(ContentTypeId, "thisOrThat");
                 break;
-            case ContentType.PhotoMode:
+            case CloudFlareImageContentType.PhotoMode:
                 metaDictionary.Add(ContentTypeId, "photoMode");
+                break;
+            case CloudFlareImageContentType.MotorfestVehicle:
+                metaDictionary.Add(ContentTypeId, "motorfestVehicle");
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null);
@@ -87,11 +97,6 @@ public class CloudFlareImageService : ICloudFlareImageService
         }
 
         return result;
-    }
-    public enum ContentType
-    {
-        ThisOrThat,
-        PhotoMode
     }
 }
 

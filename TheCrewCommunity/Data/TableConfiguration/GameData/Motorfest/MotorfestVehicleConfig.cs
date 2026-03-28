@@ -8,6 +8,7 @@ public class MotorfestVehicleConfig : IEntityTypeConfiguration<MotorfestVehicle>
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicle> builder)
     {
+        builder.ToTable("motorfest_vehicles");
         builder.HasKey(mv => mv.Id);
         builder.HasOne(vehicle=>vehicle.Brand)
             .WithMany()

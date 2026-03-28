@@ -8,6 +8,7 @@ public class MotorfestVehicleTagConfig : IEntityTypeConfiguration<MotorfestVehic
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicleTag> builder)
     {
+        builder.ToTable("motorfest_vehicle_tag");
         builder.HasKey(tag => tag.Id);
         builder.Property(tag => tag.Name)
             .IsRequired()

@@ -8,6 +8,7 @@ public class MotorfestVehicleCountryConfig : IEntityTypeConfiguration<MotorfestV
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicleCountry> builder)
     {
+        builder.ToTable("motorfest_vehicle_country");
         builder.HasKey(country => country.Id);
         builder.Property(country => country.Id)
             .HasMaxLength(2);

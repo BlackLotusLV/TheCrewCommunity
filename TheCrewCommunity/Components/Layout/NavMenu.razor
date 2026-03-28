@@ -74,6 +74,13 @@
                                 <NavLink href="/Account/Profile" class="dropdown-item" @onclick="CloseMenu">
                                     <i class="fa fa-user"></i> Profile
                                 </NavLink>
+                                <AuthorizeView Roles="Administrator" Context="innerContext">
+                                    <Authorized>
+                                        <NavLink href="/ModTools" class="dropdown-item" @onclick="CloseMenu">
+                                            <i class="fa fa-screwdriver-wrench"></i> Mod Tools
+                                        </NavLink>
+                                    </Authorized>
+                                </AuthorizeView>
                                 <a href="/api/auth/logout" class="dropdown-item logout-link">
                                     <i class="fa fa-sign-out-alt"></i> Logout
                                 </a>

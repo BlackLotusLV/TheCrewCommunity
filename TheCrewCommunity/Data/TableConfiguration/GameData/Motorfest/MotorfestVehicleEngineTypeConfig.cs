@@ -8,6 +8,7 @@ public class MotorfestVehicleEngineTypeConfig : IEntityTypeConfiguration<Motorfe
 {
     public void Configure(EntityTypeBuilder<MotorfestVehicleEngineType> builder)
     {
+        builder.ToTable("motorfest_vehicle_engine_type");
         builder.HasKey(engineType => engineType.Id);
         builder.Property(engineType => engineType.Name)
             .IsRequired()
