@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
-using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.Entities.WebData;
 using TheCrewCommunity.LiveBot;
 using TheCrewCommunity.LiveBot.DiscordEventHandlers;
 using TheCrewCommunity.Services;
@@ -67,7 +67,10 @@ public static class ServiceConfiguration
                 
         string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Default connection string not provided!");
                 
-        services.AddPooledDbContextFactory<LiveBotDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddPooledDbContextFactory<LiveBotDbContext>(options =>options
+            .UseNpgsql(connectionString)
+            .UseSnakeCaseNamingConvention()
+        );
         services.AddTransient(sp =>
         {
             var factory = sp.GetRequiredService<IDbContextFactory<LiveBotDbContext>>();

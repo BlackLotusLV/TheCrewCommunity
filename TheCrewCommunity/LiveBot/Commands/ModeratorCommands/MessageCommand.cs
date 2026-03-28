@@ -2,6 +2,8 @@
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot.Commands.ModeratorCommands;

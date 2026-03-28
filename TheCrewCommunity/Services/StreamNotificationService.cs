@@ -2,6 +2,8 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
 
 namespace TheCrewCommunity.Services;
 

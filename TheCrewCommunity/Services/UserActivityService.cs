@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
 
 namespace TheCrewCommunity.Services;
 

@@ -1,9 +1,12 @@
 ﻿@page "/ThisOrThat/Leaderboard"
 @using TheCrewCommunity.Services
+@using TheCrewCommunity.Data.Entities.GameData.Motorfest
+@using Microsoft.AspNetCore.Authorization
 @inject GeneralUtils GeneralUtils
 @inject IThisOrThatLeaderboardService LeaderboardService
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IDatabaseMethodService DatabaseMethodService
 @rendermode InteractiveServer
 <HeadContent>
     <meta property="og:title" content="This or That Leaderboard" />
@@ -36,6 +39,7 @@
                 <th style="width: 100%">Vehicle</th>
                 <th>Total Wins</th>
                 <th>Points</th>
+                <th class="implementation-header">In Game</th>
                 <th class="table-image-column">Thumbnail</th>
             </tr>
             </thead>
@@ -43,7 +47,7 @@
             @if (FilteredEntries == null)
             {
                 <tr>
-                    <td colspan="5">Loading...</td>
+                    <td colspan="6">Loading...</td>
                 </tr>
             }
             else
@@ -60,6 +64,19 @@
                         <td>@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year</td>
                         <td>@entry.TotalWins</td>
                         <td>@entry.V2Points</td>
+                        <td class="implementation-cell">
+                            @if (entry.VehicleSuggestion.Implementations != null && entry.VehicleSuggestion.Implementations.Count > 0)
+                            {
+                                string hoverText = string.Join("\n", entry.VehicleSuggestion.Implementations.Select(i => (i.Brand?.Name ?? "") + " " + i.ModelName + " (" + i.Year.Year + ")"));
+                                <div class="implementation-wrapper" title="@hoverText">
+                                    <img src="assets/Icons/motorfest_logo.png" class="motorfest-icon" alt="In Game"/>
+                                    @if (entry.VehicleSuggestion.Implementations.Count > 1)
+                                    {
+                                        <span class="implementation-count">@entry.VehicleSuggestion.Implementations.Count</span>
+                                    }
+                                </div>
+                            }
+                        </td>
                         <td class="thumbnail-cell"><img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.VehicleSuggestion.ImageId/leaderboardThumb" alt="@entry.VehicleSuggestion.Brand - @entry.VehicleSuggestion.Model - @entry.VehicleSuggestion.Year"/></td>
                     </tr>
                 </Virtualize>
@@ -71,6 +88,39 @@
         @if (_selectedEntry != null)
         {
             <img class="preview-image selected-preview" src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@_selectedEntry.VehicleSuggestion.ImageId/public" alt="@_selectedEntry.VehicleSuggestion.Brand - @_selectedEntry.VehicleSuggestion.Model - @_selectedEntry.VehicleSuggestion.Year"/>
+            <AuthorizeView Roles="Administrator">
+                <div class="link-vehicle-section">
+                    <h3 class="section-subtitle">Link to Motorfest Vehicle</h3>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input list="motorfest-vehicles-list" class="form-control" @bind-value="_motorfestVehicleName" @bind-value:event="oninput" @onchange="OnMotorfestVehicleChanged" placeholder="SELECT MOTORFEST VEHICLE" />
+                            <datalist id="motorfest-vehicles-list">
+                                @if (_motorfestVehicles != null)
+                                {
+                                    @foreach (var vehicle in _motorfestVehicles)
+                                    {
+                                        <option value="@(vehicle.Brand.Name + " " + vehicle.ModelName + " (" + vehicle.Year.Year + ")")" />
+                                    }
+                                }
+                            </datalist>
+                        </div>
+                    </div>
+                    <button class="upload-button" @onclick="LinkVehicle" disabled="@(_selectedMotorfestVehicleId == null || _isLinking)">
+                        @if (_isLinking)
+                        {
+                            <i class="fa fa-spinner fa-spin"></i> <span>LINKING...</span>
+                        }
+                        else
+                        {
+                            <span>LINK VEHICLE</span>
+                        }
+                    </button>
+                    @if (!string.IsNullOrEmpty(_linkErrorMessage))
+                    {
+                        <div class="error-message">@_linkErrorMessage</div>
+                    }
+                </div>
+            </AuthorizeView>
         }
     </div>
 </div>
@@ -92,6 +142,12 @@
     ThisOrThatLeaderboardService.LeaderboardEntry? _selectedEntry;
     string _searchText = "";
     bool _isMobile = false;
+
+    private List<MotorfestVehicle>? _motorfestVehicles;
+    private string _motorfestVehicleName = string.Empty;
+    private Guid? _selectedMotorfestVehicleId;
+    private bool _isLinking = false;
+    private string? _linkErrorMessage;
 
     private void SetSortMode(SortMode mode)
     {
@@ -158,6 +214,39 @@
             return;
         }
         _selectedEntry = entry;
+        _motorfestVehicleName = string.Empty;
+        _selectedMotorfestVehicleId = null;
+        _linkErrorMessage = null;
+    }
+
+    private void OnMotorfestVehicleChanged()
+    {
+        var selected = _motorfestVehicles?.FirstOrDefault(v => (v.Brand.Name + " " + v.ModelName + " (" + v.Year.Year + ")") == _motorfestVehicleName);
+        _selectedMotorfestVehicleId = selected?.Id;
+    }
+
+    private async Task LinkVehicle()
+    {
+        if (_selectedEntry == null || _selectedMotorfestVehicleId == null) return;
+        _isLinking = true;
+        _linkErrorMessage = null;
+        try
+        {
+            await DatabaseMethodService.LinkSuggestionToVehicleAsync(_selectedEntry.VehicleSuggestion.Id, _selectedMotorfestVehicleId.Value);
+            await LeaderboardService.UpdateLeaderboardAsync();
+            _leaderboardEntries = LeaderboardService.GetLeaderboard();
+            _selectedEntry = _leaderboardEntries.FirstOrDefault(e => e.VehicleSuggestion.Id == _selectedEntry.VehicleSuggestion.Id);
+            _motorfestVehicleName = string.Empty;
+            _selectedMotorfestVehicleId = null;
+        }
+        catch (Exception ex)
+        {
+            _linkErrorMessage = "Failed to link vehicle: " + ex.Message;
+        }
+        finally
+        {
+            _isLinking = false;
+        }
     }
 
     private string GetRankClass(int rank)
@@ -194,6 +283,7 @@
         {
             _isMobile = true;
         }
+        _motorfestVehicles = await DatabaseMethodService.GetMotorfestVehiclesAsync();
     }
 
     private string GetTop5VehiclesDescription()

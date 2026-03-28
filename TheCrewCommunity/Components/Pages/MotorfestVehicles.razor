@@ -1,0 +1,498 @@
+@page "/ModTools/MotorfestVehicles"
+@rendermode InteractiveServer
+@using TheCrewCommunity.Data.Entities.GameData.Motorfest
+@using TheCrewCommunity.Data.Entities.WebData.ThisOrThat
+@using TheCrewCommunity.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrator")]
+@inject IDatabaseMethodService DatabaseMethodService
+@inject ICloudFlareImageService CloudFlareImageService
+
+<div class="header-container">
+    <div class="header-content">
+        <h1 class="main-title">Motorfest Vehicles Management</h1>
+    </div>
+</div>
+
+<AddMotorfestLookupDialog @bind-ShowDialog="_showAddDialog" LookupType="@_addDialogType" OnItemAdded="LoadData" />
+
+<div class="content-layout">
+    <div class="form-section">
+        <h2 class="section-title">Add New Vehicle</h2>
+        <EditForm Model="@_newVehicle" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label>Brand</label>
+                <div class="input-group">
+                    <input list="brands-list" class='form-control @(string.IsNullOrEmpty(_brandName) || _newVehicle.BrandId != Guid.Empty ? "" : "is-invalid")' @bind-value="_brandName" @bind-value:event="oninput" @onchange="OnBrandChanged" placeholder="SELECT BRAND" />
+                    <datalist id="brands-list">
+                        @foreach (var brand in _brands)
+                        {
+                            <option value="@brand.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Brand")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.BrandId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Model Name</label>
+                <InputText @bind-Value="_newVehicle.ModelName" class="form-control" placeholder="MODEL NAME" />
+                <ValidationMessage For="@(() => _newVehicle.ModelName)" />
+            </div>
+
+            <div class="form-group">
+                <label>Year</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" @bind="_selectedYear" min="1900" max="2100" step="1" />
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.Year)" />
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <div class="input-group">
+                    <input list="categories-list" class='form-control @(string.IsNullOrEmpty(_categoryName) || _newVehicle.CategoryId != Guid.Empty ? "" : "is-invalid")' @bind-value="_categoryName" @bind-value:event="oninput" @onchange="OnCategoryChanged" placeholder="SELECT CATEGORY" />
+                    <datalist id="categories-list">
+                        @foreach (var item in _categories)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Category")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.CategoryId)" />
+            </div>
+            
+            <div class="form-group">
+                <label>Type</label>
+                <div class="input-group">
+                    <input list="types-list" class='form-control @(string.IsNullOrEmpty(_typeName) || _newVehicle.TypeId != Guid.Empty ? "" : "is-invalid")' @bind-value="_typeName" @bind-value:event="oninput" @onchange="OnTypeChanged" placeholder="SELECT TYPE" />
+                    <datalist id="types-list">
+                        @foreach (var item in _types)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Type")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.TypeId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Engine Type</label>
+                <div class="input-group">
+                    <input list="engine-types-list" class='form-control @(string.IsNullOrEmpty(_engineTypeName) || _newVehicle.EngineTypeId != Guid.Empty ? "" : "is-invalid")' @bind-value="_engineTypeName" @bind-value:event="oninput" @onchange="OnEngineTypeChanged" placeholder="SELECT ENGINE TYPE" />
+                    <datalist id="engine-types-list">
+                        @foreach (var item in _engineTypes)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("EngineType")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.EngineTypeId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Period</label>
+                <div class="input-group">
+                    <input list="periods-list" class='form-control @(string.IsNullOrEmpty(_periodName) || _newVehicle.PeriodId != Guid.Empty ? "" : "is-invalid")' @bind-value="_periodName" @bind-value:event="oninput" @onchange="OnPeriodChanged" placeholder="SELECT PERIOD" />
+                    <datalist id="periods-list">
+                        @foreach (var item in _periods)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Period")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.PeriodId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Style</label>
+                <div class="input-group">
+                    <input list="styles-list" class='form-control @(string.IsNullOrEmpty(_styleName) || _newVehicle.StyleId != Guid.Empty ? "" : "is-invalid")' @bind-value="_styleName" @bind-value:event="oninput" @onchange="OnStyleChanged" placeholder="SELECT STYLE" />
+                    <datalist id="styles-list">
+                        @foreach (var item in _styles)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Style")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.StyleId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Tag</label>
+                <div class="input-group">
+                    <input list="tags-list" class='form-control @(string.IsNullOrEmpty(_tagName) || _newVehicle.TagId != Guid.Empty ? "" : "is-invalid")' @bind-value="_tagName" @bind-value:event="oninput" @onchange="OnTagChanged" placeholder="SELECT TAG" />
+                    <datalist id="tags-list">
+                        @foreach (var item in _tags)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Tag")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.TagId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Country</label>
+                <div class="input-group">
+                    <input list="countries-list" class='form-control @(string.IsNullOrEmpty(_countryName) || !string.IsNullOrEmpty(_newVehicle.CountryId) ? "" : "is-invalid")' @bind-value="_countryName" @bind-value:event="oninput" @onchange="OnCountryChanged" placeholder="SELECT COUNTRY" />
+                    <datalist id="countries-list">
+                        @foreach (var item in _countries)
+                        {
+                            <option value="@item.Name" />
+                        }
+                    </datalist>
+                    <button type="button" class="btn btn-outline-secondary" @onclick='() => ShowAddDialog("Country")'>+</button>
+                </div>
+                <ValidationMessage For="@(() => _newVehicle.CountryId)" />
+            </div>
+
+            <div class="form-group">
+                <label>Price (Bucks)</label>
+                <InputNumber @bind-Value="_newVehicle.PriceBucks" class="form-control" />
+                <ValidationMessage For="@(() => _newVehicle.PriceBucks)" />
+            </div>
+
+            <div class="form-group">
+                <label>Price (Credits)</label>
+                <InputNumber @bind-Value="_newVehicle.PriceCredits" class="form-control" />
+                <ValidationMessage For="@(() => _newVehicle.PriceCredits)" />
+            </div>
+
+            <div class="form-group">
+                <label>Image</label>
+                <div class="input-wrapper">
+                    <InputFile OnChange="HandleFileSelected" class="form-control file-input" accept=".jpg,.jpeg,.png,.webp" />
+                    @if (_isImageValid == true)
+                    {
+                        <span class="status-icon success"><i class="fa fa-check"></i></span>
+                    }
+                    else if (_isImageValid == false)
+                    {
+                        <span class="status-icon error"><i class="fa fa-times"></i> @_imageErrorMessage</span>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Implementation of Suggestion</label>
+                <div class="input-group">
+                    <input list="suggestions-list" class='form-control @(string.IsNullOrEmpty(_suggestionName) || _newVehicle.SuggestionId != null ? "" : "")' @bind-value="_suggestionName" @bind-value:event="oninput" @onchange="OnSuggestionChanged" placeholder="SELECT SUGGESTION (OPTIONAL)" />
+                    <datalist id="suggestions-list">
+                        @foreach (var item in _suggestions)
+                        {
+                            <option value="@(item.Brand + " " + item.Model + " (" + item.Year + ")")" />
+                        }
+                    </datalist>
+                </div>
+            </div>
+
+            @if (_isDuplicate)
+            {
+                <div class="error-message">
+                    <i class="fa fa-warning"></i> A vehicle with this brand and model name already exists!
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-message">
+                    <i class="fa fa-times-circle"></i> @_errorMessage
+                </div>
+            }
+
+            <div class="button-group">
+                <button type="submit" class="upload-button" disabled="@(_isSubmitting || _isDuplicate || _isImageValid == false)">
+                    @if (_isSubmitting)
+                    {
+                        <i class="fa fa-spinner fa-spin"></i> <span>PROCESSING...</span>
+                    }
+                    else
+                    {
+                        <span>ADD VEHICLE</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+
+    <div class="list-section">
+        <h2 class="section-title">Existing Vehicles</h2>
+        <div class="search-wrapper">
+            <input type="text" class="search-box" placeholder="SEARCH" @bind-value="_searchText" @bind-value:event="oninput"/>
+            <i class="search-icon">🔍</i>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Brand</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var vehicle in FilteredVehicles)
+                    {
+                        <tr>
+                            <td>@vehicle.Brand?.Name</td>
+                            <td>@vehicle.ModelName</td>
+                            <td>@vehicle.Year.Year</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private MotorfestVehicle _newVehicle = new()
+    {
+        ModelName = string.Empty,
+        Year = DateOnly.FromDateTime(DateTime.Today),
+        CountryId = string.Empty,
+        BrandId = Guid.Empty,
+        EngineTypeId = Guid.Empty,
+        CategoryId = Guid.Empty,
+        PeriodId = Guid.Empty,
+        StyleId = Guid.Empty,
+        TagId = Guid.Empty,
+        TypeId = Guid.Empty
+    };
+
+    private List<MotorfestVehicleBrand> _brands = [];
+    private List<MotorfestVehicleCategory> _categories = [];
+    private List<MotorfestVehicleCountry> _countries = [];
+    private List<MotorfestVehicleEngineType> _engineTypes = [];
+    private List<MotorfestVehiclePeriod> _periods = [];
+    private List<MotorfestVehicleStyle> _styles = [];
+    private List<MotorfestVehicleTag> _tags = [];
+    private List<MotorfestVehicleType> _types = [];
+    private List<MotorfestVehicle> _existingVehicles = [];
+    private List<VehicleSuggestion> _suggestions = [];
+
+    private IBrowserFile? _selectedFile;
+    private bool _isSubmitting = false;
+    private bool _showAddDialog = false;
+    private string _addDialogType = string.Empty;
+    private string _searchText = string.Empty;
+    private bool? _isImageValid;
+    private string _imageErrorMessage = string.Empty;
+    private string _errorMessage = string.Empty;
+
+    private string _brandName = string.Empty;
+    private string _categoryName = string.Empty;
+    private string _typeName = string.Empty;
+    private string _engineTypeName = string.Empty;
+    private string _periodName = string.Empty;
+    private string _styleName = string.Empty;
+    private string _tagName = string.Empty;
+    private string _countryName = string.Empty;
+    private string _suggestionName = string.Empty;
+
+    private int _selectedYear
+    {
+        get => _newVehicle.Year.Year;
+        set => _newVehicle.Year = new DateOnly(value, 1, 1);
+    }
+
+    private List<MotorfestVehicle> FilteredVehicles => string.IsNullOrWhiteSpace(_searchText)
+        ? _existingVehicles
+        : _existingVehicles.Where(v => v.ModelName.Contains(_searchText, StringComparison.OrdinalIgnoreCase) || (v.Brand?.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _brands = await DatabaseMethodService.GetMotorfestVehicleBrandsAsync();
+        _categories = await DatabaseMethodService.GetMotorfestVehicleCategoriesAsync();
+        _countries = await DatabaseMethodService.GetMotorfestVehicleCountriesAsync();
+        _engineTypes = await DatabaseMethodService.GetMotorfestVehicleEngineTypesAsync();
+        _periods = await DatabaseMethodService.GetMotorfestVehiclePeriodsAsync();
+        _styles = await DatabaseMethodService.GetMotorfestVehicleStylesAsync();
+        _tags = await DatabaseMethodService.GetMotorfestVehicleTagsAsync();
+        _types = await DatabaseMethodService.GetMotorfestVehicleTypesAsync();
+        _existingVehicles = await DatabaseMethodService.GetMotorfestVehiclesAsync();
+        _suggestions = await DatabaseMethodService.GetVehicleSuggestionsAsync();
+    }
+
+    private void OnBrandChanged(ChangeEventArgs e)
+    {
+        _brandName = e.Value?.ToString() ?? string.Empty;
+        var brand = _brands.FirstOrDefault(b => b.Name.Equals(_brandName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.BrandId = brand?.Id ?? Guid.Empty;
+    }
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        _categoryName = e.Value?.ToString() ?? string.Empty;
+        var item = _categories.FirstOrDefault(x => x.Name.Equals(_categoryName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.CategoryId = item?.Id ?? Guid.Empty;
+    }
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        _typeName = e.Value?.ToString() ?? string.Empty;
+        var item = _types.FirstOrDefault(x => x.Name.Equals(_typeName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.TypeId = item?.Id ?? Guid.Empty;
+    }
+    private void OnEngineTypeChanged(ChangeEventArgs e)
+    {
+        _engineTypeName = e.Value?.ToString() ?? string.Empty;
+        var item = _engineTypes.FirstOrDefault(x => x.Name.Equals(_engineTypeName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.EngineTypeId = item?.Id ?? Guid.Empty;
+    }
+    private void OnPeriodChanged(ChangeEventArgs e)
+    {
+        _periodName = e.Value?.ToString() ?? string.Empty;
+        var item = _periods.FirstOrDefault(x => x.Name.Equals(_periodName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.PeriodId = item?.Id ?? Guid.Empty;
+    }
+    private void OnStyleChanged(ChangeEventArgs e)
+    {
+        _styleName = e.Value?.ToString() ?? string.Empty;
+        var item = _styles.FirstOrDefault(x => x.Name.Equals(_styleName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.StyleId = item?.Id ?? Guid.Empty;
+    }
+    private void OnTagChanged(ChangeEventArgs e)
+    {
+        _tagName = e.Value?.ToString() ?? string.Empty;
+        var item = _tags.FirstOrDefault(x => x.Name.Equals(_tagName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.TagId = item?.Id ?? Guid.Empty;
+    }
+    private void OnCountryChanged(ChangeEventArgs e)
+    {
+        _countryName = e.Value?.ToString() ?? string.Empty;
+        var item = _countries.FirstOrDefault(c => c.Name.Equals(_countryName, StringComparison.OrdinalIgnoreCase) || c.Id.Equals(_countryName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.CountryId = item?.Id ?? string.Empty;
+    }
+
+    private void OnSuggestionChanged(ChangeEventArgs e)
+    {
+        _suggestionName = e.Value?.ToString() ?? string.Empty;
+        var item = _suggestions.FirstOrDefault(s => (s.Brand + " " + s.Model + " (" + s.Year + ")").Equals(_suggestionName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.SuggestionId = item?.Id;
+    }
+
+    private bool _isDuplicate => _existingVehicles.Any(v => v.BrandId == _newVehicle.BrandId && v.ModelName.Equals(_newVehicle.ModelName, StringComparison.OrdinalIgnoreCase));
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedFile = e.File;
+        _isImageValid = null;
+        _imageErrorMessage = string.Empty;
+        
+        const long maxFileSize = 1024 * 1024 * 5; // 5MB
+        var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+
+        if (_selectedFile.Size > maxFileSize)
+        {
+            _isImageValid = false;
+            _imageErrorMessage = "FILE TOO LARGE (MAX 5MB)";
+        }
+        else if (!allowedContentTypes.Contains(_selectedFile.ContentType))
+        {
+            _isImageValid = false;
+            _imageErrorMessage = "INVALID FILE TYPE (JPG, PNG, WEBP ONLY)";
+        }
+        else
+        {
+            _isImageValid = true;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_newVehicle.BrandId == Guid.Empty || string.IsNullOrWhiteSpace(_newVehicle.ModelName) || _newVehicle.CategoryId == Guid.Empty ||
+            _newVehicle.TypeId == Guid.Empty || _newVehicle.EngineTypeId == Guid.Empty || _newVehicle.PeriodId == Guid.Empty ||
+            _newVehicle.StyleId == Guid.Empty || _newVehicle.TagId == Guid.Empty || string.IsNullOrWhiteSpace(_newVehicle.CountryId))
+        {
+            _errorMessage = "PLEASE FILL IN ALL REQUIRED FIELDS.";
+            return;
+        }
+        if (_isDuplicate || _isImageValid == false) return;
+        _isSubmitting = true;
+        _errorMessage = string.Empty;
+        try
+        {
+            if (_selectedFile != null)
+            {
+                try
+                {
+                    using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); // 10MB max allowed by stream, but we validate 5MB
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    var response = await CloudFlareImageService.PostImageAsync(ms.ToArray(), false, CloudFlareImageContentType.MotorfestVehicle);
+                    if (response.Success && response.Result != null)
+                    {
+                        _newVehicle.ImageId = Guid.Parse(response.Result.Id);
+                    }
+                    else
+                    {
+                        _errorMessage = "Failed to upload image to CloudFlare.";
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _errorMessage = $"Image upload error: {ex.Message}";
+                    return;
+                }
+            }
+
+            await DatabaseMethodService.AddMotorfestVehicleAsync(_newVehicle);
+            
+            // Reset form
+            _newVehicle = new()
+            {
+                ModelName = string.Empty,
+                Year = DateOnly.FromDateTime(DateTime.Today),
+                CountryId = string.Empty,
+                BrandId = Guid.Empty,
+                EngineTypeId = Guid.Empty,
+                CategoryId = Guid.Empty,
+                PeriodId = Guid.Empty,
+                StyleId = Guid.Empty,
+                TagId = Guid.Empty,
+                TypeId = Guid.Empty
+            };
+            _brandName = string.Empty;
+            _categoryName = string.Empty;
+            _typeName = string.Empty;
+            _engineTypeName = string.Empty;
+            _periodName = string.Empty;
+            _styleName = string.Empty;
+            _tagName = string.Empty;
+            _countryName = string.Empty;
+            _suggestionName = string.Empty;
+            _selectedFile = null;
+            _isImageValid = null;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Database error: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void ShowAddDialog(string type)
+    {
+        _addDialogType = type;
+        _showAddDialog = true;
+    }
+}

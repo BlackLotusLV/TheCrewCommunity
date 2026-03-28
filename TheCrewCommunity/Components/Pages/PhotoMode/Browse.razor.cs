@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.JSInterop;
 using TheCrewCommunity.Data;
-using TheCrewCommunity.Data.GameData;
-using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.Entities.GameData;
+using TheCrewCommunity.Data.Entities.WebData;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.Components.Pages.PhotoMode;

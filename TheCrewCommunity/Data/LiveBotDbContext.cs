@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TheCrewCommunity.Data.GameData;
-using TheCrewCommunity.Data.TableConfiguration;
-using TheCrewCommunity.Data.WebData.ThisOrThat;
-using TheCrewCommunity.Data.WebData;
-using TheCrewCommunity.Data.WebData.ProSettings;
+using TheCrewCommunity.Data.Entities.Discord;
+using TheCrewCommunity.Data.Entities.GameData;
+using TheCrewCommunity.Data.Entities.GameData.Motorfest;
+using TheCrewCommunity.Data.Entities.WebData;
+using TheCrewCommunity.Data.Entities.WebData.ProSettings;
+using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
 
 namespace TheCrewCommunity.Data;
 
@@ -42,6 +43,15 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
     public DbSet<SuggestionVote> SuggestionVotes { get; init; }
     public DbSet<DailyVote> DailyVotes { get; init; }
     public DbSet<PersistentMessage> PersistentMessages { get; init; }
+    public DbSet<MotorfestVehicle> MotorfestVehicles { get; init; }
+    public DbSet<MotorfestVehicleBrand> MotorfestVehicleBrands { get; init; }
+    public DbSet<MotorfestVehicleCategory> MotorfestVehicleCategories { get; init; }
+    public DbSet<MotorfestVehicleCountry> MotorfestVehicleCountries { get; init; }
+    public DbSet<MotorfestVehicleEngineType> MotorfestVehicleEngineTypes { get; init; }
+    public DbSet<MotorfestVehiclePeriod> MotorfestVehiclePeriods { get; init; }
+    public DbSet<MotorfestVehicleStyle> MotorfestVehicleStyles { get; init; }
+    public DbSet<MotorfestVehicleTag> MotorfestVehicleTags { get; init; }
+    public DbSet<MotorfestVehicleType> MotorfestVehicleTypes { get; init; }
 
     public LiveBotDbContext()
     {
@@ -53,12 +63,7 @@ public class LiveBotDbContext : IdentityDbContext<ApplicationUser,IdentityRole<G
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
-        modelBuilder.ApplyConfiguration(new ImageLikeConfig());
-        modelBuilder.ApplyConfiguration(new UserImageConfig());
-        modelBuilder.ApplyConfiguration(new VehicleSuggestionConfig());
-        modelBuilder.ApplyConfiguration(new SuggestionVoteConfig());
-        modelBuilder.ApplyConfiguration(new DailyVoteConfig());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(LiveBotDbContext).Assembly);
         modelBuilder.Entity<ButtonRoles>().HasKey(x => x.Id);
         modelBuilder.Entity<Guild>().HasKey(x => x.Id);
         modelBuilder.Entity<GuildUser>().HasKey(x => new { x.UserDiscordId, x.GuildId });

@@ -1,0 +1,295 @@
+@page "/Motorfest/Vehicles"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using TheCrewCommunity.Data.Entities.GameData.Motorfest
+@using TheCrewCommunity.Services
+@inject IDatabaseMethodService DatabaseMethodService
+@inject GeneralUtils GeneralUtils
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Motorfest Vehicles</PageTitle>
+
+<div class="header-container">
+    <div class="header-content">
+        <h1 class="main-title">Motorfest Vehicles</h1>
+        <div class="controls-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-box" placeholder="Search vehicles..." @bind-value="_searchText" @bind-value:event="oninput"/>
+                @if (!string.IsNullOrEmpty(_searchText))
+                {
+                    <button class="clear-search-button" @onclick="() => _searchText = string.Empty">✖</button>
+                }
+                <i class="search-icon">🔍</i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-layout">
+    <aside class="filter-section">
+        <h2 class="section-title">Filters</h2>
+        
+        <div class="filter-group">
+            <label>Brand</label>
+            <select class="form-control" @bind="_selectedBrandId">
+                <option value="">All Brands</option>
+                @foreach (var brand in _brands)
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Year</label>
+            <select class="form-control" @bind="_selectedYear">
+                <option value="">All Years</option>
+                @foreach (var year in _years)
+                {
+                    <option value="@year">@year</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Category</label>
+            <select class="form-control" @bind="_selectedCategoryId">
+                <option value="">All Categories</option>
+                @foreach (var category in _categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Type</label>
+            <select class="form-control" @bind="_selectedTypeId">
+                <option value="">All Types</option>
+                @foreach (var type in _types)
+                {
+                    <option value="@type.Id">@type.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Engine Type</label>
+            <select class="form-control" @bind="_selectedEngineTypeId">
+                <option value="">All Engine Types</option>
+                @foreach (var engineType in _engineTypes)
+                {
+                    <option value="@engineType.Id">@engineType.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Period</label>
+            <select class="form-control" @bind="_selectedPeriodId">
+                <option value="">All Periods</option>
+                @foreach (var period in _periods)
+                {
+                    <option value="@period.Id">@period.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Style</label>
+            <select class="form-control" @bind="_selectedStyleId">
+                <option value="">All Styles</option>
+                @foreach (var style in _styles)
+                {
+                    <option value="@style.Id">@style.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Tag</label>
+            <select class="form-control" @bind="_selectedTagId">
+                <option value="">All Tags</option>
+                @foreach (var tag in _tags)
+                {
+                    <option value="@tag.Id">@tag.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Country</label>
+            <select class="form-control" @bind="_selectedCountryId">
+                <option value="">All Countries</option>
+                @foreach (var country in _countries)
+                {
+                    <option value="@country.Id">@country.Name</option>
+                }
+            </select>
+        </div>
+        
+        <button class="button secondary reset-button" @onclick="ResetFilters">Reset Filters</button>
+    </aside>
+
+    <main class="list-section">
+        @if (FilteredVehicles == null)
+        {
+            <div class="loading-container">
+                <i class="fa fa-spinner fa-spin"></i> Loading Vehicles...
+            </div>
+        }
+        else if (!FilteredVehicles.Any())
+        {
+            <div class="no-results">
+                No vehicles found matching your criteria.
+            </div>
+        }
+        else
+        {
+            <div class="vehicle-grid">
+                <Virtualize Items="@FilteredVehicles" Context="vehicle" ItemSize="300">
+                    <div class="vehicle-card">
+                        <div class="vehicle-image-container">
+                            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@vehicle.ImageId/public" alt="@vehicle.Brand.Name @vehicle.ModelName" loading="lazy" />
+                        </div>
+                        <div class="vehicle-info">
+                            <h3 class="vehicle-title">@vehicle.Brand.Name @vehicle.ModelName</h3>
+                            <div class="vehicle-meta">
+                                <span class="meta-item"><i class="fa fa-calendar"></i> @vehicle.Year.Year</span>
+                                <span class="meta-item"><i class="fa fa-tag"></i> @vehicle.Category.Name</span>
+                            </div>
+                            <div class="vehicle-details">
+                                <span class="detail-badge">@vehicle.Type.Name</span>
+                                <span class="detail-badge">@vehicle.EngineType.Name</span>
+                                <span class="detail-badge">@vehicle.Period.Name</span>
+                            </div>
+                        </div>
+                    </div>
+                </Virtualize>
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private List<MotorfestVehicle>? _vehicles;
+    private List<MotorfestVehicleBrand> _brands = [];
+    private List<MotorfestVehicleCategory> _categories = [];
+    private List<MotorfestVehicleType> _types = [];
+    private List<MotorfestVehicleEngineType> _engineTypes = [];
+    private List<MotorfestVehiclePeriod> _periods = [];
+    private List<MotorfestVehicleStyle> _styles = [];
+    private List<MotorfestVehicleTag> _tags = [];
+    private List<MotorfestVehicleCountry> _countries = [];
+    private List<int> _years = [];
+
+    private string _searchText = "";
+    private Guid? _selectedBrandId;
+    private int? _selectedYear;
+    private Guid? _selectedCategoryId;
+    private Guid? _selectedTypeId;
+    private Guid? _selectedEngineTypeId;
+    private Guid? _selectedPeriodId;
+    private Guid? _selectedStyleId;
+    private Guid? _selectedTagId;
+    private string? _selectedCountryId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var tasks = new List<Task>
+        {
+            Task.Run(async () => _vehicles = await DatabaseMethodService.GetMotorfestVehiclesAsync()),
+            Task.Run(async () => _brands = await DatabaseMethodService.GetMotorfestVehicleBrandsAsync()),
+            Task.Run(async () => _categories = await DatabaseMethodService.GetMotorfestVehicleCategoriesAsync()),
+            Task.Run(async () => _types = await DatabaseMethodService.GetMotorfestVehicleTypesAsync()),
+            Task.Run(async () => _engineTypes = await DatabaseMethodService.GetMotorfestVehicleEngineTypesAsync()),
+            Task.Run(async () => _periods = await DatabaseMethodService.GetMotorfestVehiclePeriodsAsync()),
+            Task.Run(async () => _styles = await DatabaseMethodService.GetMotorfestVehicleStylesAsync()),
+            Task.Run(async () => _tags = await DatabaseMethodService.GetMotorfestVehicleTagsAsync()),
+            Task.Run(async () => _countries = await DatabaseMethodService.GetMotorfestVehicleCountriesAsync())
+        };
+
+        await Task.WhenAll(tasks);
+        
+        if (_vehicles != null)
+        {
+            _years = _vehicles.Select(v => v.Year.Year).Distinct().OrderByDescending(y => y).ToList();
+        }
+    }
+
+    private void ResetFilters()
+    {
+        _searchText = "";
+        _selectedBrandId = null;
+        _selectedYear = null;
+        _selectedCategoryId = null;
+        _selectedTypeId = null;
+        _selectedEngineTypeId = null;
+        _selectedPeriodId = null;
+        _selectedStyleId = null;
+        _selectedTagId = null;
+        _selectedCountryId = null;
+    }
+
+    private List<MotorfestVehicle>? FilteredVehicles
+    {
+        get
+        {
+            if (_vehicles == null) return null;
+
+            var query = _vehicles.AsEnumerable();
+
+            if (_selectedBrandId.HasValue)
+                query = query.Where(v => v.BrandId == _selectedBrandId.Value);
+            
+            if (_selectedYear.HasValue)
+                query = query.Where(v => v.Year.Year == _selectedYear.Value);
+
+            if (_selectedCategoryId.HasValue)
+                query = query.Where(v => v.CategoryId == _selectedCategoryId.Value);
+
+            if (_selectedTypeId.HasValue)
+                query = query.Where(v => v.TypeId == _selectedTypeId.Value);
+
+            if (_selectedEngineTypeId.HasValue)
+                query = query.Where(v => v.EngineTypeId == _selectedEngineTypeId.Value);
+
+            if (_selectedPeriodId.HasValue)
+                query = query.Where(v => v.PeriodId == _selectedPeriodId.Value);
+
+            if (_selectedStyleId.HasValue)
+                query = query.Where(v => v.StyleId == _selectedStyleId.Value);
+
+            if (_selectedTagId.HasValue)
+                query = query.Where(v => v.TagId == _selectedTagId.Value);
+
+            if (!string.IsNullOrEmpty(_selectedCountryId))
+                query = query.Where(v => v.CountryId == _selectedCountryId);
+
+            if (string.IsNullOrWhiteSpace(_searchText))
+            {
+                return query.ToList();
+            }
+
+            return query
+                .Select(v => new
+                {
+                    Vehicle = v,
+                    Similarity = GeneralUtils.CalculateStringSimilarity(
+                        _searchText.AsSpan(),
+                        $"{v.Brand.Name} {v.ModelName} {v.Year.Year}".AsSpan()
+                    )
+                })
+                .OrderByDescending(x => x.Similarity)
+                .ThenBy(x => x.Vehicle.Brand.Name)
+                .ThenBy(x => x.Vehicle.ModelName)
+                .Select(x => x.Vehicle)
+                .ToList();
+        }
+    }
+}

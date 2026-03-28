@@ -5,6 +5,8 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
 using TheCrewCommunity.Services;
 
 namespace TheCrewCommunity.LiveBot.DiscordEventHandlers;
