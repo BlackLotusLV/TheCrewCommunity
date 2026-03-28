@@ -1,53 +1,58 @@
 @using TheCrewCommunity.Data.Entities.GameData.Motorfest
 @using TheCrewCommunity.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IDatabaseMethodService DatabaseMethodService
 
-@if (ShowDialog)
-{
-    <div class="modal-background" @onclick="ToggleDialog">
-        <div class="modal-content" @onclick:stopPropagation="true">
-            <div class="close" @onclick="ToggleDialog">
-                <i class="fa fa-x"></i>
-            </div>
-            <h2 class="modal-title"><i class="fa fa-plus-circle"></i> Add New @LookupType</h2>
-            
-            <div class="form-container">
-                @if (LookupType == "Country")
-                {
-                    <div class="form-group">
-                        <label>Country Code (e.g. US, GB, JP)</label>
-                        <input type="text" @bind="_newItemId" class="form-control" maxlength="2" />
+<AuthorizeView Roles="Administrator">
+    <Authorized>
+        @if (ShowDialog)
+        {
+            <div class="modal-background" @onclick="ToggleDialog">
+                <div class="modal-content" @onclick:stopPropagation="true">
+                    <div class="close" @onclick="ToggleDialog">
+                        <i class="fa fa-x"></i>
                     </div>
-                }
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" @bind="_newItemName" class="form-control" />
-                </div>
-                
-                @if (!string.IsNullOrEmpty(_errorMessage))
-                {
-                    <div class="error-message">
-                        <i class="fa fa-times-circle"></i> @_errorMessage
-                    </div>
-                }
+                    <h2 class="modal-title"><i class="fa fa-plus-circle"></i> Add New @LookupType</h2>
+                    
+                    <div class="form-container">
+                        @if (LookupType == "Country")
+                        {
+                            <div class="form-group">
+                                <label>Country Code (e.g. US, GB, JP)</label>
+                                <input type="text" @bind="_newItemId" class="form-control" maxlength="2" />
+                            </div>
+                        }
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" @bind="_newItemName" class="form-control" />
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <div class="error-message">
+                                <i class="fa fa-times-circle"></i> @_errorMessage
+                            </div>
+                        }
 
-                <div class="button-group">
-                    <button type="button" class="button secondary" @onclick="ToggleDialog">Cancel</button>
-                    <button type="button" class="button" @onclick="HandleSave" disabled="@(string.IsNullOrWhiteSpace(_newItemName) || (LookupType == "Country" && string.IsNullOrWhiteSpace(_newItemId)) || _isSaving)">
-                        @if (_isSaving)
-                        {
-                            <i class="fa fa-spinner fa-spin"></i> <span>SAVING...</span>
-                        }
-                        else
-                        {
-                            <span>SAVE</span>
-                        }
-                    </button>
+                        <div class="button-group">
+                            <button type="button" class="button secondary" @onclick="ToggleDialog">Cancel</button>
+                            <button type="button" class="button" @onclick="HandleSave" disabled="@(string.IsNullOrWhiteSpace(_newItemName) || (LookupType == "Country" && string.IsNullOrWhiteSpace(_newItemId)) || _isSaving)">
+                                @if (_isSaving)
+                                {
+                                    <i class="fa fa-spinner fa-spin"></i> <span>SAVING...</span>
+                                }
+                                else
+                                {
+                                    <span>SAVE</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-}
+        }
+    </Authorized>
+</AuthorizeView>
 
 <style>
     .modal-background {
@@ -181,14 +186,16 @@
     public void ToggleDialog()
     {
         ShowDialog = !ShowDialog;
-        if (ShowDialog)
-        {
-            _newItemName = string.Empty;
-            _newItemId = string.Empty;
-            _errorMessage = string.Empty;
-            _isSaving = false;
-        }
+        ClearForm();
         ShowDialogChanged.InvokeAsync(ShowDialog);
+    }
+
+    private void ClearForm()
+    {
+        _newItemName = string.Empty;
+        _newItemId = string.Empty;
+        _errorMessage = string.Empty;
+        _isSaving = false;
     }
 
     private async Task HandleSave()
