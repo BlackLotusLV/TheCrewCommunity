@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using TheCrewCommunity.Data.Entities.GameData.Motorfest;
+
 namespace TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
 
 public class VehicleSuggestion
@@ -16,4 +18,5 @@ public class VehicleSuggestion
     public string? Description { get; set; }
     
     public ICollection<SuggestionVote>? VotesFor { get; set; }
+    public ICollection<MotorfestVehicle>? Implementations { get; set; }
 }

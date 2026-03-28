@@ -184,15 +184,121 @@ th {
 .preview-container {
     flex: 1;
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    position: sticky;
+    top: 0;
 }
 .preview-image {
     width: 100%;
-    border-radius: 15px;
-    border: 1px solid #444;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-radius: 12px;
+    border: 2px solid #e0c040;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     transition: all 0.2s;
+}
+
+.link-vehicle-section {
+    width: 100%;
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #e0c040;
+    text-transform: uppercase;
+}
+
+.section-subtitle {
+    color: #e0c040;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    background-color: #1a1a1a;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #e0c040;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(224, 192, 64, 0.2);
+}
+
+.upload-button {
+    background-color: #e0c040;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.upload-button:hover:not(:disabled) {
+    background-color: #f0d050;
+    transform: translateY(-1px);
+}
+
+.upload-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #ff4444;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.implementation-header {
+    white-space: nowrap;
+}
+
+.implementation-cell {
+    min-width: 60px;
+}
+
+.implementation-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+}
+
+.motorfest-icon {
+    height: 1.5rem;
+    width: auto;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+.implementation-count {
+    position: absolute;
+    bottom: -5px;
+    right: -8px;
+    background-color: #e0c040;
+    color: #1a1a1a;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #1a1a1a;
 }
 
 .selected-preview {

@@ -11,6 +11,9 @@ namespace TheCrewCommunity.Services;
 
 public interface IDatabaseMethodService
 {
+    Task<List<VehicleSuggestion>> GetVehicleSuggestionsAsync();
+    Task LinkSuggestionToVehicleAsync(Guid suggestionId, Guid vehicleId);
+    Task UnlinkSuggestionFromVehicleAsync(Guid vehicleId);
     Task<Guild> AddGuildAsync(Guild guild);
     Task<User> AddUserAsync(User user);
     Task AddUbiInfoAsync(UbiInfo ubiInfo);
@@ -54,6 +57,35 @@ public interface IDatabaseMethodService
 
 public class DatabaseMethodService(IDbContextFactory<LiveBotDbContext> dbContextFactory, ILogger<IDatabaseMethodService> logger) : IDatabaseMethodService
 {
+    public async Task<List<VehicleSuggestion>> GetVehicleSuggestionsAsync()
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        return await context.VehicleSuggestions
+            .Include(vs => vs.Implementations)
+            .OrderBy(vs => vs.Brand)
+            .ThenBy(vs => vs.Model)
+            .ToListAsync();
+    }
+    public async Task LinkSuggestionToVehicleAsync(Guid suggestionId, Guid vehicleId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        MotorfestVehicle? vehicle = await context.MotorfestVehicles.FindAsync(vehicleId);
+        if (vehicle != null)
+        {
+            vehicle.SuggestionId = suggestionId;
+            await context.SaveChangesAsync();
+        }
+    }
+    public async Task UnlinkSuggestionFromVehicleAsync(Guid vehicleId)
+    {
+        await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();
+        MotorfestVehicle? vehicle = await context.MotorfestVehicles.FindAsync(vehicleId);
+        if (vehicle != null)
+        {
+            vehicle.SuggestionId = null;
+            await context.SaveChangesAsync();
+        }
+    }
     public async Task<SuggestionVote> AddSuggestionVoteAsync(SuggestionVote vote)
     {
         await using LiveBotDbContext context = await dbContextFactory.CreateDbContextAsync();

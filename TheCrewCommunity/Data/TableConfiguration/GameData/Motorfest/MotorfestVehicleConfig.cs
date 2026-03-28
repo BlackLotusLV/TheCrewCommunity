@@ -40,5 +40,9 @@ public class MotorfestVehicleConfig : IEntityTypeConfiguration<MotorfestVehicle>
             .HasMaxLength(80);
         builder.Property(vehicle => vehicle.CountryId)
             .HasMaxLength(2);
+            
+        builder.HasOne(mv => mv.Suggestion)
+            .WithMany(vs => vs.Implementations)
+            .HasForeignKey(mv => mv.SuggestionId);
     }
 }

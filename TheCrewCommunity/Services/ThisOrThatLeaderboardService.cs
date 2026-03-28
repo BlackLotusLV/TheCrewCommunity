@@ -95,7 +95,10 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     {
         await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
 
-        List<VehicleSuggestion> suggestions = await dbContext.VehicleSuggestions.ToListAsync();
+        List<VehicleSuggestion> suggestions = await dbContext.VehicleSuggestions
+            .Include(vs => vs.Implementations)
+                .ThenInclude(mv => mv.Brand)
+            .ToListAsync();
         List<SuggestionVote> allVotes = await dbContext.SuggestionVotes.ToListAsync();
 
         Dictionary<Guid, int> winsMap = suggestions.ToDictionary(s => s.Id, _ => 0);

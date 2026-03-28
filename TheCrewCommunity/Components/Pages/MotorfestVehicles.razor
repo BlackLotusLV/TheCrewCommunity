@@ -1,6 +1,7 @@
 @page "/ModTools/MotorfestVehicles"
 @rendermode InteractiveServer
 @using TheCrewCommunity.Data.Entities.GameData.Motorfest
+@using TheCrewCommunity.Data.Entities.WebData.ThisOrThat
 @using TheCrewCommunity.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Administrator")]
@@ -182,6 +183,19 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label>Implementation of Suggestion</label>
+                <div class="input-group">
+                    <input list="suggestions-list" class='form-control @(string.IsNullOrEmpty(_suggestionName) || _newVehicle.SuggestionId != null ? "" : "")' @bind-value="_suggestionName" @bind-value:event="oninput" @onchange="OnSuggestionChanged" placeholder="SELECT SUGGESTION (OPTIONAL)" />
+                    <datalist id="suggestions-list">
+                        @foreach (var item in _suggestions)
+                        {
+                            <option value="@(item.Brand + " " + item.Model + " (" + item.Year + ")")" />
+                        }
+                    </datalist>
+                </div>
+            </div>
+
             @if (_isDuplicate)
             {
                 <div class="error-message">
@@ -265,6 +279,7 @@
     private List<MotorfestVehicleTag> _tags = [];
     private List<MotorfestVehicleType> _types = [];
     private List<MotorfestVehicle> _existingVehicles = [];
+    private List<VehicleSuggestion> _suggestions = [];
 
     private IBrowserFile? _selectedFile;
     private bool _isSubmitting = false;
@@ -283,6 +298,7 @@
     private string _styleName = string.Empty;
     private string _tagName = string.Empty;
     private string _countryName = string.Empty;
+    private string _suggestionName = string.Empty;
 
     private int _selectedYear
     {
@@ -310,6 +326,7 @@
         _tags = await DatabaseMethodService.GetMotorfestVehicleTagsAsync();
         _types = await DatabaseMethodService.GetMotorfestVehicleTypesAsync();
         _existingVehicles = await DatabaseMethodService.GetMotorfestVehiclesAsync();
+        _suggestions = await DatabaseMethodService.GetVehicleSuggestionsAsync();
     }
 
     private void OnBrandChanged(ChangeEventArgs e)
@@ -359,6 +376,13 @@
         _countryName = e.Value?.ToString() ?? string.Empty;
         var item = _countries.FirstOrDefault(c => c.Name.Equals(_countryName, StringComparison.OrdinalIgnoreCase) || c.Id.Equals(_countryName, StringComparison.OrdinalIgnoreCase));
         _newVehicle.CountryId = item?.Id ?? string.Empty;
+    }
+
+    private void OnSuggestionChanged(ChangeEventArgs e)
+    {
+        _suggestionName = e.Value?.ToString() ?? string.Empty;
+        var item = _suggestions.FirstOrDefault(s => (s.Brand + " " + s.Model + " (" + s.Year + ")").Equals(_suggestionName, StringComparison.OrdinalIgnoreCase));
+        _newVehicle.SuggestionId = item?.Id;
     }
 
     private bool _isDuplicate => _existingVehicles.Any(v => v.BrandId == _newVehicle.BrandId && v.ModelName.Equals(_newVehicle.ModelName, StringComparison.OrdinalIgnoreCase));
@@ -451,6 +475,7 @@
             _styleName = string.Empty;
             _tagName = string.Empty;
             _countryName = string.Empty;
+            _suggestionName = string.Empty;
             _selectedFile = null;
             _isImageValid = null;
             await LoadData();

@@ -1,3 +1,5 @@
+using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
+
 namespace TheCrewCommunity.Data.Entities.GameData.Motorfest;
 
 public class MotorfestVehicle
@@ -24,4 +26,6 @@ public class MotorfestVehicle
     public required Guid TypeId { get; set; }
     public MotorfestVehicleType? Type { get; set; }
     public Guid? ImageId { get; set; }
+    public Guid? SuggestionId { get; set; }
+    public VehicleSuggestion? Suggestion { get; set; }
 }
