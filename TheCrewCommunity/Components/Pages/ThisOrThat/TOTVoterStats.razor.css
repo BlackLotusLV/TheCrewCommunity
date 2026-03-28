@@ -201,11 +201,18 @@ th {
     text-transform: uppercase;
 }
 
+.thumbnail-cell img {
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid #444;
+}
+
 .user-link {
     color: #e0c040;
     text-decoration: none;
     font-weight: bold;
     transition: color 0.2s;
+    word-break: break-word;
 }
 
 .user-link:hover {

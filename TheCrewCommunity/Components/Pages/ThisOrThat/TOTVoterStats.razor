@@ -27,10 +27,10 @@
             <thead>
             <tr>
                 <th>Rank</th>
-                <th style="width: 100%">Name</th>
+                <th style="width: 50%">Name</th>
                 <th>Votes</th>
                 <th>Completion</th>
-                <th>Favorite Vehicle</th>
+                <th style="width: 50%">Favorite Vehicle</th>
             </tr>
             </thead>
             <tbody>
@@ -54,7 +54,16 @@
                         <td><a href="/Account/Profile/@entry.UserId" class="user-link" @onclick:stopPropagation="true">@entry.Username</a></td>
                         <td>@entry.TotalMatches</td>
                         <td>@entry.Percent.ToString("P2")</td>
-                        <td>@(entry.TopVehicle != null ? $"{entry.TopVehicle.Brand} {entry.TopVehicle.Model}" : "N/A")</td>
+                        <td class="thumbnail-cell">
+                            @if (entry.TopVehicle != null)
+                            {
+                                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@entry.TopVehicle.ImageId/leaderboardThumb" alt="@($"{entry.TopVehicle.Brand} {entry.TopVehicle.Model}")"/>
+                            }
+                            else
+                            {
+                                <span>N/A</span>
+                            }
+                        </td>
                     </tr>
                 </Virtualize>
             }
