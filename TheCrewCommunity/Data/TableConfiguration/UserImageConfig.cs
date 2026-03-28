@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheCrewCommunity.Data.GameData;
-using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.Entities.GameData;
+using TheCrewCommunity.Data.Entities.WebData;
 
 namespace TheCrewCommunity.Data.TableConfiguration;
 

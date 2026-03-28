@@ -1,0 +1,17 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TheCrewCommunity.Data.Entities.Discord;
+
+public class VanityWhitelist
+{
+    private readonly ulong _guildId;
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public required ulong GuildId
+    {
+        get => _guildId;
+        init => _guildId = Convert.ToUInt64(value);
+    }
+    public Guild? Guild { get; init; }
+    [MaxLength(25)]
+    public required string VanityCode { get; init; }
+}

@@ -1,6 +1,8 @@
 ﻿using DSharpPlus.Commands.Processors.SlashCommands;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
 
 namespace TheCrewCommunity.LiveBot.Commands.TagCommands;
 

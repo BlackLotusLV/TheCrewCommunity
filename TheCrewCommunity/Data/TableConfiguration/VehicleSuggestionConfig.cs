@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TheCrewCommunity.Data.WebData.ThisOrThat;
+using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
 
 namespace TheCrewCommunity.Data.TableConfiguration;
 

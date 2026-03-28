@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
-using TheCrewCommunity.Data.WebData;
+using TheCrewCommunity.Data.Entities.WebData;
 
 namespace TheCrewCommunity.Services;
 

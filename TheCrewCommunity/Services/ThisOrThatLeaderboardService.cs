@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
-using TheCrewCommunity.Data.WebData.ThisOrThat;
+using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
 
 namespace TheCrewCommunity.Services;
 

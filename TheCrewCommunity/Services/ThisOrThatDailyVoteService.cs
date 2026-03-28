@@ -4,8 +4,10 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using TheCrewCommunity.Data;
-using TheCrewCommunity.Data.WebData;
-using TheCrewCommunity.Data.WebData.ThisOrThat;
+using TheCrewCommunity.Data.Entities;
+using TheCrewCommunity.Data.Entities.Discord;
+using TheCrewCommunity.Data.Entities.WebData;
+using TheCrewCommunity.Data.Entities.WebData.ThisOrThat;
 
 namespace TheCrewCommunity.Services;
 
