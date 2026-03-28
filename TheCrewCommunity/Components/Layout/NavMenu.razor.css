@@ -1,1 +1,17 @@
 /* Scoped CSS for NavMenu */
+.motorfest-nav-logo {
+    height: 1.2rem;
+    width: auto;
+    margin-right: 0.3rem;
+    filter: grayscale(100%) brightness(2); /* Make it greyscale and light */
+    transition: filter 0.2s ease;
+}
+
+.dropdown-toggle:hover .motorfest-nav-logo,
+.nav-link.active .motorfest-nav-logo {
+    filter: none; /* Return to original colors if hovered or active */
+}
+
+.dropdown-toggle:hover .motorfest-nav-logo {
+    filter: invert(79%) sepia(58%) saturate(442%) hue-rotate(352deg) brightness(92%) contrast(88%);
+}
