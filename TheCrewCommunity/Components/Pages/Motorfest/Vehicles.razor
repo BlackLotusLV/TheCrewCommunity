@@ -132,7 +132,7 @@
     </aside>
 
     <main class="list-section">
-        @if (FilteredVehicles == null)
+        @if (_vehicles == null)
         {
             <div class="loading-container">
                 <i class="fa fa-spinner fa-spin"></i> Loading Vehicles...
@@ -146,26 +146,41 @@
         }
         else
         {
-            <div class="vehicle-grid">
-                <Virtualize Items="@FilteredVehicles" Context="vehicle" ItemSize="300">
-                    <div class="vehicle-card">
-                        <div class="vehicle-image-container">
-                            <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@vehicle.ImageId/public" alt="@vehicle.Brand.Name @vehicle.ModelName" loading="lazy" />
-                        </div>
-                        <div class="vehicle-info">
-                            <h3 class="vehicle-title">@vehicle.Brand.Name @vehicle.ModelName</h3>
-                            <div class="vehicle-meta">
-                                <span class="meta-item"><i class="fa fa-calendar"></i> @vehicle.Year.Year</span>
-                                <span class="meta-item"><i class="fa fa-tag"></i> @vehicle.Category.Name</span>
-                            </div>
-                            <div class="vehicle-details">
-                                <span class="detail-badge">@vehicle.Type.Name</span>
-                                <span class="detail-badge">@vehicle.EngineType.Name</span>
-                                <span class="detail-badge">@vehicle.Period.Name</span>
-                            </div>
-                        </div>
-                    </div>
-                </Virtualize>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th style="width: 100%">Vehicle</th>
+                        <th class="category-header">Category</th>
+                        <th class="table-image-column">Preview</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <Virtualize Items="@FilteredVehicles" Context="vehicle" ItemSize="180" OverscanCount="20">
+                        <tr class="table-row">
+                            <td class="vehicle-cell">
+                                <div class="vehicle-main-info">
+                                    <span class="brand-name">@vehicle.Brand.Name</span>
+                                    <span class="model-name">@vehicle.ModelName</span>
+                                    <span class="year-name">(@vehicle.Year.Year)</span>
+                                </div>
+                                <div class="vehicle-sub-info">
+                                    <span class="detail-item"><span class="detail-label">Country:</span> @vehicle.Country.Name</span>
+                                    <span class="detail-item"><span class="detail-label">Period:</span> @vehicle.Period.Name</span>
+                                    <span class="detail-item"><span class="detail-label">Type:</span> @vehicle.Type.Name</span>
+                                    <span class="detail-item"><span class="detail-label">Engine:</span> @vehicle.EngineType.Name</span>
+                                    <span class="detail-item"><span class="detail-label">Tag:</span> @vehicle.Tag.Name</span>
+                                    <span class="detail-item"><span class="detail-label">Style:</span> @vehicle.Style.Name</span>
+                                </div>
+                            </td>
+                            <td class="category-cell">@vehicle.Category.Name</td>
+                            <td class="thumbnail-cell">
+                                <img src="https://imagedelivery.net/Gym1gfQYlAl-qmVmCPEnkA/@vehicle.ImageId/public?width=400" alt="@vehicle.Brand.Name @vehicle.ModelName (@vehicle.Year.Year)"/>
+                            </td>
+                        </tr>
+                    </Virtualize>
+                    </tbody>
+                </table>
             </div>
         }
     </main>
@@ -236,11 +251,11 @@
         _selectedCountryId = null;
     }
 
-    private List<MotorfestVehicle>? FilteredVehicles
+    private List<MotorfestVehicle> FilteredVehicles
     {
         get
         {
-            if (_vehicles == null) return null;
+            if (_vehicles == null) return [];
 
             var query = _vehicles.AsEnumerable();
 
@@ -282,7 +297,7 @@
                     Vehicle = v,
                     Similarity = GeneralUtils.CalculateStringSimilarity(
                         _searchText.AsSpan(),
-                        $"{v.Brand.Name} {v.ModelName} {v.Year.Year}".AsSpan()
+                        $"{v.Brand.Name} {v.ModelName} {v.Year.Year} {v.Country.Name}".AsSpan()
                     )
                 })
                 .OrderByDescending(x => x.Similarity)
