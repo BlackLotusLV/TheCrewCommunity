@@ -1,0 +1,245 @@
+.header-container {
+    padding: 20px 0;
+    text-align: center;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.main-title {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.controls-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-box {
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 2px solid #e0c040;
+    border-radius: 25px;
+    color: #e0c040;
+    padding: 12px 45px;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus {
+    box-shadow: 0 0 15px rgba(224, 192, 64, 0.3);
+    background-color: #252525;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #e0c040;
+    pointer-events: none;
+}
+
+.clear-search-button {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #e0c040;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content-layout {
+    display: flex;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(100vh - 250px);
+}
+
+.filter-section {
+    flex: 0 0 280px;
+    background-color: #1a1a1a;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #333;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.section-title {
+    color: #e0c040;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0c040;
+    padding-bottom: 10px;
+}
+
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-group label {
+    display: block;
+    color: #e0c040;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #e0c040;
+}
+
+.reset-button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.list-section {
+    flex: 1;
+}
+
+.loading-container, .no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px;
+    color: #e0c040;
+    font-size: 1.5rem;
+    background-color: #1a1a1a;
+    border-radius: 15px;
+}
+
+.vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.vehicle-card {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    border-color: #e0c040;
+}
+
+.vehicle-image-container {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    background-color: #000;
+}
+
+.vehicle-image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vehicle-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.vehicle-title {
+    color: #e0c040;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.vehicle-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.vehicle-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.detail-badge {
+    background-color: #333;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    border: 1px solid #444;
+}
+
+@media (max-width: 992px) {
+    .content-layout {
+        flex-direction: column;
+    }
+    .filter-section {
+        flex: none;
+        width: 100%;
+        position: static;
+    }
+}
