@@ -385,7 +385,7 @@
         _newVehicle.SuggestionId = item?.Id;
     }
 
-    private bool _isDuplicate => _existingVehicles.Any(v => v.BrandId == _newVehicle.BrandId && v.ModelName.Equals(_newVehicle.ModelName, StringComparison.OrdinalIgnoreCase) && v.Year.Year == _newVehicle.Year.Year);
+    private bool _isDuplicate => _existingVehicles.Any(v => v.BrandId == _newVehicle.BrandId && v.ModelName.Equals(_newVehicle.ModelName, StringComparison.OrdinalIgnoreCase) && v.Year.Year == _newVehicle.Year.Year && v.CategoryId == _newVehicle.CategoryId);
 
     private void HandleFileSelected(InputFileChangeEventArgs e)
     {
