@@ -30,5 +30,11 @@ public static class HandleEvent
         if(eventArgs.Guild is null || eventArgs.Author.IsBot) return;
         await userActivityService.UpdateUserActivityAsync(eventArgs.Author, eventArgs.Guild);
         persistentMessageService.EnqueueMessageUpdate(eventArgs.Channel.Id);
+        await using LiveBotDbContext dbContext = await dbContextFactory.CreateDbContextAsync();
+        Guild? guild = await dbContext.Guilds.FindAsync(eventArgs.Guild.Id);
+        if (guild?.ShadowRealm is not null && guild.ShadowRealm == eventArgs.Message.ChannelId)
+        {
+            await SendToShadowRealm.Banish(client, eventArgs);
+        }
     }
 }

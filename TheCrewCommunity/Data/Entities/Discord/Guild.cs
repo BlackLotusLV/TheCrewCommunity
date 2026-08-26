@@ -119,6 +119,13 @@ public class Guild
     }
     private readonly ulong? _thisOrThatDailyChannelId;
 
+    public ulong? ShadowRealm
+    {
+        get => _shadowRealm;
+        init => _shadowRealm = value.HasValue ? Convert.ToUInt64(value) : null;
+    }
+    private readonly ulong? _shadowRealm;
+
     public ICollection<GuildUser>? GuildUsers { get; init; }
     public ICollection<RankRoles>? RankRoles { get; init; }
     public ICollection<ButtonRoles>? ButtonRoles { get; init; }
