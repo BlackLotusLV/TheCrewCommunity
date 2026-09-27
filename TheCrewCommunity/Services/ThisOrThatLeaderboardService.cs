@@ -166,33 +166,47 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
 
             if (totalVotes == 0) continue;
 
+            const int minVotesThreshold = 4;
+
             if (vehicle1Votes > vehicle2Votes)
             {
                 double ratio = (double)vehicle1Votes / totalVotes;
-                int points = ratio switch
+                double points = ratio switch
                 {
                     1.0 => 10,
                     >= 0.75 => 5,
                     _ => 1
                 };
+
+                if (totalVotes < minVotesThreshold)
+                {
+                    points *= (double)totalVotes / minVotesThreshold;
+                }
+
                 v2PointsMap[vehicle1Id] += points;
             }
             else if (vehicle2Votes > vehicle1Votes)
             {
                 double ratio = (double)vehicle2Votes / totalVotes;
-                int points = ratio switch
+                double points = ratio switch
                 {
                     1.0 => 10,
                     >= 0.75 => 5,
                     _ => 1
                 };
+
+                if (totalVotes < minVotesThreshold)
+                {
+                    points *= (double)totalVotes / minVotesThreshold;
+                }
+
                 v2PointsMap[vehicle2Id] += points;
             }
         }
 
         foreach (LeaderboardEntry entry in leaderboardEntries)
         {
-            entry.V2Points = v2PointsMap[entry.VehicleSuggestion.Id];
+            entry.V2Points = (int)Math.Round(v2PointsMap[entry.VehicleSuggestion.Id], MidpointRounding.AwayFromZero);
         }
 
         _leaderboard = leaderboardEntries
@@ -250,7 +264,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
         public int TotalMatches { get; init; }
         public int TotalWins { get; init; }
         public double WinRatio { get; set; }
-        public double V2Points { get; set; }
+        public int V2Points { get; set; }
         public int V2Rank { get; set; }
     }
 
