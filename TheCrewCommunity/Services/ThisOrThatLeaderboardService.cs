@@ -23,7 +23,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("ThisOrThatLeaderboardService is starting.");
+        logger.LogInformation("ThisOrThatLeaderboardService is starting");
         await UpdateLeaderboardAsync();
         await UpdateVoterListAsync();
         _timer = new Timer(RefreshLeaderboardCallback, null, _updateInterval, _updateInterval);
@@ -66,7 +66,7 @@ public class ThisOrThatLeaderboardService(IDbContextFactory<LiveBotDbContext> db
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("ThisOrThatLeaderboardService is stopping.");
+        logger.LogInformation("ThisOrThatLeaderboardService is stopping");
         _timer?.Change(Timeout.Infinite, 0);
         
         await Task.CompletedTask;
